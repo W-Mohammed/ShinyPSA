@@ -81,11 +81,11 @@ get_icers <- function(icer_data) {
   # Sort ICER table and empty columns:
   icer_tmp <- icer_data %>%
     arrange(qalys) %>%
-    mutate(delta.e = NA_real_,
-           delta.c = NA_real_,
-           dominated = NA_character_,
-           e.dominated = NA_character_,
-           icer = NA_real_)
+    mutate(delta.e = NA,
+           delta.c = NA,
+           dominated = NA,
+           e.dominated = NA,
+           icer = NA)
 
   # Identify dominated interventions:
   while (any("dominated" %in%
