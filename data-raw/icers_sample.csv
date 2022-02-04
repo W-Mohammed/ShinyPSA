@@ -1,0 +1,9 @@
+Sequence,Discounted Costs,Discounted QALYs
+BSC,0,4.21
+B + BSC -> BSC,"5,777",4.433
+E + BSC -> BSC,"3,200",4.62
+E + BSC -> B + BSC -> BSC,"12,571",6.825
+B + BSC -> E + BSC -> BSC,"12,706",4.826
+newOne,"3,000",5.5
+newTwo,"10,000",7.7
+newThree,"11,000",12
