@@ -7,6 +7,28 @@
 #
 ################################################################################
 
+#' Perform and report PSA analysis
+#'
+#' @param e A matrix containing the \code{effects} from PSA. Number of
+#'  \code{columns} is equal to the interventions while the number of
+#'  \code{rows} is equal to the number of PSA simulations to be analysed.
+#' @param c A matrix containing the \code{costs} from PSA. Number of
+#'  \code{columns} is equal to the interventions while the number of
+#'  \code{rows} is equal to the number of PSA simulations to be analysed.
+#' @param interventions A vector containing the names of all interventions.
+#' If not provided or less names than needed is provided, the function will
+#' generate generic names, for example \code{intervention 1}.
+#' @param ref An integer indicating the index of the reference
+#' intervention. This index is used against the \code{intervention} vector.
+#' @param Kmax The maximum willingness-to-pay threshold to use in the
+#' analysis. This parameter is ignored if \code{wtp} is provided.
+#' @param wtp A vector of \code{length > 0} identifying the
+#' willingness-to-pay values to use in the analysis.
+#'
+#' @return A list of class \code{psa} with \code{24} elements.
+#' @export
+#'
+#' @examples
 perform_psa <- function(e, c, interventions = NULL, ref = NULL, Kmax = 50000, wtp = NULL) {
 
   # Stop if objects e & c are not of class matrix or different dimensions:
