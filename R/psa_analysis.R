@@ -18,18 +18,20 @@
 #' @param interventions A vector containing the names of all interventions.
 #' If not provided or less names than needed is provided, the function will
 #' generate generic names, for example \code{intervention 1}.
-#' @param ref An integer indicating the index of the reference
+#' @param .ref An integer indicating the index of the reference
 #' intervention. This index is used against the \code{intervention} vector.
 #' @param Kmax The maximum willingness-to-pay threshold to use in the
 #' analysis. This parameter is ignored if \code{wtp} is provided.
 #' @param wtp A vector of \code{length > 0} identifying the
 #' willingness-to-pay values to use in the analysis.
+#' @param .incremental
 #'
 #' @return A list of class \code{psa} with \code{24} elements.
 #' @export
 #'
 #' @examples
-perform_psa <- function(e, c, interventions = NULL, ref = NULL, Kmax = 50000, wtp = NULL) {
+perform_psa <- function(e, c, interventions = NULL, .ref = NULL,
+                        .incremental = TRUE, Kmax = 50000, wtp = NULL) {
 
   # Stop if objects e & c are not of class matrix or different dimensions:
   stopifnot('is e a matrix' = "matrix" %in% class(e),
@@ -42,7 +44,7 @@ perform_psa <- function(e, c, interventions = NULL, ref = NULL, Kmax = 50000, wt
   n.comparisons <- n.comparators - 1 # Number of least possible comparisons
   v.ints <- 1:n.comparators # Vector with index of interventions'
 
-  # Check interventions labels supplied, create ones if any is missing:
+  # Check supplied interventions labels, create ones if any is missing:
   if(!is.null(interventions) & length(interventions) != n.comparators) {
     interventions <- NULL
   }
@@ -71,16 +73,16 @@ perform_psa <- function(e, c, interventions = NULL, ref = NULL, Kmax = 50000, wt
   # ICER(s), CEAC & NMB(s)/iNMB(s):
   if(n.comparisons == 1) { # If there were only two interventions:
     # Define comparator(s) and reference interventions:
-    if(is.null(ref)) {
-      ref = 1 # reference group default's to 1
+    if(is.null(.ref)) {
+      .ref = 1 # reference group default's to 1
     }
-    v.comp <- v.ints[-ref]
+    v.comp <- v.ints[-.ref]
 
     # Compute Effectiveness & Cost differentials using ref intervention:
-    delta.e <- e[, ref] - e[, v.comp]
-    delta.c <- c[, ref] - c[, v.comp]
+    delta.e <- e[, .ref] - e[, v.comp]
+    delta.c <- c[, .ref] - c[, v.comp]
     dimnames(delta.e) <- dimnames(delta.c) <- list(NULL,
-                                                   interventions[-ref])
+                                                   interventions[-.ref])
 
     # Compute the ICER with respect to the first intervention:
     ICER <- mean(delta.c) / mean(delta.e)
@@ -90,7 +92,7 @@ perform_psa <- function(e, c, interventions = NULL, ref = NULL, Kmax = 50000, wt
     ceac <- rowMeans(inmb > 0)
     # Select the best option for each willingness-to-pay value:
     e.inmb <- rowMeans(inmb)
-    best <- rep(ref, n.k)
+    best <- rep(.ref, n.k)
     best[which(e.inmb < 0)] <- v.comp
     # Finds the wtp value for which the optimal decision changes:
     check <- c(0, diff(best))
@@ -98,15 +100,15 @@ perform_psa <- function(e, c, interventions = NULL, ref = NULL, Kmax = 50000, wt
 
   } else if(n.comparisons > 1) { # multiple comparators
     # Incremental analysis:
-    if(!is.null(ref)) { # when a reference intervention is supplied
+    if(!is.null(.ref)) { # when a reference intervention is supplied
       # Define comparator(s) and reference interventions:
-      v.comp <- v.ints[-ref]
+      v.comp <- v.ints[-.ref]
 
-      # Compute Effectiveness & Cost differentials using ref intervention:
-      delta.e <- e[, ref] - e[, v.comp]
-      delta.c <- c[, ref] - c[, v.comp]
+      # Compute Effectiveness & Cost differentials using .ref intervention:
+      delta.e <- e[, .ref] - e[, v.comp]
+      delta.c <- c[, .ref] - c[, v.comp]
       dimnames(delta.e) <- dimnames(delta.c) <- list(NULL,
-                                                     interventions[-ref])
+                                                     interventions[-.ref])
 
       # Compute the ICER with respect to the ref intervention:
       ICER <- colMeans(delta.c) / colMeans(delta.e)
@@ -129,7 +131,7 @@ perform_psa <- function(e, c, interventions = NULL, ref = NULL, Kmax = 50000, wt
         tmp <- apply(e.inmb, 1, min)
         tmp2 <- apply(e.inmb, 1, which.min)
       }
-      best <- ifelse(tmp > 0, ref, v.comp[tmp2])
+      best <- ifelse(tmp > 0, .ref, v.comp[tmp2])
       # Finds the wtp value for which the optimal decision changes
       check <- c(0, diff(best))
       kstar <- v.k[check!=0]
@@ -141,7 +143,8 @@ perform_psa <- function(e, c, interventions = NULL, ref = NULL, Kmax = 50000, wt
         'qalys' = colMeans(e),
         'costs' = colMeans(c)
       )
-      ICER <- get_icers(icer_data = icer_df)
+      ICER <- get_icers(.icer_data = icer_df, .incremental = .incremental,
+                        .ref = .ref)
 
       # Compute NMBs & CEAC:
       nmb <- array(rep(e, n.k) *
@@ -185,14 +188,14 @@ perform_psa <- function(e, c, interventions = NULL, ref = NULL, Kmax = 50000, wt
   results <- list(
     n.sim = n.sim, n.comparators = n.comparators,
     n.comparisons = n.comparisons,
-    delta.e = if(!is.null(ref)) as.data.frame(delta.e) else NULL,
-    delta.c = if(!is.null(ref)) as.data.frame(delta.c) else NULL,
+    delta.e = if(!is.null(.ref)) as.data.frame(delta.e) else NULL,
+    delta.c = if(!is.null(.ref)) as.data.frame(delta.c) else NULL,
     ICER = ICER, Kmax = Kmax, k = v.k, ceac = ceac,
-    ib = if(!is.null(ref)) inmb else nmb,
-    eib = if(!is.null(ref)) e.inmb else e.nmb,
+    ib = if(!is.null(.ref)) inmb else nmb,
+    eib = if(!is.null(.ref)) e.inmb else e.nmb,
     kstar = kstar, best = best, U = U, vi = vi, Ustar = Ustar, ol = ol,
-    evi = evi, interventions = interventions, ref = ref,
-    comp = if(!is.null(ref)) v.comp else NULL,
+    evi = evi, interventions = interventions, .ref = .ref,
+    comp = if(!is.null(.ref)) v.comp else NULL,
     step = step, e = e, c = c
   )
 
