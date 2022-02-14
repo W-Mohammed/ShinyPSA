@@ -30,8 +30,8 @@
 #' @export
 #'
 #' @examples
-perform_psa <- function(e, c, interventions = NULL, .ref = NULL,
-                        .incremental = TRUE, Kmax = 50000, wtp = NULL) {
+perform_psa <- function(e, c, .interventions = NULL, .ref = NULL,
+                        .incremental = TRUE, .Kmax = 50000, .wtp = NULL) {
 
   # Stop if objects e & c are not of class matrix or different dimensions:
   stopifnot('is e a matrix' = "matrix" %in% class(e),
@@ -45,30 +45,49 @@ perform_psa <- function(e, c, interventions = NULL, .ref = NULL,
   v.ints <- 1:n.comparators # Vector with index of interventions'
 
   # Check supplied interventions labels, create ones if any is missing:
-  if(!is.null(interventions) & length(interventions) != n.comparators) {
-    interventions <- NULL
+  if(!is.null(.interventions) & length(.interventions) != n.comparators) {
+    .interventions <- NULL
   }
-  if(is.null(interventions)) {
-    interventions <- paste("intervention", 1:n.comparators)
+  if(is.null(.interventions)) {
+    .interventions <- paste("intervention", 1:n.comparators)
   }
 
   # Set up willingness-to-pay:
-  if (!is.null(Kmax)) {
-    Kmax <- 50000
+  if (is.null(.Kmax)) {
+    .Kmax <- 50000
   }
-  if (!is.null(wtp)) {
-    wtp <- sort(unique(wtp))
-    n.points <- length(wtp) - 1
-    Kmax <- max(wtp)
+  if (!is.null(.wtp)) {
+    .wtp <- sort(unique(.wtp))
+    .Kmax <- max(.wtp)
     step <- NA
-    v.k <- wtp
-    n.k <- n.points + 1
+    v.k <- .wtp
+    n.k <- length(.wtp)
   } else {
     n.points <- 500
-    step <- Kmax / n.points
-    v.k <- seq(from = 0, to = Kmax, by = step)
+    step <- .Kmax / n.points
+    v.k <- seq(from = 0, to = .Kmax, by = step)
     n.k <- length(v.k)
   }
+
+  # Compute ICER(s):
+  ICER <- compute_icers(.icer_data = icer_df,
+                        .incremental = .incremental, .ref = .ref)
+
+  # Compute NMB or iNMB, e.NMB or e.iNMB and best option for each k:
+  nmbs <- compute_NMBs(.effs = .effs, .costs = .costs, .ref = .ref,
+                     .interventions = .interventions, .Kmax = .Kmax,
+                     .wtp = .wtp)
+  NMB <- nmbs$nmb
+  e.NMB <- nmbs$e.nmb
+  best <- nmbs$best
+  check <- nmbs$check
+  kstar <- nmbs$kstar
+
+  # Compute CEAC:
+  CEAC <- compute_CEACs(.nmb = NMB, .ref = .ref)
+
+  # Compute CEAF:
+  CEAF <- compute_CEAFs(.ceac = CEAC)
 
   # ICER(s), CEAC & NMB(s)/iNMB(s):
   if(n.comparisons == 1) { # If there were only two interventions:
@@ -143,8 +162,8 @@ perform_psa <- function(e, c, interventions = NULL, .ref = NULL,
         'qalys' = colMeans(e),
         'costs' = colMeans(c)
       )
-      ICER <- get_icers(.icer_data = icer_df, .incremental = .incremental,
-                        .ref = .ref)
+      ICER <- compute_icers(.icer_data = icer_df,
+                            .incremental = .incremental, .ref = .ref)
 
       # Compute NMBs & CEAC:
       nmb <- array(rep(e, n.k) *

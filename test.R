@@ -10,10 +10,15 @@ icer_test_input <-
 View(icer_test_input %>% dominance_wraper())
 
 icer_test_input <-
-  tibble("intervention" = paste("intervention", 1:2),
-         "costs" = c(500, 5777),
-         "qalys" = c(4.21, 4.133))
-icer_test_input %>% compute_ICERs()
+  tibble("intervention" = paste("intervention", 1:5),
+         "costs" = c(500, 600, 700, 800, 900),
+         "qalys" = c(4.21, 4.133, 4.1, 4.05, 4))
+View(icer_test_input %>% get_icers())
+icer_test_input <-
+  tibble("intervention" = paste("intervention", 1:6),
+         "costs" = c(500, 600, 700, 800, 900, 1000),
+         "qalys" = c(4.21, 4.133, 4.1, 4.05, 4, 5))
+View(icer_test_input %>% get_icers())
 # icer_test_input %>% dominance_wraper()
 character_nms <- c("dominance", "icer_label")
 numeric_nms <- c("delta.e", "delta.c", "icer")
