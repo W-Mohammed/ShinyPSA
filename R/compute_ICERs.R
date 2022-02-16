@@ -243,11 +243,11 @@ compute_ICERs <- function(.icer_data, .effs = NULL, .costs = NULL,
     n.comparators <- dim(.effs)[2]
 
     # Check supplied interventions labels, create ones if any is missing:
-    if(!is.null(interventions) & length(interventions) != n.comparators) {
-      interventions <- NULL
+    if(!is.null(.interventions) & length(.interventions) != n.comparators) {
+      .interventions <- NULL
     }
-    if(is.null(interventions)) {
-      interventions <- paste("intervention", 1:n.comparators)
+    if(is.null(.interventions)) {
+      .interventions <- paste("intervention", 1:n.comparators)
     }
 
     # Define ICER table:

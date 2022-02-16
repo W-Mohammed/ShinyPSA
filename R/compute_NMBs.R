@@ -108,7 +108,7 @@ compute_NMBs <- function(.effs, .costs, .ref = NULL, .interventions = NULL,
                dimnames = list(sims = NULL,
                                ints = .interventions,
                                k = NULL))
-  nmb <- aperm(nmb, c(3, 1, 2)) # array(slice = v.k, row = sims, col = v.comps)
+  nmb <- aperm(nmb, c(3, 1, 2)) # array(slice = v.k, row = sims, col = v.ints)
 
   # Compute expected net benefit (e.NMB):
   e.nmb <- apply(nmb, 3, function(x) apply(x, 1, mean))
