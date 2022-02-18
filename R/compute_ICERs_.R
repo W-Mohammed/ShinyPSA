@@ -95,7 +95,7 @@ identify_e.dominance_ <- function(.icer_data, .qalys = qalys) {
 #'
 #' @examples
 calculate_ICERs_ <- function(.icer_data, .qalys = qalys, .costs = costs,
-                            .ref = NULL, .incremental = TRUE) {
+                             .ref = NULL, .incremental = TRUE) {
   # Check if missing key columns and create them if so:
   .icer_data <- .icer_data %>%
     add_missing_columns_(.x = .,

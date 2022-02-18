@@ -22,7 +22,7 @@
 #'
 #' @examples
 compute_NMBs_ <- function(.effs, .costs, .ref = NULL, .interventions = NULL,
-                         .Kmax = NULL, .wtp = NULL) {
+                          .Kmax = NULL, .wtp = NULL) {
   # Stop if .effs & .costs are not of class tibble or have unequal dims:
   stopifnot('.effs is not a tibble' = "data.frame" %in% class(.effs),
             '.costs is not a tibble' = "data.frame" %in% class(.costs),
@@ -30,7 +30,6 @@ compute_NMBs_ <- function(.effs, .costs, .ref = NULL, .interventions = NULL,
               dim(.effs) == dim(.costs))
 
   # Simulations & interventions analysed:
-  n.sim <- nrow(.effs) # Number of simulations
   n.comparators <- ncol(.effs) # Number of interventions
   n.comparisons <- n.comparators - 1 # Number of least possible comparisons
   v.ints <- 1:n.comparators # Vector with index of interventions'
@@ -97,8 +96,8 @@ compute_NMBs_ <- function(.effs, .costs, .ref = NULL, .interventions = NULL,
     # Compute incremental expected net benefit e.iNMB:
     e.inmb <- inmb %>%
       map_dfr(.f = function(.x) {
-      colMeans(as_tibble(.x))
-    })
+        colMeans(as_tibble(.x))
+      })
 
     # Select the best option for each willingness-to-pay value:
     best_interv <- e.inmb %>%
@@ -118,17 +117,17 @@ compute_NMBs_ <- function(.effs, .costs, .ref = NULL, .interventions = NULL,
   }
   # Compute monetary net benefit (NMB) (default):
   nmb <- map2(.x = .effs, .y = .costs,
-               .f = function(.eff = .x, .cost = .y) {
-                 map_dfc(as.list(v.k),
-                         .f = function(.k = .x) {
-                           .eff * .k - .cost})}) %>%
+              .f = function(.eff = .x, .cost = .y) {
+                map_dfc(as.list(v.k),
+                        .f = function(.k = .x) {
+                          .eff * .k - .cost})}) %>%
     transpose()
 
   # Compute expected net benefit (e.NMB):
   e.nmb <- nmb %>%
     map_dfr(.f = function(.x) {
-    colMeans(as_tibble(.x))
-  })
+      colMeans(as_tibble(.x))
+    })
 
   # Select the best option for each willingness-to-pay value:
   best_interv <- e.nmb %>%
@@ -160,7 +159,7 @@ compute_NMBs_ <- function(.effs, .costs, .ref = NULL, .interventions = NULL,
 #'
 #' @examples
 compute_CEACs_ <- function(.nmb, .effs = NULL, .costs = NULL, .ref = NULL,
-                          .interventions = NULL, .Kmax = NULL, .wtp = NULL) {
+                           .interventions = NULL, .Kmax = NULL, .wtp = NULL) {
   # If .nmb was not available but raw data were:
   if(is.null(.nmb) & !is.null(.effs) & !is.null(.costs))
     .nmb <- compute_NMBs_(.effs = .effs, .costs = .costs, .ref = .ref,
