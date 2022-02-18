@@ -1,8 +1,9 @@
 ################################################################################
 #
-# Script Name:        psa_analysis.R
+# Script Name:        summarise_PSA.R
 # Module Name:        Economic/PSA
-# Script Description: Defines probabilistic sensitivity analysis functions.
+# Script Description: Defines a function that summarises probabilistic
+#                     sensitivity analysis outputs.
 # Author:             WM-University of Sheffield (wmamohammed1@sheffield.ac.uk)
 #
 ################################################################################

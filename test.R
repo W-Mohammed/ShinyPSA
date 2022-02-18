@@ -1,3 +1,16 @@
+pacman::p_load(BCEA, tidyverse, devtools, ggrepel)
+
+icer_tmp <- tibble(
+  'intervention' = paste("int", 1:4),
+  'qalys' = NA,
+  'costs' = NA) %>%
+  add_missing_columns_(.x = .,
+                      .characters = c("dominance", "icer_label"),
+                      .numerics = c("delta.e", "delta.c", "icer"))
+
+
+
+
 icer_test_input <-
   tibble("intervention" = paste("intervention", 1:2),
          "costs" = c(500, 5777),
@@ -57,6 +70,31 @@ icer_test_input <-
          "costs" = c(0, 5777, 3200, 12571, 12706, 3000, 10000, 11000),
          "qalys" = c(4.21, 4.433, 4.62, 6.825, 4.826, 5.5, 7.7, 12))
 
+icer_test_input %>% identify_dominance_() %>% View()
+.x = icer_test_input
+     # Check if missing key columns and create them if so:
+     .x <- .x %>%
+       add_missing_columns_(.x = .,
+                            .characters = c("dominance", "icer_label"),
+                            .numerics = c("delta.e", "delta.c", "icer"))
+
+     # Check for unidentified dominance
+     while (any("dominated" %in%
+                (.x %>%
+                 filter(if_any(dominance, ~ is.na(.))) %>%
+                 identify_dominance_() %>%
+                 pull(dominance)))) {
+       # Do until all dominated are identified
+       .x <- .x %>%
+         identify_dominance_()
+     }
+     .x %>%
+       filter(if_any(dominance, ~ is.na(.))) %>%
+       identify_dominance_()
+identify_dominance_(.icer_data = icer_test_input)
+
+
+
 icer_df <- tibble(
   'intervention' = interventions,
   'qalys' = colMeans(e),
@@ -64,7 +102,7 @@ icer_df <- tibble(
 )
 ICER <- get_icers(icer_data = icer_df)
 
-pacman::p_load(BCEA, tidyverse, devtools)
+pacman::p_load(BCEA, tidyverse, devtools, ggrepel)
 # Tidyverse version of nmb, ceac, ceaf and evpi:
 data(Smoking)
 v.k = seq(from = 0, to = 500, length.out = 11)
@@ -88,11 +126,12 @@ test2 = map_dfr(test1, .f = function(.x) {
 test3 = test1 %>%
   map_dfr(.f = function(.x) {
     .tmp = max.col(as_tibble(.x), ties.method = "first")
-    table(.tmp) / length(.tmp)
-  }) %>%
+    table(.tmp) / length(.tmp)}) %>%
   select(paste(1:length(test1[[1]]))) %>% # arrange for column names
   `colnames<-`(treats) %>%
   mutate(across(.fns = ~ ifelse(is.na(.x), 0, .x)))
+
+
 # Possible use in a CEAF:
 test4 = do.call(pmax, test3)
 # Find best:
@@ -177,17 +216,23 @@ ce_plane = tst_PSA$e %>%
 x_lim = c(NA, max(ce_plane$effects) * 1.1)
 y_lim = c(min(ce_plane$costs) * 0.9, max(ce_plane$costs) * 1.1)
 
-ce_plane %>%
-  ggplot(aes(x = effects, y = costs, shape = interventions)) +
-  geom_point(size = 0.8) +
-  geom_hline(yintercept = 0, colour = "grey") +
-  geom_vline(xintercept = 0, colour = "grey") +
+ce_plane$interventions[ce_plane$interventions == "V1"] = treats[1]
+ce_plane$interventions[ce_plane$interventions == "V2"] = treats[2]
+ce_plane$interventions[ce_plane$interventions == "V3"] = treats[3]
+ce_plane$interventions[ce_plane$interventions == "V4"] = treats[4]
+
+ce_plane_plot <- ggplot() +
+  geom_point(data = ce_plane, aes(x = effects, y = costs, shape = interventions, color = interventions), size = 1, alpha = 0.4) +
+  geom_hline(yintercept = 0, colour = "gray") +
+  geom_vline(xintercept = 0, colour = "gray") +
   coord_cartesian(xlim = x_lim,
                   ylim = y_lim,
-                  expand = FALSE)
-
-
-
+                  expand = FALSE) +
+  geom_point(data = tst_PSA$ICER, inherit.aes = FALSE, aes(x = qalys, y = costs, fill = intervention), shape = 21, colour = "black", show.legend = FALSE, size = 3, alpha = 1) +
+  geom_text_repel(data = tst_PSA$ICER, aes(x = qalys, y = costs, label = paste(ifelse(is.na(icer), "", paste0("£", round(icer))), "(", icer_label, ")", sep = "")), nudge_x = 0.25, nudge_y = 0.25, parse = FALSE, size = 3, max.overlaps = Inf,  min.segment.length = 0) +
+  geom_abline(slope = 20000) +
+  theme(legend.position = c(0.8, 0.2),
+        legend.background = element_rect(fill = NA))
 
 
 

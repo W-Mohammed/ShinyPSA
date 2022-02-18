@@ -1,6 +1,6 @@
 ################################################################################
 #
-# Script Name:        icer_helper_functions.R
+# Script Name:        helper_functions.R
 # Module Name:        Economic/PSA
 # Script Description: Defines a set of functions that aid icer(s)
 #                     computation.
@@ -23,6 +23,34 @@ add_missing_columns <- function(.x, .characters, .numerics) {
   missing_nms <- setdiff(nms, names(.x))
   .x[missing_nms[missing_nms %in% .numerics]] <- NA_real_
   .x[missing_nms[missing_nms %in% .characters]] <- NA_character_
+
+  return(.x)
+}
+
+#' Check and add any missing columns expected by ICER computation functions
+#'
+#' @param .characters
+#' @param .numerics
+#' @param .x
+#'
+#' @return
+#' @export
+#'
+#' @examples
+add_missing_columns_ <- function(.x, .characters, .numerics) {
+  # Check for missing columns:
+  missing_nms <- setdiff(c(.numerics, .characters), names(.x))
+
+  # In case there were missing columns:
+  if(!length(missing_nms) == 0) {
+    # Create missing columns:
+    .x <- .x %>%
+      cbind(missing_nms %>%
+              `names<-`(missing_nms) %>%
+              map_dfc(.f = function(.x) {
+                .x = ifelse(.x %in% .numerics, NA_real_, NA_character_)
+              }))
+  }
 
   return(.x)
 }
