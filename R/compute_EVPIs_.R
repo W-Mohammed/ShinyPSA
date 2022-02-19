@@ -64,11 +64,11 @@ compute_EVPIs_ = function(.effs, .costs, .interventions = NULL,
       colMeans(as_tibble(.x))
     })
 
-  # Select the best option for each willingness-to-pay value:
+  # Identify the best option for each willingness-to-pay value:
   best_interv <- e.nmb %>%
     max.col(ties.method = "first")
 
-  # Select maximum nmb at each iteration and for each wtp:
+  # Extract maximum nmb value at each iteration for each wtp/threshold:
   max_nmb_iter <- nmb %>%
     map_dfr(.f = function(.x) {
       do.call(pmax, as_tibble(.x))
@@ -89,5 +89,5 @@ compute_EVPIs_ = function(.effs, .costs, .interventions = NULL,
   # Compute expected value-of-information (EVPI):
   evi <- colMeans(ol)
 
-  return(list(Ustar = max_nmb_iter, vi = vi, ol = ol, evi = evi))
+  return(list(U = nmb, Ustar = max_nmb_iter, vi = vi, ol = ol, evi = evi))
 }

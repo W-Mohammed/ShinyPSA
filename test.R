@@ -234,8 +234,41 @@ ce_plane_plot <- ggplot() +
   theme(legend.position = c(0.8, 0.2),
         legend.background = element_rect(fill = NA))
 
+# Compare Base and Tidy versions of the PSA functions:
+base_tidy_summarise = microbenchmark::microbenchmark(
+  'base' = summarise_PSA(.effs = e, .costs = c, .interventions = treats),
+  'tidy' = summarise_PSA_(.effs = e, .costs = c, .interventions = treats),
+  times = 100)
 
+plot(base_tidy_summarise)
 
+base_tidy_ICERs = microbenchmark::microbenchmark(
+  'base' = compute_ICERs(.icer_data = NULL, .effs = e, .costs = c, .interventions = treats),
+  'tidy' = compute_ICERs_(.icer_data = NULL, .effs = as_tibble(e), .costs = as_tibble(c), .interventions = treats),
+  times = 100)
+
+plot(base_tidy_ICERs)
+
+base_tidy_NMBs = microbenchmark::microbenchmark(
+  'base' = compute_NMBs(.effs = e, .costs = c, .interventions = treats),
+  'tidy' = compute_NMBs_(.effs = as_tibble(e), .costs = as_tibble(c), .interventions = treats),
+  times = 100)
+
+plot(base_tidy_NMBs)
+
+base_tidy_CEACs = microbenchmark::microbenchmark(
+  'base' = compute_CEACs(.nmb = NULL, .effs = e, .costs = c, .interventions = treats),
+  'tidy' = compute_CEACs_(.nmb = NULL, .effs = as_tibble(e), .costs = as_tibble(c), .interventions = treats),
+  times = 100)
+
+plot(base_tidy_CEACs)
+
+base_tidy_EVPIs = microbenchmark::microbenchmark(
+  'base' = compute_EVPIs(.effs = e, .costs = c, .interventions = treats),
+  'tidy' = compute_EVPIs_(.effs = as_tibble(e), .costs = as_tibble(c), .interventions = treats),
+  times = 100)
+
+plot(base_tidy_EVPIs)
 
 
 

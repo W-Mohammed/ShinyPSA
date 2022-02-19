@@ -78,12 +78,12 @@ compute_NMBs_ <- function(.effs, .costs, .ref = NULL, .interventions = NULL,
     delta.effs <- .effs %>%
       select(-.ref) %>%
       mutate(across(.fns = ~ .effs %>%
-                      pull(.ref) - .x))
+                      .x - pull(.ref)))
 
     delta.costs <- .costs %>%
       select(-.ref) %>%
       mutate(across(.fns = ~ .costs %>%
-                      pull(.ref) - .x))
+                      .x - pull(.ref)))
 
     # Calculate iNMB:
     inmb <- map2(.x = delta.effs, .y = delta.costs,
@@ -102,7 +102,7 @@ compute_NMBs_ <- function(.effs, .costs, .ref = NULL, .interventions = NULL,
     # Select the best option for each willingness-to-pay value:
     best_interv <- e.inmb %>%
       do.call(pmax, .) %>%
-      {ifelse(. >= 0, .ref,
+      {ifelse(. < 0, .ref,
               v.comp[max.col(-e.inmb, ties.method = "first")])}
     best_interv_name <- .interventions[best_interv]
 

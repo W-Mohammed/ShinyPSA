@@ -33,7 +33,7 @@
 #' @export
 #'
 #' @examples
-summarise_PSA <- function(.effs, .costs, .interventions = NULL,
+summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
                           .ref = NULL, .incremental = TRUE, .Kmax = 50000,
                           .wtp = NULL) {
 
@@ -141,10 +141,11 @@ summarise_PSA <- function(.effs, .costs, .interventions = NULL,
   # Compute EVPI:
   EVPIs <- compute_EVPIs_(.effs = .effs, .costs = .costs, .Kmax = .Kmax,
                           .interventions = .interventions, .wtp = .wtp)
-  EVPI <- EVPIs$evi
-  vi <- EVPIs$vi
+  U <- EVPIs$U
   Ustar <- EVPIs$Ustar
   ol <- EVPIs$ol
+  vi <- EVPIs$vi
+  EVPI <- EVPIs$evi
 
   ## Outputs of the function
   results <- list(
@@ -152,7 +153,7 @@ summarise_PSA <- function(.effs, .costs, .interventions = NULL,
     n.comparisons = n.comparisons, delta.e = delta.effs,
     delta.c = delta.costs, ICER = ICER, Kmax = .Kmax, k = v.k, NMB = NMB,
     e.NMB = e.NMB, CEAC = CEAC, CEAF = CEAF, EVPI = EVPI, kstar = kstar,
-    best = best, U = NMB, vi = vi, Ustar = Ustar, ol = ol, step = step,
+    best = best, U = U, vi = vi, Ustar = Ustar, ol = ol, step = step,
     interventions = .interventions, .ref = .ref, comp = v.comp,
     e = .effs, c = .costs
   )
