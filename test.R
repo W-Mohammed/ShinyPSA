@@ -5,8 +5,8 @@ icer_tmp <- tibble(
   'qalys' = NA,
   'costs' = NA) %>%
   add_missing_columns_(.x = .,
-                      .characters = c("dominance", "icer_label"),
-                      .numerics = c("delta.e", "delta.c", "icer"))
+                       .characters = c("dominance", "icer_label"),
+                       .numerics = c("delta.e", "delta.c", "icer"))
 
 
 
@@ -72,25 +72,25 @@ icer_test_input <-
 
 icer_test_input %>% identify_dominance_() %>% View()
 .x = icer_test_input
-     # Check if missing key columns and create them if so:
-     .x <- .x %>%
-       add_missing_columns_(.x = .,
-                            .characters = c("dominance", "icer_label"),
-                            .numerics = c("delta.e", "delta.c", "icer"))
+# Check if missing key columns and create them if so:
+.x <- .x %>%
+  add_missing_columns_(.x = .,
+                       .characters = c("dominance", "icer_label"),
+                       .numerics = c("delta.e", "delta.c", "icer"))
 
-     # Check for unidentified dominance
-     while (any("dominated" %in%
-                (.x %>%
-                 filter(if_any(dominance, ~ is.na(.))) %>%
-                 identify_dominance_() %>%
-                 pull(dominance)))) {
-       # Do until all dominated are identified
-       .x <- .x %>%
-         identify_dominance_()
-     }
-     .x %>%
-       filter(if_any(dominance, ~ is.na(.))) %>%
-       identify_dominance_()
+# Check for unidentified dominance
+while (any("dominated" %in%
+           (.x %>%
+            filter(if_any(dominance, ~ is.na(.))) %>%
+            identify_dominance_() %>%
+            pull(dominance)))) {
+  # Do until all dominated are identified
+  .x <- .x %>%
+    identify_dominance_()
+}
+.x %>%
+  filter(if_any(dominance, ~ is.na(.))) %>%
+  identify_dominance_()
 identify_dominance_(.icer_data = icer_test_input)
 
 
@@ -152,13 +152,13 @@ test6_max = test1 %>%
 
 test6_ol = pmap_dfc(.l = list(test1, test5, test6_max),
                     .f = function(first, second, third){
-  third - first[[second]]
-  })
+                      third - first[[second]]
+                    })
 
 test6_ol2 = pmap_dfc(.l = list(test1, test5, test6_max),
                      .f = function(x, y, z){
-  z - x[[y]]
-})
+                       z - x[[y]]
+                     })
 
 test6_ol3 = pmap_dfc(.l = list(test1, test5, test6_max),
                      .f = function(.x, .y, .z){
@@ -201,39 +201,6 @@ ceplane.plot(tst_bcea)
 ceef.plot(tst_bcea)
 ceaf.plot(tst_bcea)
 
-ce_plane = tst_PSA$e %>%
-  as_tibble() %>%
-  mutate(sims = seq_len(nrow(.))) %>%
-  pivot_longer(cols = -sims, names_to = "interventions",
-               values_to = "effects") %>%
-  left_join(x = .,
-            y = tst_PSA$c %>%
-              as_tibble() %>%
-              mutate(sims = seq_len(nrow(.))) %>%
-              pivot_longer(cols = -sims, names_to = "interventions",
-                           values_to = "costs"), by = c("sims", "interventions"))
-
-x_lim = c(NA, max(ce_plane$effects) * 1.1)
-y_lim = c(min(ce_plane$costs) * 0.9, max(ce_plane$costs) * 1.1)
-
-ce_plane$interventions[ce_plane$interventions == "V1"] = treats[1]
-ce_plane$interventions[ce_plane$interventions == "V2"] = treats[2]
-ce_plane$interventions[ce_plane$interventions == "V3"] = treats[3]
-ce_plane$interventions[ce_plane$interventions == "V4"] = treats[4]
-
-ce_plane_plot <- ggplot() +
-  geom_point(data = ce_plane, aes(x = effects, y = costs, shape = interventions, color = interventions), size = 1, alpha = 0.4) +
-  geom_hline(yintercept = 0, colour = "gray") +
-  geom_vline(xintercept = 0, colour = "gray") +
-  coord_cartesian(xlim = x_lim,
-                  ylim = y_lim,
-                  expand = FALSE) +
-  geom_point(data = tst_PSA$ICER, inherit.aes = FALSE, aes(x = qalys, y = costs, fill = intervention), shape = 21, colour = "black", show.legend = FALSE, size = 3, alpha = 1) +
-  geom_text_repel(data = tst_PSA$ICER, aes(x = qalys, y = costs, label = paste(ifelse(is.na(icer), "", paste0("£", round(icer))), "(", icer_label, ")", sep = "")), nudge_x = 0.25, nudge_y = 0.25, parse = FALSE, size = 3, max.overlaps = Inf,  min.segment.length = 0) +
-  geom_abline(slope = 20000) +
-  theme(legend.position = c(0.8, 0.2),
-        legend.background = element_rect(fill = NA))
-
 # Compare Base and Tidy versions of the PSA functions:
 base_tidy_summarise = microbenchmark::microbenchmark(
   'base' = summarise_PSA(.effs = e, .costs = c, .interventions = treats),
@@ -270,5 +237,128 @@ base_tidy_EVPIs = microbenchmark::microbenchmark(
 
 plot(base_tidy_EVPIs)
 
+# Plots:
+ce_plane_dt = tst_tidy2$e %>%
+  `colnames<-`(paste0(1:ncol(.),": ", colnames(.))) %>%
+  mutate(sims = row_number()) %>%
+  pivot_longer(cols = -sims, names_to = "interventions",
+               values_to = "effects") %>%
+  left_join(x = .,
+            y = tst_tidy2$c %>%
+              `colnames<-`(paste0(1:ncol(.),": ", colnames(.))) %>%
+              mutate(sims = row_number()) %>%
+              pivot_longer(cols = -sims, names_to = "interventions",
+                           values_to = "costs"),
+            by = c("sims", "interventions"))
+
+x_lim = c(NA, max(ce_plane_dt$effects) * 1.1)
+y_lim = c(min(ce_plane_dt$costs) * 0.9, max(ce_plane_dt$costs) * 1.1)
+wtp = 100
+wtp = wtp %>%
+  as_tibble() %>%
+  mutate(label = paste0("WTP threshold = £", wtp))
+
+# ce_plane$interventions[ce_plane$interventions == "V1"] = treats[1]
+# ce_plane$interventions[ce_plane$interventions == "V2"] = treats[2]
+# ce_plane$interventions[ce_plane$interventions == "V3"] = treats[3]
+# ce_plane$interventions[ce_plane$interventions == "V4"] = treats[4]
+set.seed(4)
+ce_plane_plot <- ggplot() +
+  geom_hline(yintercept = 0, colour = "dark gray") +
+  geom_vline(xintercept = 0, colour = "dark gray") +
+  geom_point(data = ce_plane_dt,
+             aes(x = effects, y = costs, color = interventions),
+             size = 1, alpha = 0.5) +
+  geom_point(data = tst_tidy2$ICER, inherit.aes = FALSE,
+             aes(x = qalys, y = costs, fill = intervention),
+             shape = 21, colour = "black", show.legend = TRUE,
+             size = 1, alpha = 1, stroke = 1) +
+  # Keep one value in the legend:
+  scale_fill_discrete(
+    breaks = tst_tidy2$ICER$intervention[1], # keep one
+    labels = "Mean effects & costs") + # change its label
+  #coord_cartesian(xlim = x_lim, ylim = y_lim, expand = FALSE) +
+  geom_text_repel(data = tst_tidy2$ICER,
+                  aes(x = qalys, y = costs, label = icer_label),
+                  force_pull = 8,
+                  size = 2.75,
+                  point.padding = 0.2,
+                  nudge_x = 0.35,
+                  nudge_y = 10,
+                  segment.curvature = 1e-8,
+                  arrow = arrow(length = unit(0.015, "npc")),
+                  max.overlaps = Inf,
+                  min.segment.length = 0) +
+  geom_abline(data = as_tibble(wtp),
+              aes(intercept = 0, slope = value, linetype = label),
+              show.legend = TRUE) +
+  scale_linetype_manual(values = 3) + # 6: dashed 4: dot dashed 3: dots
+  theme(
+    legend.title = element_blank(),
+    legend.position = c(0.8, 0.2),
+    #legend.position = 'bottom',
+    legend.box.margin = margin(),
+    #legend.box.spacing = unit(0.5, "cm"),
+    #legend.key = element_rect(fill = "white", colour = "black"),
+    #legend.justification = c("right", "top"),
+    # Control legend text alignment:
+    legend.text.align = 0, # 0 left (default), 1 right
+    # Add a black box around the legend:
+    #legend.background = element_rect(fill = NA, color = 'black'),
+    legend.background = element_rect(fill = NA),
+    legend.spacing = unit(0, "cm"), # spacing between legend items
+    legend.spacing.y = unit(-0.2, "cm"), # bring legends closer
+    legend.key.size = unit(0, "cm"),
+    #legend.direction = "horizontal",
+    panel.grid = element_line(colour = 'grey'),
+    panel.border = element_rect(colour = 'black', fill = NA)) +
+  labs(title = "Cost-effectiveness plane",
+       x = "Effects",
+       y = "Costs") +
+  guides(
+    # Increase the size of the points in the legend:
+    color = guide_legend(override.aes = list(size = 2,
+                                             alpha = 1,
+                                             stroke = NA, # remove storke
+                                             linetype = 0)), # remove line
+    # Remove the fill colour in shape 21, generalising it to all options:
+    fill = guide_legend(override.aes = list(size = 2,
+                                            alpha = 1,
+                                            fill = NA, # remove fill
+                                            stroke = 1, # remove line
+                                            linetype = 0)),
+    # Remove the storke from the line and adjust the size:
+    linetype = guide_legend(override.aes = list(size = 0.7,
+                                                stroke = NA)))
+
+ceac_df = tst_tidy2$CEAC %>%
+  mutate('WTP threshold' = tst_tidy2$k) %>%
+  pivot_longer(cols = -`WTP threshold`,
+               names_to = 'Option',
+               values_to = 'Probability cost-effective')
+
+ceac_plot = ggplot() +
+  geom_line(data = ceac_df,
+            aes(x = `WTP threshold`, y = `Probability cost-effective`,
+                color = Option),
+            size = 0.8) +
+  geom_point(data = ceac_df,
+             aes(x = `WTP threshold`, y = `Probability cost-effective`,
+                 shape = Option),
+             size = 0.8) +
+  coord_cartesian(xlim = c(0, 10000), expand = FALSE) +
+  theme(
+    legend.title = element_blank(),
+    legend.position = c(0.8, 0.9),
+    legend.text.align = 0, # 0 left (default), 1 right
+    legend.background = element_rect(fill = NA),
+    # legend.spacing = unit(0, "cm"), # spacing between legend items
+    # legend.spacing.y = unit(-0.2, "cm"), # bring legends closer
+    legend.key.size = unit(0.2, "cm"),
+    # legend.position = 'bottom',
+    # legend.box.margin = margin(),
+    # legend.direction = "horizontal",
+    panel.grid = element_line(colour = 'grey'),
+    panel.border = element_rect(colour = 'black', fill = NA))
 
 

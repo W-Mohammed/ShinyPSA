@@ -159,5 +159,6 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
   )
 
   class(results) <- "psa"
+
   return(results)
 }

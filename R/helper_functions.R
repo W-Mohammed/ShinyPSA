@@ -55,6 +55,27 @@ add_missing_columns_ <- function(.x, .characters, .numerics) {
   return(.x)
 }
 
+add_missing_columns_ <- function(.x, .characters, .numerics) {
+  # Check for missing columns:
+  missing_nms <- setdiff(c(.numerics, .characters), names(.x))
+
+  # In case there were missing columns:
+  if(!length(missing_nms) == 0) {
+    # Create missing columns:
+    .x <- .x %>%
+      cbind(missing_nms %>%
+              `names<-`(missing_nms) %>%
+              map_dfc(.f = function(.x) {
+                .x = ifelse(.x %in% .numerics, NA_real_, NA_character_)
+              }))
+  }
+  .x <- .x %>%
+    select(".id", everything()) %>%
+    mutate(.id = row_number())
+
+  return(.x)
+}
+
 #' Get the maximum value in all rows in a dataframe.
 #'
 #' @param x A matrix or dataframe with \code{r} rows and \code{c} columns

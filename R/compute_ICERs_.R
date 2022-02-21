@@ -24,7 +24,7 @@ identify_dominance_ <- function(.icer_data, .qalys = qalys, .costs = costs) {
   .icer_data <- .icer_data %>%
     add_missing_columns_(.x = .,
                          .characters = c("dominance", "icer_label"),
-                         .numerics = c("delta.e", "delta.c", "icer"))
+                         .numerics = c(".id", "delta.e", "delta.c", "icer"))
 
   # Identify dominated interventions:
   .icer_data <- .icer_data %>%
@@ -34,7 +34,7 @@ identify_dominance_ <- function(.icer_data, .qalys = qalys, .costs = costs) {
       icer_label = case_when(
         is.na(dominance) ~ case_when(
           lead({{.costs}}) < {{.costs}} ~ paste0("[dominated by ",
-                                                 lead(intervention), "]")),
+                                                 lead(.id), "]")),
         TRUE ~ icer_label),
       dominance = case_when(
         is.na(dominance) ~ case_when(
@@ -60,7 +60,7 @@ identify_e.dominance_ <- function(.icer_data, .qalys = qalys) {
   .icer_data <- .icer_data %>%
     add_missing_columns_(.x = .,
                          .characters = c("dominance", "icer_label"),
-                         .numerics = c("delta.e", "delta.c", "icer"))
+                         .numerics = c(".id", "delta.e", "delta.c", "icer"))
 
   # Identify extendedly dominated interventions:
   .icer_data <- .icer_data %>%
@@ -70,7 +70,7 @@ identify_e.dominance_ <- function(.icer_data, .qalys = qalys) {
       icer_label = case_when(
         is.na(dominance) ~ case_when(
           lead(icer) < icer ~ paste0("[extendedly dominated by ",
-                                     lead(intervention), "]")),
+                                     lead(.id), "]")),
         TRUE ~ icer_label),
       dominance = case_when(
         is.na(dominance) ~ case_when(
@@ -100,7 +100,7 @@ calculate_ICERs_ <- function(.icer_data, .qalys = qalys, .costs = costs,
   .icer_data <- .icer_data %>%
     add_missing_columns_(.x = .,
                          .characters = c("dominance", "icer_label"),
-                         .numerics = c("delta.e", "delta.c", "icer"))
+                         .numerics = c(".id", "delta.e", "delta.c", "icer"))
 
   # Incremental analysis (default):
   if(.incremental) {
@@ -119,7 +119,7 @@ calculate_ICERs_ <- function(.icer_data, .qalys = qalys, .costs = costs,
           is.na(dominance) & !is.na(icer) ~ paste0("[ICER = £",
                                                    round(icer, digits = 1),
                                                    ", vs ",
-                                                   lag(intervention), "]"),
+                                                   lag(.id), "]"),
           is.na(dominance) & is.na(icer) ~ case_when(
             n() > 1 ~ paste0("[ICER reference]"),
             TRUE ~ icer_label),
@@ -131,6 +131,9 @@ calculate_ICERs_ <- function(.icer_data, .qalys = qalys, .costs = costs,
     .ref_name = .icer_data %>%
       filter(row_number() == .ref) %>%
       pull(intervention)
+    .ref_id = .icer_data %>%
+      filter(row_number() == .ref) %>%
+      pull(.id)
 
     # Compute Incremental Cost-Effectiveness Ratio:
     .icer_data <- .icer_data %>%
@@ -146,7 +149,7 @@ calculate_ICERs_ <- function(.icer_data, .qalys = qalys, .costs = costs,
           delta.e != 0 & delta.c != 0 ~ delta.c / delta.e),
         icer_label = case_when(
           !is.na(icer) ~ paste0("[ICER = £", round(icer, digits = 1),
-                                ", vs ", .ref_name, "]"),
+                                ", vs ", .ref_id, "]"),
           TRUE ~ paste0("[ICER reference]")),
         dominance = paste0("Not checked")
       )
@@ -168,7 +171,7 @@ dominance_wraper_ <- function(.x) {
   .x <- .x %>%
     add_missing_columns_(.x = .,
                          .characters = c("dominance", "icer_label"),
-                         .numerics = c("delta.e", "delta.c", "icer"))
+                         .numerics = c(".id", "delta.e", "delta.c", "icer"))
 
   # Check for unidentified dominance
   while (any("dominated" %in%
@@ -197,7 +200,7 @@ e.dominance_wraper_ <- function(.x) {
   .x <- .x %>%
     add_missing_columns_(.x = .,
                          .characters = c("dominance", "icer_label"),
-                         .numerics = c("delta.e", "delta.c", "icer"))
+                         .numerics = c(".id", "delta.e", "delta.c", "icer"))
 
   # Check for any remaining e.dominance
   while (any("e.dominated" %in% (.x %>%
@@ -236,7 +239,7 @@ compute_ICERs_ <- function(.icer_data, .effs = NULL, .costs = NULL,
     icer_tmp <- .icer_data %>%
       add_missing_columns_(.x = .,
                            .characters = c("dominance", "icer_label"),
-                           .numerics = c("delta.e", "delta.c", "icer"))
+                           .numerics = c(".id", "delta.e", "delta.c", "icer"))
   } else if(!is.null(.effs) & !is.null(.costs)) {
 
     # Stop if .effs & .costs are not of class tibble or have unequal dims:
@@ -263,7 +266,7 @@ compute_ICERs_ <- function(.icer_data, .effs = NULL, .costs = NULL,
       'costs' = colMeans(.costs)) %>%
       add_missing_columns_(.x = .,
                            .characters = c("dominance", "icer_label"),
-                           .numerics = c("delta.e", "delta.c", "icer"))
+                           .numerics = c(".id", "delta.e", "delta.c", "icer"))
   } else {
     stop("Please supply costs and effects from PSA, each in a separate
          tibble/dataframe, or a summary table with interventions' names,
@@ -290,6 +293,11 @@ compute_ICERs_ <- function(.icer_data, .effs = NULL, .costs = NULL,
   # Identify any extendedly dominated interventions, and recompute ICER(s):
   icer_tmp <- icer_tmp %>%
     e.dominance_wraper_()
+
+  # Drop .id after combining it with intervention's name:
+  icer_tmp <- icer_tmp %>%
+    mutate(intervention = paste0(.id, ": ", intervention)) %>%
+    select(-.id)
 
   return(icer_tmp)
 }
