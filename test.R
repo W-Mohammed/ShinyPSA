@@ -337,28 +337,50 @@ ceac_df = tst_tidy2$CEAC %>%
                names_to = 'Option',
                values_to = 'Probability cost-effective')
 
+ceaf_df = tst_tidy2$CEAF$ceaf %>%
+  as_tibble() %>%
+  mutate('WTP threshold' = tst_tidy2$k) %>%
+  rename('CEAF' = value)
+
 ceac_plot = ggplot() +
+  geom_line(data = ceaf_df,
+            aes(x = `WTP threshold`, y = CEAF),
+            size = 2, alpha = 0.6, color = 'sky blue',
+            show.legend = TRUE) +
+  scale_fill_manual(values = c("CEAF" = "gray")) +
   geom_line(data = ceac_df,
             aes(x = `WTP threshold`, y = `Probability cost-effective`,
-                color = Option),
-            size = 0.8) +
+                group = Option, linetype = Option),
+            size = 0.4) +
   geom_point(data = ceac_df,
              aes(x = `WTP threshold`, y = `Probability cost-effective`,
-                 shape = Option),
-             size = 0.8) +
+                 shape = Option, color = Option),
+             size = 1) +
   coord_cartesian(xlim = c(0, 10000), expand = FALSE) +
   theme(
     legend.title = element_blank(),
-    legend.position = c(0.8, 0.9),
+    legend.position = c(0.8, 0.85),
     legend.text.align = 0, # 0 left (default), 1 right
     legend.background = element_rect(fill = NA),
     # legend.spacing = unit(0, "cm"), # spacing between legend items
-    # legend.spacing.y = unit(-0.2, "cm"), # bring legends closer
+    legend.spacing.y = unit(-0.2, "cm"), # bring legends closer
     legend.key.size = unit(0.2, "cm"),
     # legend.position = 'bottom',
     # legend.box.margin = margin(),
     # legend.direction = "horizontal",
     panel.grid = element_line(colour = 'grey'),
-    panel.border = element_rect(colour = 'black', fill = NA))
+    panel.border = element_rect(colour = 'black', fill = NA)) +
+  labs(title = "Cost-effectiveness acceptability curve (CEAC)",
+       x = "Willingness-to-pay",
+       y = "Probability cost-effective") +
+  guides(
+    # Increase the size of the points in the legend:
+    shape = guide_legend(override.aes = list(size = 2,
+                                             #alpha = 1,
+                                             #stroke = NA, # remove storke
+                                             linetype = 0)),
+    # line = guide_legend(override.aes = list(size = 0.2)),
+    fill = guide_legend(override.aes = list(alpha = 1))
+  )
 
-
+bcea(eff = e, cost = c,interventions = treats, plot = T)
