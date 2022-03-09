@@ -3,6 +3,33 @@ pacman::p_load(tidyverse, devtools, BCEA)
 load_all()
 PSA_data <- ShinyPSA:::Smoking_PSA
 #PSA_data <- ShinyPSA:::Vaccine_PSA
+#################################################################
+tst = compute_NMBs_(.effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+                    .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+                    .interventions = ShinyPSA::Vaccine_PSA$treats)
+tst2 = compute_NMBs_(.effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+                     .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+                     .interventions = ShinyPSA::Vaccine_PSA$treats)
+tst_CEAC = compute_CEACs_(.nmb = NULL,
+                          .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+                          .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+                          .interventions = ShinyPSA::Vaccine_PSA$treats)
+tst_CEAF = compute_CEAFs_(.ceac = tst_CEAC)
+tst_ICER = compute_ICERs_(.icer_data = NULL,
+                           .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+                           .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+                           .interventions = ShinyPSA::Vaccine_PSA$treat)
+tst_CEAC2 = compute_CEACs_(.nmb = NULL,
+                          .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
+                          .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
+                          .interventions = ShinyPSA::Smoking_PSA$treats)
+tst_CEAF2 = compute_CEAFs_(.ceac = tst_CEAC2)
+tst_ICER2 = compute_ICERs_(.icer_data = NULL,
+                           .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
+                           .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
+                           .interventions = ShinyPSA::Smoking_PSA$treats)
+
+#################################################################
 
 PSA_dt <- summarise_PSA_(.effs = PSA_data$e, .costs = PSA_data$c,
                          .interventions = PSA_data$treats)
@@ -286,8 +313,8 @@ ceac_ceaf_plot <- ceac_plot +
                                              stroke = 1,
                                              linetype = 0)),
     fill = guide_legend(override.aes = list(#size = 0.3,
-                                            #alpha = 1,
-                                            stroke = 1,
-                                            linetype = 0)))
+      #alpha = 1,
+      stroke = 1,
+      linetype = 0)))
 
 ceac_ceaf_plot

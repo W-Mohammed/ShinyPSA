@@ -120,7 +120,9 @@ calculate_ICERs_ <- function(.icer_data, .qalys = qalys, .costs = costs) {
         is.na(dominance) ~ delta.c / delta.e),
       icer_label = case_when(
         is.na(dominance) & !is.na(icer) ~ paste0("[ICER = £",
-                                                 round(icer, digits = 1),
+                                                 format(icer,
+                                                        digits = 1,
+                                                        big.mark = ","),
                                                  ", vs ",
                                                  lag(.id), "]"),
         is.na(dominance) & is.na(icer) ~ case_when(
