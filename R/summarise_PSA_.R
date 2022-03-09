@@ -26,20 +26,18 @@
 #' analysis. This parameter is ignored if \code{wtp} is provided.
 #' @param .wtp A vector of \code{length > 0} identifying the
 #' willingness-to-pay values to use in the analysis.
-#' @param .incremental A logical value of whether an incremental analysis
-#' should be conducted. Default value is \code{TRUE}
-#'
 #' @return A list of class \code{psa} with \code{24} elements.
 #' @export
 #'
 #' @examples
 summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
-                          .ref = NULL, .incremental = TRUE, .Kmax = 50000,
-                          .wtp = NULL) {
+                          .ref = NULL, .Kmax = 50000, .wtp = NULL) {
 
-  # Stop if objects e & c are not of class matrix or different dimensions:
-  stopifnot('unequal dimensions in .effs and .costs' =
-              dim(.effs) == dim(.costs))
+  # Stop if .effs & .costs have different dimensions:
+  stopifnot('Unequal dimensions in .effs and .costs' =
+              dim(.effs) == dim(.costs),
+            'PSA results for less than two interventions is supplied' =
+              ncol(.effs) >= 2)
 
   # Simulations & interventions analysed:
   n.sim <- nrow(.effs) # Number of simulations
@@ -55,22 +53,27 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
     .interventions <- paste("intervention", 1:n.comparators)
   }
 
+  # Associate .interventions with number IDs for cleaner plots' labels:
+  .interventions <- paste0(1:length(.interventions),
+                           ": ",
+                           .interventions)
+
   # Set missing values or remove ones to be ignored:
-  if(!.incremental){
+  if(n.comparators == 2){
     # If no reference was provided in a non-incremental analysis:
     if(is.null(.ref)){
-      message(paste("No reference was provided, using ",
-                    .interventions[.ref], "as reference."))
       .ref <- 1
+      message(paste("No reference selected, using ",
+                    .interventions[.ref], "as reference."))
     }
-    v.comp <- v.ints[-.ref]
+    comp <- v.ints[-.ref]
   } else {
-    # Ignore .ref if the analysis was incremental:
+    # Ignore .ref if the analysis will be an incremental one:
     if(!is.null(.ref)) {
-      message(".incremental is set to TRUE, .ref is ignored")
       .ref <- NULL
+      message("More than two interventions, .ref is ignored")
     }
-    v.comp <- NULL
+    comp <- NULL
   }
 
   # Set up willingness-to-pay:
@@ -80,46 +83,42 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
   if (!is.null(.wtp)) {
     .wtp <- sort(unique(.wtp))
     .Kmax <- max(.wtp)
-    step <- NA
     v.k <- .wtp
     n.k <- length(.wtp)
   } else {
     n.points <- 500
-    step <- .Kmax / n.points
-    v.k <- seq(from = 0, to = .Kmax, by = step)
+    v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
     n.k <- length(v.k)
   }
 
   # Ensure .effs and .costs are tibbles and name columns appropriately:
   .effs <- .effs %>%
-    as_tibble() %>%
+    as_tibble(.name_repair = "unique") %>%
     `colnames<-`(.interventions)
   .costs <- .costs %>%
-    as_tibble() %>%
+    as_tibble(.name_repair = "unique") %>%
     `colnames<-`(.interventions)
 
-  # Compute effects and costs differentials, if .incremental = FALSE:
-  if(.incremental) {
-    delta.effs <- NULL
-    delta.costs <- NULL
-  } else {
+  # Compute effects and costs differentials:
+  if(n.comparators == 2) {
     delta.effs <- .effs %>%
       select(-.ref) %>%
-      mutate(across(.fns =
-                      ~ .effs %>%
-                      select(all_of(.ref)) - .x))
+      mutate(across(.fns = function(.x) .x - .effs %>%
+                      pull(.ref)))
 
     delta.costs <- .costs %>%
       select(-.ref) %>%
-      mutate(across(.fns =
-                      ~ .costs %>%
-                      select(all_of(.ref)) - .x))
+      mutate(across(.fns = function(.x) .x - .costs %>%
+                      pull(.ref)))
+
+  } else {
+    delta.effs <- NULL
+    delta.costs <- NULL
   }
 
   # Compute ICER(s):
   ICER <- compute_ICERs_(.icer_data = NULL, .effs = .effs, .costs = .costs,
-                         .interventions = .interventions, .ref = .ref,
-                         .incremental = .incremental)
+                         .interventions = .interventions)
 
   # Compute NMB or iNMB, e.NMB or e.iNMB and best option for each k:
   nmbs <- compute_NMBs_(.effs = .effs, .costs = .costs, .ref = .ref,
@@ -130,13 +129,13 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
   best <- nmbs$best_interv
   best_name <- nmbs$best_interv_name
   check <- nmbs$check
-  kstar <- nmbs$kstar
+  kstar <- nmbs$wtp_star
 
   # Compute CEAC:
   CEAC <- compute_CEACs_(.nmb = NMB, .ref = .ref)
 
   # Compute CEAF:
-  CEAF <- compute_CEAFs_(.ceac = CEAC, .ref = .ref)
+  CEAF <- compute_CEAFs_(.ceac = CEAC)
 
   # Compute EVPI:
   EVPIs <- compute_EVPIs_(.effs = .effs, .costs = .costs, .Kmax = .Kmax,
@@ -153,8 +152,8 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
     n.comparisons = n.comparisons, delta.e = delta.effs,
     delta.c = delta.costs, ICER = ICER, Kmax = .Kmax, k = v.k, NMB = NMB,
     e.NMB = e.NMB, CEAC = CEAC, CEAF = CEAF, EVPI = EVPI, kstar = kstar,
-    best = best, U = U, vi = vi, Ustar = Ustar, ol = ol, step = step,
-    interventions = .interventions, .ref = .ref, comp = v.comp,
+    best = best, U = U, vi = vi, Ustar = Ustar, ol = ol, step = n.k,
+    interventions = .interventions, ref = .ref, comp = comp,
     e = .effs, c = .costs
   )
 

@@ -25,8 +25,8 @@ compute_NMBs_ <- function(.effs, .costs, .ref = NULL,
                           .interventions = NULL, .Kmax = NULL,
                           .wtp = NULL) {
   # Stop if .effs & .costs are not of class tibble or have unequal dims:
-  stopifnot('.effs is not a tibble' = "data.frame" %in% class(.effs),
-            '.costs is not a tibble' = "data.frame" %in% class(.costs),
+  stopifnot('.effs is a not tibble' = "data.frame" %in% class(.effs),
+            '.costs is a not tibble' = "data.frame" %in% class(.costs),
             '.effs and .costs have unequal dimensions' =
               dim(.effs) == dim(.costs))
 
@@ -41,10 +41,11 @@ compute_NMBs_ <- function(.effs, .costs, .ref = NULL,
   }
   if(is.null(.interventions)) {
     .interventions <- paste("intervention", 1:n.comparators)
+    # Associate .interventions with number IDs for cleaner plots' labels:
+    .interventions <- paste0(1:length(.interventions),
+                             ": ",
+                             .interventions)
   }
-
-  # Associate .interventions with IDs to help in plots labels:
-  .interventions <- paste0(1:length(.interventions), ": ", .interventions)
 
   # Name .effs and .costs columns appropriately:
   .effs <- .effs %>%
@@ -87,7 +88,7 @@ compute_NMBs_ <- function(.effs, .costs, .ref = NULL,
 
     delta.costs <- .costs %>%
       select(-.ref) %>%
-      mutate(across(.fns =  function(.x) .x - .costs %>%
+      mutate(across(.fns = function(.x) .x - .costs %>%
                       pull(.ref)))
 
     # Calculate iNMB:
@@ -120,6 +121,7 @@ compute_NMBs_ <- function(.effs, .costs, .ref = NULL,
                 delta.costs = delta.costs, best_interv = best_interv,
                 best_interv_name = best_interv_name))
   }
+
   # Compute monetary net benefit (NMB) (default):
   nmb <- map2(.x = .effs,
               .y = .costs,
@@ -199,16 +201,16 @@ compute_CEACs_ <- function(.nmb, .effs = NULL, .costs = NULL, .ref = NULL,
 #'
 #' @param .ceac
 #' @param .nmb
-#' @param .ref
 #'
 #' @return
 #' @export
 #'
 #' @examples
-compute_CEAFs_ <- function(.ceac, .nmb = NULL, .ref = NULL) {
+compute_CEAFs_ <- function(.ceac, .nmb = NULL) {
   # Stop if object .ceac is not of class tibble:
-  stopifnot('No reference intervention' = is.null(.ref),
-            '.ceac is not a tibble' = "data.frame" %in% class(.ceac))
+  stopifnot('.ceac is a not tibble' = "data.frame" %in% class(.ceac))
+  if(!is.null(.nmb))
+    stopifnot('.nmb is not a list' = "list" %in% class(.nmb))
 
   # If .ceac was not available but .nmb was:
   if(is.null(.ceac) & !is.null(.nmb))

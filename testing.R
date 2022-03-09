@@ -1,7 +1,7 @@
 # Load library:
 pacman::p_load(tidyverse, devtools, BCEA)
 load_all()
-PSA_data <- ShinyPSA:::Smoking_PSA
+#PSA_data <- ShinyPSA:::Smoking_PSA
 #PSA_data <- ShinyPSA:::Vaccine_PSA
 #################################################################
 tst = compute_NMBs_(.effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
@@ -28,6 +28,23 @@ tst_ICER2 = compute_ICERs_(.icer_data = NULL,
                            .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
                            .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
                            .interventions = ShinyPSA::Smoking_PSA$treats)
+tst_all1 = summarise_PSA_(.effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+                         .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+                         .interventions = ShinyPSA::Vaccine_PSA$treats)
+tst_all2 = summarise_PSA_(.effs = as_tibble(ShinyPSA::Smoking_PSA$e),
+                          .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
+                          .interventions = ShinyPSA::Smoking_PSA$treats)
+tst_all1_BCEA = BCEA::bcea(eff = (ShinyPSA::Vaccine_PSA$e),
+                           cost = (ShinyPSA::Vaccine_PSA$c),
+                           interventions = ShinyPSA::Vaccine_PSA$treats)
+tst_all2_BCEA = BCEA::bcea(eff = (ShinyPSA::Smoking_PSA$e),
+                           cost = (ShinyPSA::Smoking_PSA$c),
+                           interventions = ShinyPSA::Smoking_PSA$treats)
+compare(tst_all1$EVPI, tst_all1_BCEA$evi, check.attributes = F)
+compare(tst_all1$e.NMB$`2: Vaccination`, -tst_all1_BCEA$eib, check.attributes = F)
+compare(tst_all1$CEAC$`2: Vaccination`, 1 - tst_all1_BCEA$ceac, check.attributes = F)
+
+compare(tst_all2$EVPI, tst_all2_BCEA$evi, check.attributes = F)
 
 #################################################################
 
@@ -36,13 +53,11 @@ PSA_dt <- summarise_PSA_(.effs = PSA_data$e, .costs = PSA_data$c,
 
 # Plots:
 ce_plane_dt = PSA_dt$e %>%
-  `colnames<-`(paste0(1:ncol(.),": ", colnames(.))) %>%
   mutate(sims = row_number()) %>%
   pivot_longer(cols = -sims, names_to = "interventions",
                values_to = "effects") %>%
   left_join(x = .,
             y = PSA_dt$c %>%
-              `colnames<-`(paste0(1:ncol(.),": ", colnames(.))) %>%
               mutate(sims = row_number()) %>%
               pivot_longer(cols = -sims, names_to = "interventions",
                            values_to = "costs"),

@@ -227,15 +227,18 @@ compute_ICERs_ <- function(.icer_data, .effs = NULL, .costs = NULL,
                 dim(.effs) == dim(.costs))
 
     # Get number of interventions in supplied matrix:
-    n.comparators <- ncol(.effs)
+    n.comparators <- ncol(.effs) # Number of interventions
 
     # Check supplied interventions labels, create ones if any is missing:
-    if(!is.null(.interventions) &
-       length(.interventions) != n.comparators) {
+    if(!is.null(.interventions) & length(.interventions) != n.comparators) {
       .interventions <- NULL
     }
     if(is.null(.interventions)) {
       .interventions <- paste("intervention", 1:n.comparators)
+      # Associate .interventions with number IDs for cleaner plots' labels:
+      .interventions <- paste0(1:length(.interventions),
+                               ": ",
+                               .interventions)
     }
 
     # Define ICER table:
@@ -265,9 +268,8 @@ compute_ICERs_ <- function(.icer_data, .effs = NULL, .costs = NULL,
   icer_tmp <- icer_tmp %>%
     e.dominance_wraper_()
 
-  # Drop .id after combining it with intervention's name:
+  # Drop .id:
   icer_tmp <- icer_tmp %>%
-    mutate(intervention = paste0(.id, ": ", intervention)) %>%
     select(-.id)
 
   return(icer_tmp)

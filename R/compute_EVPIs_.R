@@ -24,6 +24,10 @@ compute_EVPIs_ = function(.effs, .costs, .interventions = NULL,
   }
   if(is.null(.interventions)) {
     .interventions <- paste("intervention", 1:n.comparators)
+    # Associate .interventions with number IDs for cleaner plots' labels:
+    .interventions <- paste0(1:length(.interventions),
+                             ": ",
+                             .interventions)
   }
 
   # Name .effs and .costs columns appropriately:
@@ -39,15 +43,13 @@ compute_EVPIs_ = function(.effs, .costs, .interventions = NULL,
   if (!is.null(.wtp)) {
     .wtp <- sort(unique(.wtp))
     .Kmax <- max(.wtp)
-    step <- NA
     v.k <- .wtp
     n.k <- length(.wtp)
   } else {
     n.points <- .Kmax/100
-    step <- .Kmax / n.points
-    v.k <- seq(from = 0, to = .Kmax, by = step)
+    v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
     n.k <- length(v.k)
-    names(v.k) <- paste0("£", v.k)
+    names(v.k) <- paste0("£", format(v.k, big.mark = ","))
   }
 
   # Compute monetary net benefit (NMB) (default):
