@@ -383,4 +383,53 @@ ceac_plot = ggplot() +
     fill = guide_legend(override.aes = list(alpha = 1))
   )
 
-bcea(eff = e, cost = c,interventions = treats, plot = T)
+# bcea(eff = e, cost = c,interventions = treats, plot = T)
+
+
+ceac_plot = ggplot() +
+  geom_point(data = ceaf_df,
+             aes(x = `WTP threshold`, y = CEAF),
+             size = 2, alpha = 0.8, shape = 21, color = "black",
+             show.legend = TRUE) +
+  geom_point(data = ceaf_df,
+             aes(x = `WTP threshold`, y = CEAF),
+             size = 0.1, stroke = 1,
+             alpha = 1, shape = 1, color = "black", fill = 'black',
+             show.legend = FALSE) +
+  scale_shape_manual(values = c("CEAF" = "black")) +
+  geom_line(data = ceac_df,
+            aes(x = `WTP threshold`, y = `Probability cost-effective`,
+                group = Option, color = Option),
+            size = 0.4) +
+  # geom_point(data = ceac_df,
+  #            aes(x = `WTP threshold`, y = `Probability cost-effective`,
+  #                shape = Option, color = Option),
+  #            size = 1) +
+  coord_cartesian(xlim = c(0, 10000), expand = FALSE) +
+  theme(
+    legend.title = element_blank(),
+    legend.position = c(0.8, 0.85),
+    legend.text.align = 0, # 0 left (default), 1 right
+    legend.background = element_rect(fill = NA),
+    # legend.spacing = unit(0, "cm"), # spacing between legend items
+    legend.spacing.y = unit(-0.2, "cm"), # bring legends closer
+    legend.key.size = unit(0.2, "cm"),
+    # legend.position = 'bottom',
+    # legend.box.margin = margin(),
+    # legend.direction = "horizontal",
+    panel.grid = element_line(colour = 'grey'),
+    panel.border = element_rect(colour = 'black', fill = NA)) +
+  labs(
+    title = "Cost-effectiveness acceptability curve (CEAC)",
+    x = "Willingness-to-pay",
+    y = "Probability cost-effective") +
+  guides(
+    # Increase the size of the points in the legend:
+    shape = guide_legend(override.aes = list(size = 2,
+                                             #alpha = 1,
+                                             stroke = 1,
+                                             linetype = 0)),
+    # line = guide_legend(override.aes = list(size = 0.2)),
+    color = guide_legend(override.aes = list(size = 1,
+                                             alpha = 1,
+                                             shape = NA)))
