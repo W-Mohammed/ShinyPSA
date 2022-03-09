@@ -63,8 +63,8 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
     # If no reference was provided in a non-incremental analysis:
     if(is.null(.ref)){
       .ref <- 1
-      message(paste("No reference selected, using ",
-                    .interventions[.ref], "as reference."))
+      message(paste0("No reference selected, using [",
+                    .interventions[.ref], "] as reference."))
     }
     comp <- v.ints[-.ref]
   } else {
@@ -101,16 +101,8 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
 
   # Compute effects and costs differentials:
   if(n.comparators == 2) {
-    delta.effs <- .effs %>%
-      select(-.ref) %>%
-      mutate(across(.fns = function(.x) .x - .effs %>%
-                      pull(.ref)))
-
-    delta.costs <- .costs %>%
-      select(-.ref) %>%
-      mutate(across(.fns = function(.x) .x - .costs %>%
-                      pull(.ref)))
-
+    delta.effs <- calculate_differentials_(.data = .effs, .ref = .ref)
+    delta.costs <- calculate_differentials_(.data = .costs, .ref = .ref)
   } else {
     delta.effs <- NULL
     delta.costs <- NULL
