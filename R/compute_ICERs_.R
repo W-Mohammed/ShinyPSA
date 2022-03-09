@@ -10,21 +10,25 @@
 
 #' Identify dominated interventions
 #'
-#' @param .icer_data
-#' @param .qalys
-#' @param .costs
+#' @param .icer_data A table containing average costs and QALYs data
+#' @param .qalys Character indicating the name of the column containing
+#' Quality Adjusted Life Years (QALYs) in \code{.icer_data}
+#' @param .costs Character indicating the name of the column containing
+#' cost data in \code{.icer_data}
 #'
-#' @return  A vector stating whether any of the included interventions were
-#' dominated.
+#' @return A table containing \code{.icer_data} in addition to identified
+#' dominance
 #' @export
 #'
 #' @examples
-identify_dominance_ <- function(.icer_data, .qalys = qalys, .costs = costs) {
+identify_dominance_ <- function(.icer_data, .qalys = qalys,
+                                .costs = costs) {
   # Check if missing key columns and create them if so:
   .icer_data <- .icer_data %>%
     add_missing_columns_(.x = .,
                          .characters = c("dominance", "icer_label"),
-                         .numerics = c(".id", "delta.e", "delta.c", "icer"))
+                         .numerics = c(".id", "delta.e", "delta.c",
+                                       "icer"))
 
   # Identify dominated interventions:
   .icer_data <- .icer_data %>%
@@ -47,8 +51,9 @@ identify_dominance_ <- function(.icer_data, .qalys = qalys, .costs = costs) {
 
 #' Identify extendedly dominated interventions
 #'
-#' @param .icer_data
-#' @param .qalys
+#' @param .icer_data A table containing average costs and QALYs data
+#' @param .qalys Character indicating the name of the column containing
+#' Quality Adjusted Life Years (QALYs) in \code{.icer_data}
 #'
 #' @return A vector stating whether any of the included interventions were
 #' e.dominated
@@ -83,86 +88,56 @@ identify_e.dominance_ <- function(.icer_data, .qalys = qalys) {
 
 #' Calculate ICER(s) and effects and costs differentials
 #'
-#' @param .icer_data
-#' @param .qalys
-#' @param .costs
-#' @param .ref
-#' @param .incremental
+#' @param .icer_data A table containing average costs and QALYs data
+#' @param .qalys Character indicating the name of the column containing
+#' Quality Adjusted Life Years (QALYs) data in .icer_data
+#' @param .costs Character indicating the name of the column containing
+#' cost data in .icer_data
 #'
-#' @return A matrix of \code{effects diffrentials}, \code{costs
-#'  differentials} & \code{icers}
+#' @return A table of \code{effects diffrentials}, \code{costs
+#' differentials} & \code{icers}
 #' @export
 #'
 #' @examples
-calculate_ICERs_ <- function(.icer_data, .qalys = qalys, .costs = costs,
-                             .ref = NULL, .incremental = TRUE) {
+calculate_ICERs_ <- function(.icer_data, .qalys = qalys, .costs = costs) {
   # Check if missing key columns and create them if so:
   .icer_data <- .icer_data %>%
     add_missing_columns_(.x = .,
                          .characters = c("dominance", "icer_label"),
-                         .numerics = c(".id", "delta.e", "delta.c", "icer"))
+                         .numerics = c(".id", "delta.e", "delta.c",
+                                       "icer"))
 
-  # Incremental analysis (default):
-  if(.incremental) {
-    # Compute Incremental Cost-Effectiveness Ratio:
-    .icer_data <- .icer_data %>%
-      arrange({{.qalys}}) %>%
-      group_by(dominance) %>%
-      mutate(
-        delta.e = case_when(
-          is.na(dominance) ~ c(NA, diff({{.qalys}}))),
-        delta.c = case_when(
-          is.na(dominance) ~ c(NA, diff({{.costs}}))),
-        icer = case_when(
-          is.na(dominance) ~ delta.c / delta.e),
-        icer_label = case_when(
-          is.na(dominance) & !is.na(icer) ~ paste0("[ICER = £",
-                                                   round(icer, digits = 1),
-                                                   ", vs ",
-                                                   lag(.id), "]"),
-          is.na(dominance) & is.na(icer) ~ case_when(
-            n() > 1 ~ paste0("[ICER reference]"),
-            TRUE ~ icer_label),
-          TRUE ~ icer_label)) %>%
-      ungroup()
-  } else { # This is no longer a full incremental analysis
-    # Set first intervention as reference if not defined by user:
-    if(is.null(.ref)) .ref = 1
-    .ref_name = .icer_data %>%
-      filter(row_number() == .ref) %>%
-      pull(intervention)
-    .ref_id = .icer_data %>%
-      filter(row_number() == .ref) %>%
-      pull(.id)
-
-    # Compute Incremental Cost-Effectiveness Ratio:
-    .icer_data <- .icer_data %>%
-      arrange({{.qalys}}) %>%
-      mutate(
-        delta.e = {{.qalys}} - .icer_data %>%
-          filter(intervention == .ref_name) %>%
-          pull({{.qalys}}),
-        delta.c = {{.costs}} - .icer_data %>%
-          filter(intervention == .ref_name) %>%
-          pull({{.costs}}),
-        icer = case_when(
-          delta.e != 0 & delta.c != 0 ~ delta.c / delta.e),
-        icer_label = case_when(
-          !is.na(icer) ~ paste0("[ICER = £", round(icer, digits = 1),
-                                ", vs ", .ref_id, "]"),
-          TRUE ~ paste0("[ICER reference]")),
-        dominance = paste0("Not checked")
-      )
-  }
+  # Compute Incremental Cost-Effectiveness Ratio (ICER):
+  .icer_data <- .icer_data %>%
+    arrange({{.qalys}}) %>%
+    group_by(dominance) %>%
+    mutate(
+      delta.e = case_when(
+        is.na(dominance) ~ c(NA, diff({{.qalys}}))),
+      delta.c = case_when(
+        is.na(dominance) ~ c(NA, diff({{.costs}}))),
+      icer = case_when(
+        is.na(dominance) ~ delta.c / delta.e),
+      icer_label = case_when(
+        is.na(dominance) & !is.na(icer) ~ paste0("[ICER = £",
+                                                 round(icer, digits = 1),
+                                                 ", vs ",
+                                                 lag(.id), "]"),
+        is.na(dominance) & is.na(icer) ~ case_when(
+          n() > 1 ~ paste0("[ICER reference]"),
+          TRUE ~ icer_label),
+        TRUE ~ icer_label)) %>%
+    ungroup()
 
   return(.icer_data)
 }
 
 #' Identify, iteratively, all dominated interventions
 #'
-#' @param .x
+#' @param .x A table containing average costs and QALYs data
 #'
-#' @return
+#' @return A dataframe with data from .x in addition to dominance
+#' information, if any
 #' @export
 #'
 #' @examples
@@ -171,7 +146,8 @@ dominance_wraper_ <- function(.x) {
   .x <- .x %>%
     add_missing_columns_(.x = .,
                          .characters = c("dominance", "icer_label"),
-                         .numerics = c(".id", "delta.e", "delta.c", "icer"))
+                         .numerics = c(".id", "delta.e", "delta.c",
+                                       "icer"))
 
   # Check for unidentified dominance
   while (any("dominated" %in%
@@ -189,9 +165,10 @@ dominance_wraper_ <- function(.x) {
 
 #' Identify, iteratively, all extendedly dominated interventions
 #'
-#' @param .x
+#' @param .x A table containing average costs and QALYs data
 #'
-#' @return
+#' @return A dataframe with data from \code{.x} in addition to extended
+#' dominance information, if any
 #' @export
 #'
 #' @examples
@@ -200,7 +177,8 @@ e.dominance_wraper_ <- function(.x) {
   .x <- .x %>%
     add_missing_columns_(.x = .,
                          .characters = c("dominance", "icer_label"),
-                         .numerics = c(".id", "delta.e", "delta.c", "icer"))
+                         .numerics = c(".id", "delta.e", "delta.c",
+                                       "icer"))
 
   # Check for any remaining e.dominance
   while (any("e.dominated" %in% (.x %>%
@@ -218,28 +196,26 @@ e.dominance_wraper_ <- function(.x) {
 
 #' Compute ICER(s)
 #'
-#' @param .icer_data
-#' @param .effs
-#' @param .costs
-#' @param .ref
-#' @param .interventions
-#' @param .incremental
+#' @param .icer_data A table containing average costs and QALYs data
+#' @param .effs A table with Quality Adjusted Life Years (QALYs) data
+#' @param .costs A table with costs data
+#' @param .interventions A vector of characters with intervention names
 #'
 #' @return A dataframe with data from icer_data in addition to
-#' \code{qalys and costs diffrential(s)} & \code{icer(s)}
+#' \code{qalys and costs diffrential(s)}, \code{dominance} & \code{icer(s)}
 #' @export
 #'
 #' @examples
 compute_ICERs_ <- function(.icer_data, .effs = NULL, .costs = NULL,
-                           .ref = NULL, .interventions = NULL,
-                           .incremental = TRUE) {
+                           .interventions = NULL) {
   # If a summary table of costs, effects and intervention names supplied:
   if(!is.null(.icer_data)) {
     # Check if missing key columns and create them if so:
     icer_tmp <- .icer_data %>%
       add_missing_columns_(.x = .,
                            .characters = c("dominance", "icer_label"),
-                           .numerics = c(".id", "delta.e", "delta.c", "icer"))
+                           .numerics = c(".id", "delta.e", "delta.c",
+                                         "icer"))
   } else if(!is.null(.effs) & !is.null(.costs)) {
 
     # Stop if .effs & .costs are not of class tibble or have unequal dims:
@@ -252,7 +228,8 @@ compute_ICERs_ <- function(.icer_data, .effs = NULL, .costs = NULL,
     n.comparators <- ncol(.effs)
 
     # Check supplied interventions labels, create ones if any is missing:
-    if(!is.null(.interventions) & length(.interventions) != n.comparators) {
+    if(!is.null(.interventions) &
+       length(.interventions) != n.comparators) {
       .interventions <- NULL
     }
     if(is.null(.interventions)) {
@@ -266,20 +243,12 @@ compute_ICERs_ <- function(.icer_data, .effs = NULL, .costs = NULL,
       'costs' = colMeans(.costs)) %>%
       add_missing_columns_(.x = .,
                            .characters = c("dominance", "icer_label"),
-                           .numerics = c(".id", "delta.e", "delta.c", "icer"))
+                           .numerics = c(".id", "delta.e", "delta.c",
+                                         "icer"))
   } else {
     stop("Please supply costs and effects from PSA, each in a separate
          tibble/dataframe, or a summary table with interventions' names,
          and corresponding mean costs and mean qalys")
-  }
-
-  # If not a full incremental analysis:
-  if(!.incremental){
-    # Compute ICER(s), without considering dominance or e-dominance:
-    icer_tmp <- icer_tmp %>%
-      calculate_ICERs_(.ref = .ref, .incremental = .incremental)
-
-    return(icer_tmp)
   }
 
   # Identify dominated interventions:
