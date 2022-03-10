@@ -41,7 +41,7 @@ add_missing_columns_ <- function(.x, .characters, .numerics) {
 
 #' Calculate differential costs and QALYs
 #'
-#' @param .data A dataframe containing costs or QALYs data for which the
+#' @param .data_ A dataframe containing costs or QALYs data for which the
 #' function is to estimate differential values
 #' @param .ref An integer indicating the index of the reference intervention
 #'
@@ -49,12 +49,11 @@ add_missing_columns_ <- function(.x, .characters, .numerics) {
 #' @export
 #'
 #' @examples
-calculate_differentials_ <- function(.data, .ref) {
-  ref_data <- .data %>%
-    pull({{.ref}})
-  differentials_data <- .data %>%
+calculate_differentials_ <- function(.data_, .ref) {
+  differentials_data <- .data_ %>%
     mutate(across(.fns = function(.x) {
-      .x - ref_data
+      .x - .data_ %>%
+        pull({{.ref}})
     }))
 
   return(differentials_data)
