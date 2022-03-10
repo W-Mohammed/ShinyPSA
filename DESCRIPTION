@@ -19,4 +19,5 @@ Depends:
     R (>= 2.10),
     tidyverse
 Imports: 
-    ggrepel
+    ggrepel,
+    scales
