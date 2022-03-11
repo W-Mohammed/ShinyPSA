@@ -520,14 +520,6 @@ plot_CE_plane <- function(.PSA_dt, .ref = NULL, ...) {
   return(p)
 }
 
-PSA_summary1 = summarise_PSA_(.effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                              .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                              .interventions = ShinyPSA::Vaccine_PSA$treats)
-
-PSA_summary2 = summarise_PSA_(.effs = as_tibble(ShinyPSA::Smoking_PSA$e),
-                              .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
-                              .interventions = ShinyPSA::Smoking_PSA$treats)
-
 plot_CE_plane <- function(.PSA_dt, .ref = NULL, ...) {
   # Grab additional arguments:
   # expected_args <- c('.legend_pos', '.wtp_threshold', '.seed_no',
@@ -781,12 +773,279 @@ plot_CE_plane <- function(.PSA_dt, .ref = NULL, ...) {
   return(p)
 }
 
+plot_CE_plane <- function(.PSA_dt, .ref = NULL, ...) {
+  .env = environment()
+  # Grab additional arguments:
+  # expected_args <- c('.legend_pos', '.wtp_threshold', '.seed_no',
+  #                    '.show_ICER', '.show_wtp', '.nudge_labels')
+  default_args <- list('.legend_pos' = c(0.8, 0.2),
+                       '.wtp_threshold' = c(20000, 30000),
+                       '.seed_no' = 1,
+                       '.show_ICER' = TRUE,
+                       '.show_wtp' = TRUE,
+                       '.nudge_labels' = NULL)
+  expected_args <- names(default_args)
+  .args_ <- list(...)
+  supplied_args <- names(.args_)
+  if(any(!supplied_args %in% expected_args))
+    message("Argument ",
+            paste(supplied_args[!supplied_args %in% expected_args]),
+            " is unknown, and therefore ignored")
 
-p = plot_CE_plane(PSA_summary2, .ref = 3, .show_ICER = TRUE,
-                  .legend_pos = c(0.8, 0.2), .show_wtp = TRUE,
-                  .wtp_threshold = c(20000, 100, 30000), tst = "PRINT", .nudge_labels = c(0.1, -0.1)
+  purrr::walk(
+    .x = expected_args,
+    .f = function(.arg) {
+      # cat("\n", .arg, " def:\n")
+      # print(default_args[[.arg]])
+      # cat("\n", .arg, " exp:\n")
+      # print(.args_[[.arg]])
+      assign(.arg,
+             if(is.null(.args_[[.arg]])) {
+               default_args[[.arg]]
+             } else {
+               .args_[[.arg]]
+             }, envir = .env)
+    })
+
+  # dots <- list(...)
+  # # Assign any additional arguments:
+  # .legend_pos <- if(is.null(dots[['.legend_pos']]) |
+  #                   length(dots[['.legend_pos']]) != 2) {
+  #   c(0.8, 0.2)
+  # } else {
+  #   dots[['.legend_pos']]
+  # }
+  # .wtp <- if(is.null(dots[['.wtp_threshold']])) {
+  #   c(20000, 30000, 50000)
+  # } else {
+  #   dots[['.wtp_threshold']]
+  # }
+  # .seed_no <- if(is.null(dots[['.seed_no']])) {
+  #   set.seed(1)
+  # } else {
+  #   set.seed(dots[['.seed_no']])
+  # }
+  # .show_ICER <- if(is.null(dots[['.show_ICER']])) {
+  #   TRUE
+  # } else {
+  #   dots[['.show_ICER']]
+  # }
+  # .show_wtp <- if(is.null(dots[['.show_wtp']])) {
+  #   TRUE
+  # } else {
+  #   dots[['.show_wtp']]
+  # }
+  # .nudge_labels <- if(is.null(dots[['.nudge_labels']])) {
+  #   NULL
+  # } else {
+  #   dots[['.nudge_labels']]
+  # }
+  #
+  # Prepare plot data:
+  ## CE plot points:
+  if(is.null(.ref)) {
+    if(.PSA_dt$n.comparators == 2) {
+      ce_plane_dt <- .PSA_dt$delta.e %>%
+        mutate(sims = row_number()) %>%
+        pivot_longer(cols = -sims, names_to = "interventions",
+                     values_to = "Effects") %>%
+        left_join(x = .,
+                  y = .PSA_dt$delta.c %>%
+                    mutate(sims = row_number()) %>%
+                    pivot_longer(cols = -sims, names_to = "interventions",
+                                 values_to = "Costs"),
+                  by = c("sims", "interventions"))
+    } else {
+      ce_plane_dt <- .PSA_dt$e %>%
+        mutate(sims = row_number()) %>%
+        pivot_longer(cols = -sims, names_to = "interventions",
+                     values_to = "Effects") %>%
+        left_join(x = .,
+                  y = .PSA_dt$c %>%
+                    mutate(sims = row_number()) %>%
+                    pivot_longer(cols = -sims, names_to = "interventions",
+                                 values_to = "Costs"),
+                  by = c("sims", "interventions"))
+    }
+    .title_lab = "Cost Effectiveness Plane"
+    .x_lab = "Effects"
+    .y_lab = "Costs"
+  } else {
+    ce_plane_dt <- .PSA_dt$e %>%
+      calculate_differentials_(.ref = .ref) %>%
+      mutate(sims = row_number()) %>%
+      pivot_longer(cols = -sims, names_to = "interventions",
+                   values_to = "Effects") %>%
+      left_join(x = .,
+                y = .PSA_dt$c %>%
+                  calculate_differentials_(.ref = .ref) %>%
+                  mutate(sims = row_number()) %>%
+                  pivot_longer(cols = -sims, names_to = "interventions",
+                               values_to = "Costs"),
+                by = c("sims", "interventions"))
+    .title_lab = "Cost Effectiveness Plane"
+    .x_lab = "Effectiveness differential"
+    .y_lab = "Cost differential"
+  }
+  ## CE plot mean values:
+  ce_plane_mean_dt <- ce_plane_dt %>%
+    group_by(interventions) %>%
+    summarise(
+      Effects = mean(Effects),
+      Costs = mean(Costs))
+  ## CE plot x and y axis limits:
+  x_lim = c(NA, max(ce_plane_dt$Effects) )
+  y_lim = c(NA, max(ce_plane_dt$Costs) )
+  ## CE plot ICER labels nudgement:
+  .nudge_labels[1] = max(ce_plane_dt$Effects) *
+    .nudge_labels[1]
+  .nudge_labels[2] = (max(ce_plane_dt$Costs) - min(ce_plane_dt$Costs)) *
+    .nudge_labels[2]
+  ## CE plot willingness-to-pay values:
+  .wtp = .wtp_threshold %>%
+    as_tibble() %>%
+    mutate(x_cord = max(ce_plane_dt$Costs) /
+             .wtp_threshold, # set location dynamically
+           y_cord = max(ce_plane_dt$Costs), # set location dynamically
+           # set angle dynamically by relative rise/run values:
+           angle_cord = atan((y_cord/y_cord) / (x_cord)) *
+             (180/pi),
+           label_cord = paste0("£", format(.wtp_threshold,
+                                           big.mark = ",")),
+           lty_ = "Willingness-to-pay threshold")
+
+  # Plot:
+  p <- ggplot() +
+    geom_hline(
+      yintercept = 0, colour = "dark gray") +
+    geom_vline(
+      xintercept = 0, colour = "dark gray") +
+    geom_point(
+      data = ce_plane_dt,
+      aes(x = Effects,
+          y = Costs,
+          color = interventions),
+      size = 1, alpha = 0.5) +
+    scale_y_continuous(
+      labels = scales::dollar_format(prefix = "£",
+                                     big.mark = ",")) +
+    geom_point(
+      data = ce_plane_mean_dt, inherit.aes = FALSE,
+      aes(x = Effects,
+          y = Costs,
+          fill = interventions),
+      shape = 21, colour = "black", show.legend = TRUE,
+      size = 2, alpha = 1, stroke = 0.6) +
+    ## Keep one value in the legend:
+    scale_fill_discrete(
+      breaks = ce_plane_mean_dt$interventions[1], # keep one
+      labels = "Mean effects & costs") + # change its label
+    coord_cartesian(xlim = x_lim, ylim = y_lim, expand = FALSE) +
+    theme(
+      legend.title = element_blank(),
+      legend.position = .legend_pos,
+      #legend.position = 'bottom',
+      #legend.box.margin = margin(),
+      #legend.box.spacing = unit(0.5, "cm"),
+      legend.key = element_rect(fill = "white", colour = "grey"),
+      #legend.justification = c("right", "top"),
+      # Control legend text alignment:
+      legend.text.align = 0, # 0 left (default), 1 right
+      # Add a black box around the legend:
+      #legend.background = element_rect(fill = NA, color = 'black'),
+      legend.background = element_rect(fill = NA),
+      legend.spacing = unit(0, "cm"), # spacing between legend items
+      legend.spacing.y = unit(-0.195, "cm"), # bring legends closer
+      legend.key.size = unit(0.35, "cm"),
+      #legend.direction = "horizontal",
+      #panel.grid = element_line(colour = 'grey'),
+      panel.border = element_rect(colour = 'black', fill = NA)) +
+    labs(
+      title = .title_lab,
+      x = .x_lab,
+      y = .y_lab) +
+    guides(
+      # Increase the size of the points in the legend:
+      color = guide_legend(
+        override.aes = list(size = 1.5,
+                            alpha = 1,
+                            stroke = NA, # remove storke
+                            linetype = 0)), # remove line
+      # Remove the fill colour in shape 21, generalising it to all options:
+      fill = guide_legend(
+        override.aes = list(size = 2.5,
+                            alpha = 1,
+                            fill = NA, # remove fill
+                            #stroke = 1,
+                            linetype = 0))) # remove line
+
+  # Show/hide ICER label(s) on the CE plot:
+  if(.show_ICER) {
+    p <- p +
+      ggrepel::geom_text_repel(
+        data = ce_plane_mean_dt,
+        aes(x = Effects,
+            y = Costs,
+            label = .PSA_dt$ICER$icer_label),
+        force_pull = 8,
+        size = 2.5,
+        point.padding = 0,
+        nudge_x = .nudge_labels[1],
+        nudge_y = .nudge_labels[2],
+        segment.curvature = 1e-8,
+        arrow = arrow(length = unit(0.015, "npc")),
+        max.overlaps = Inf,
+        min.segment.length = 0)
+  }
+
+  # Show/hide WTP label(s) on the CE plot:
+  if(.show_wtp) {
+    p <- p +
+      geom_abline(
+        data = .wtp,
+        aes(intercept = 0,
+            slope = value,
+            linetype = lty_),
+        show.legend = TRUE) +
+      # scale_linetype_discrete(
+      #   breaks = .wtp$label[1], # keep one
+      #   labels = "WTP thresholds") + # change its label
+      scale_linetype_manual(
+        breaks = .wtp$lty_[1], # keep one for the legend
+        #labels = "WTP thresholds", # change its label
+        values = rep(3, nrow(.wtp))) +
+      ggrepel::geom_text_repel(
+        data = .wtp,
+        aes(x = x_cord,
+            y = y_cord,
+            label = label_cord,
+            angle = angle_cord),
+        size = 2,
+        show.legend = FALSE) +
+      guides(
+        # Remove the stroke from the line and adjust the size:
+        linetype = guide_legend(
+          override.aes = list(stroke = NA)) # remove stroke
+      )
+  }
+
+  return(p)
+}
+
+PSA_summary1 = summarise_PSA_(.effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+                              .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+                              .interventions = ShinyPSA::Vaccine_PSA$treats)
+
+PSA_summary2 = summarise_PSA_(.effs = as_tibble(ShinyPSA::Smoking_PSA$e),
+                              .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
+                              .interventions = ShinyPSA::Smoking_PSA$treats)
+load_all()
+ps = plot_CEplane(PSA_summary2, .ref = NULL, #.show_ICER = TRUE,
+                  #.legend_pos = "right", #.show_wtp = TRUE,
+                  .wtp_threshold = c(200), tst = "PRINT"#,
+                  #.nudge_labels = c(0.1, -0.1)
 )
-p
+ps
 ##################################################################
 
 
