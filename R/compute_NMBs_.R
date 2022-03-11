@@ -62,6 +62,7 @@ compute_NMBs_ <- function(.effs, .costs, .ref = NULL,
     .Kmax <- max(.wtp)
     v.k <- .wtp
     n.k <- length(.wtp)
+    names(v.k) <- paste0("£", format(v.k, big.mark = ","))
   } else {
     n.points <- .Kmax/100
     v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)

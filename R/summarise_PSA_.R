@@ -85,10 +85,12 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
     .Kmax <- max(.wtp)
     v.k <- .wtp
     n.k <- length(.wtp)
+    names(v.k) <- paste0("£", format(v.k, big.mark = ","))
   } else {
     n.points <- 500
     v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
     n.k <- length(v.k)
+    names(v.k) <- paste0("£", format(v.k, big.mark = ","))
   }
 
   # Ensure .effs and .costs are tibbles and name columns appropriately:
@@ -140,13 +142,13 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
 
   ## Outputs of the function
   results <- list(
-    n.sim = n.sim, n.comparators = n.comparators,
-    n.comparisons = n.comparisons, delta.e = delta.effs,
-    delta.c = delta.costs, ICER = ICER, Kmax = .Kmax, k = v.k, NMB = NMB,
-    e.NMB = e.NMB, CEAC = CEAC, CEAF = CEAF, EVPI = EVPI, kstar = kstar,
-    best = best, U = U, vi = vi, Ustar = Ustar, ol = ol, step = n.k,
+
     interventions = .interventions, ref = .ref, comp = comp,
-    e = .effs, c = .costs
+    ICER = ICER, NMB = NMB, e.NMB = e.NMB, CEAC = CEAC, CEAF = CEAF,
+    EVPI = EVPI, best_id = best, best_name = best_name, WTPs = v.k,
+    WTPstar = kstar, U = U, Ustar = Ustar, vi = vi, ol = ol, e = .effs,
+    c = .costs, delta.e = delta.effs, delta.c = delta.costs, n.sim = n.sim,
+    n.comparators = n.comparators, step = n.k, Kmax = .Kmax
   )
 
   class(results) <- "psa"

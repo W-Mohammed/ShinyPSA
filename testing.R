@@ -1032,26 +1032,125 @@ plot_CE_plane <- function(.PSA_dt, .ref = NULL, ...) {
   return(p)
 }
 
-PSA_summary = summarise_PSA_(.effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                              .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                              .interventions = ShinyPSA::Vaccine_PSA$treats)
+load_all()
 
-PSA_summary2 = summarise_PSA_(
+PSA_summary = summarise_PSA_(
+  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+  .interventions = ShinyPSA::Vaccine_PSA$treats)
+
+PSA_summary = summarise_PSA_(
   .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
   .interventions = ShinyPSA::Smoking_PSA$treats)
-load_all()
+
 p = plot_CEplane(PSA_summary,
                   .ref = 2,
-                  .show_ICER = F,
-                  .legend_pos = c(0.2, 0.8),
+                  .show_ICER = T,
+                  .legend_pos = c(0.8, 0.2),
                   .show_wtp = T,
                   .zoom = T,
-                  .wtp_threshold = c(20000),
-                  tst = "PRINT",
+                  .wtp_threshold = c(20000, 500, 100, 50),
+                  #tst = "PRINT",
                   .nudge_labels = c(0.1, -0.1))
 p
 ##################################################################
+
+tmp <- function() {
+  ################
+  # CEAC:
+  ceac_df = PSA_dt$CEAC %>%
+    mutate('WTP threshold' = PSA_dt$k) %>%
+    pivot_longer(cols = -`WTP threshold`,
+                 names_to = 'Option',
+                 values_to = 'Probability cost-effective')
+
+  ceaf_df = PSA_dt$CEAF$ceaf %>%
+    as_tibble() %>%
+    mutate('WTP threshold' = PSA_dt$k) %>%
+    rename('CEAF' = value)
+
+  # CEAC with a CEAF:
+  ceac_plot = ggplot() +
+    geom_line(data = ceac_df,
+              aes(x = `WTP threshold`,
+                  y = `Probability cost-effective`,
+                  #group = Option,
+                  color = Option),
+              size = 0.4) +
+    # geom_point(data = ceac_df,
+    #            aes(x = `WTP threshold`, y = `Probability cost-effective`,
+    #                shape = Option, color = Option),
+    #            size = 1) +
+    coord_cartesian(xlim = c(0, 10000), expand = FALSE) +
+    scale_x_continuous(labels = dollar_format(prefix = "£")) +
+    scale_y_continuous(labels = percent_format()) +
+    theme(
+      legend.title = element_blank(),
+      legend.position = c(0.8, 0.85),
+      legend.text.align = 0, # 0 left (default), 1 right
+      legend.background = element_rect(fill = NA),
+      legend.key = element_rect(fill = "white", colour = "grey"),
+      # legend.spacing = unit(0, "cm"), # spacing between legend items
+      legend.spacing.y = unit(-0.2, "cm"), # bring legends closer
+      legend.key.size = unit(0.2, "cm"),
+      # legend.position = 'bottom',
+      # legend.box.margin = margin(),
+      # legend.direction = "horizontal",
+      # panel.grid = element_line(colour = 'grey'),
+      panel.border = element_rect(colour = 'black', fill = NA),
+      plot.margin = unit(c(0,1,0,0), "cm")) + # more space LHS
+    labs(
+      title = "Cost-effectiveness acceptability curve (CEAC)",
+      x = "Willingness-to-pay",
+      y = "Probability cost-effective") +
+    guides(
+      # Increase the size of the points in the legend:
+      color = guide_legend(override.aes = list(size = 1,
+                                               alpha = 1,
+                                               shape = NA)))
+  ceac_plot
+
+  ceac_ceaf_plot <- ceac_plot +
+    geom_point(data = ceaf_df,
+               aes(x = `WTP threshold`,
+                   y = CEAF),
+               size = 2, alpha = 0.8, shape = 21, color = "black",
+               show.legend = TRUE) +
+    geom_point(data = ceaf_df,
+               aes(x = `WTP threshold`,
+                   y = CEAF),
+               size = 0.1, stroke = 1,
+               alpha = 1, shape = 1, color = "black",
+               show.legend = FALSE) +
+    scale_fill_manual(values = c("CEAF" = "black")) +
+    guides(
+      # Increase the size of the points in the legend:
+      shape = guide_legend(override.aes = list(size = 2,
+                                               #alpha = 1,
+                                               stroke = 1,
+                                               linetype = 0)),
+      fill = guide_legend(override.aes = list(#size = 0.3,
+        #alpha = 1,
+        stroke = 1,
+        linetype = 0)))
+
+  ceac_ceaf_plot
+}
+
+load_all()
+
+PSA_summary = summarise_PSA_(
+  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+  .interventions = ShinyPSA::Vaccine_PSA$treats)
+
+PSA_summary = summarise_PSA_(
+  .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
+  .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
+  .interventions = ShinyPSA::Smoking_PSA$treats)
+
+
 
 
 

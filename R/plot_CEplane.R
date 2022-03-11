@@ -43,7 +43,7 @@
 #' p
 #'
 plot_CEplane <- function(.PSA_dt, ...) {
-  # Grab function environment for assignment purposes in assign() below:
+  # Grab the function's environment for correct assignment in assign():
   .env = environment()
   # Define defaults:
   default_args <- list(
@@ -138,17 +138,28 @@ plot_CEplane <- function(.PSA_dt, ...) {
   .nudge_labels[2] = (max(ce_plane_dt$Costs) - min(ce_plane_dt$Costs)) *
     .nudge_labels[2]
   ## CE plot willingness-to-pay (WTP) values:
+  ### Get labels' coordinates dynamically:
+  x_cord = ifelse((max(ce_plane_dt$Costs) / .wtp_threshold) >=
+                    max(ce_plane_dt$Effects),
+                  max(ce_plane_dt$Effects),
+                  (max(ce_plane_dt$Costs) / .wtp_threshold))
+  y_cord = ifelse((max(ce_plane_dt$Effects) * .wtp_threshold) >=
+                    max(ce_plane_dt$Costs),
+                  max(ce_plane_dt$Costs),
+                  (max(ce_plane_dt$Effects) * .wtp_threshold))
+  ### Put .wtp data on tibble:
   .wtp = .wtp_threshold %>%
     as_tibble() %>%
-    mutate(x_cord = max(ce_plane_dt$Costs) /
-             .wtp_threshold, # get coordinates dynamically
-           y_cord = max(ce_plane_dt$Costs), # get coordinates dynamically
-           # set angle dynamically by relative rise/run values:
-           angle_cord = atan((y_cord/y_cord) / (x_cord)) *
-             (180/pi),
-           label_cord = paste0("£", format(.wtp_threshold,
-                                           big.mark = ",")),
-           lty_ = "Willingness-to-pay threshold")
+    mutate(
+      x_cord = x_cord,
+      y_cord = y_cord,
+      # set angle dynamically by relative rise/run values:
+      angle_cord = atan((y_cord/max(y_cord)) /
+                          (x_cord/max(x_cord))) *
+        (180/pi),
+      label_cord = paste0("£", format(.wtp_threshold,
+                                            big.mark = ",")),
+      lty_ = "Willingness-to-pay threshold")
 
   # Plot:
   p <- ggplot() +
@@ -243,9 +254,9 @@ plot_CEplane <- function(.PSA_dt, ...) {
         data = .wtp,
         aes(x = x_cord,
             y = y_cord,
-            label = label_cord,
-            angle = angle_cord),
-        size = 2,
+            #angle = angle_cord,
+            label = label_cord),
+        size = 1.5,
         show.legend = FALSE) +
       guides(
         # Remove the stroke from the line:
