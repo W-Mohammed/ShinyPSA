@@ -1032,21 +1032,21 @@ plot_CE_plane <- function(.PSA_dt, .ref = NULL, ...) {
   return(p)
 }
 
-PSA_summary1 = summarise_PSA_(.effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+PSA_summary = summarise_PSA_(.effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
                               .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
                               .interventions = ShinyPSA::Vaccine_PSA$treats)
 
-PSA_summary = summarise_PSA_(
+PSA_summary2 = summarise_PSA_(
   .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
   .interventions = ShinyPSA::Smoking_PSA$treats)
 load_all()
 p = plot_CEplane(PSA_summary,
-                  .ref = 1,
+                  .ref = 2,
                   .show_ICER = F,
-                  .legend_pos = c(0.8, 0.2),
+                  .legend_pos = c(0.2, 0.8),
                   .show_wtp = T,
-                  .zoom = F,
+                  .zoom = T,
                   .wtp_threshold = c(20000),
                   tst = "PRINT",
                   .nudge_labels = c(0.1, -0.1))

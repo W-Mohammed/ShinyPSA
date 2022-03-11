@@ -175,7 +175,7 @@ plot_CEplane <- function(.PSA_dt, ...) {
     ## Keep one value in the legend:
     scale_fill_discrete(
       breaks = ce_plane_mean_dt$interventions[1], # keep one
-      labels = "Mean effects & costs") + # change its label
+      labels = "Mean effects/costs") + # change its label
     theme(
       legend.position = .legend_pos,
       legend.title = element_blank(),
