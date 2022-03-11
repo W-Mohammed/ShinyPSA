@@ -138,27 +138,46 @@ plot_CEplane <- function(.PSA_dt, ...) {
   .nudge_labels[2] = (max(ce_plane_dt$Costs) - min(ce_plane_dt$Costs)) *
     .nudge_labels[2]
   ## CE plot willingness-to-pay (WTP) values:
-  ### Get labels' coordinates dynamically:
-  x_cord = ifelse((max(ce_plane_dt$Costs) / .wtp_threshold) >=
+  if(max(ce_plane_dt$Effects) < max(abs(ce_plane_dt$Effects))){
+    ### Get labels' coordinates dynamically:
+    x_cord = ifelse((min(ce_plane_dt$Costs) / .wtp_threshold) <=
+                      min(ce_plane_dt$Effects),
+                    min(ce_plane_dt$Effects),
+                    (min(ce_plane_dt$Costs) / .wtp_threshold))
+    y_cord = ifelse((min(ce_plane_dt$Effects) * .wtp_threshold) <=
+                      min(ce_plane_dt$Costs),
+                    min(ce_plane_dt$Costs),
+                    (min(ce_plane_dt$Effects) * .wtp_threshold))
+    ### Set labels' angle:
+    angle_cord = y_cord * 0
+  } else {
+    ### Get labels' coordinates dynamically:
+    x_cord = ifelse((max(ce_plane_dt$Costs) / .wtp_threshold) >=
+                      max(ce_plane_dt$Effects),
                     max(ce_plane_dt$Effects),
-                  max(ce_plane_dt$Effects),
-                  (max(ce_plane_dt$Costs) / .wtp_threshold))
-  y_cord = ifelse((max(ce_plane_dt$Effects) * .wtp_threshold) >=
+                    (max(ce_plane_dt$Costs) / .wtp_threshold))
+    y_cord = ifelse((max(ce_plane_dt$Effects) * .wtp_threshold) >=
+                      max(ce_plane_dt$Costs),
                     max(ce_plane_dt$Costs),
-                  max(ce_plane_dt$Costs),
-                  (max(ce_plane_dt$Effects) * .wtp_threshold))
+                    (max(ce_plane_dt$Effects) * .wtp_threshold))
+    ### Calculate labels' angle dynamically by relative rise/run values:
+    angle_cord = atan(ifelse((max(ce_plane_dt$Effects) * .wtp_threshold) >=
+                               max(ce_plane_dt$Costs),
+                             (y_cord/y_cord), (y_cord/max(y_cord))) /
+                        x_cord) * (180/pi)
+  }
+
+  if(.PSA_dt$n.comparators == 2) angle_cord = angle_cord * 0
+
   ### Put .wtp data on tibble:
   .wtp = .wtp_threshold %>%
     as_tibble() %>%
     mutate(
       x_cord = x_cord,
       y_cord = y_cord,
-      # set angle dynamically by relative rise/run values:
-      angle_cord = atan((y_cord/max(y_cord)) /
-                          (x_cord/max(x_cord))) *
-        (180/pi),
+      angle_cord = angle_cord,
       label_cord = paste0("£", format(.wtp_threshold,
-                                            big.mark = ",")),
+                                      big.mark = ",")),
       lty_ = "Willingness-to-pay threshold")
 
   # Plot:
@@ -254,7 +273,7 @@ plot_CEplane <- function(.PSA_dt, ...) {
         data = .wtp,
         aes(x = x_cord,
             y = y_cord,
-            #angle = angle_cord,
+            angle = angle_cord,
             label = label_cord),
         size = 1.5,
         show.legend = FALSE) +
