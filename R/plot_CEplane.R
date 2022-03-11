@@ -13,7 +13,7 @@
 #' @param .PSA_dt A list of class shinyPSA that contains summary PSA
 #' results.
 #' @param ... Additional arguments that include:
-#' reference intervention \code{.ref = NULL} rescales intervention on CEP
+#' reference intervention \code{.ref = NULL} rescales interventions on CEP,
 #' legend position \code{.legend_pos = c(0.8, 0.2)},
 #' show ICER information \code{.show_ICER' = TRUE},
 #' nudge ICER labels \code{.nudge_labels' = c(NULL, NULL)},
@@ -26,11 +26,26 @@
 #' @export
 #'
 #' @examples
+#' PSA_summary = summarise_PSA_(
+#'   .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
+#'   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
+#'   .interventions = ShinyPSA::Smoking_PSA$treats)
+#' library(ShinyPSA)
+#' p = plot_CEplane(PSA_summary,
+#'                  .ref = 1,
+#'                  .show_ICER = F,
+#'                  .legend_pos = c(0.8, 0.2),
+#'                  .show_wtp = F,
+#'                  .zoom = T,
+#'                  .wtp_threshold = c(200),
+#'                  tst = "PRINT",
+#'                  .nudge_labels = c(0.1, -0.1))
+#' p
+#'
 plot_CEplane <- function(.PSA_dt, ...) {
+  # Grab function environment for assignment purposes in assign() below:
   .env = environment()
-  # Grab additional arguments:
-  # expected_args <- c('.legend_pos', '.wtp_threshold', '.seed_no',
-  #                    '.show_ICER', '.show_wtp', '.nudge_labels')
+  # Define defaults:
   default_args <- list(
     '.ref' = NULL, # Integer 1:length(interventions)
     '.legend_pos' = c(0.8, 0.2), # c(x, y) double between 0:1
@@ -40,22 +55,18 @@ plot_CEplane <- function(.PSA_dt, ...) {
     '.show_wtp' = TRUE, # TRUE/FALSE
     '.zoom' = FALSE, # TRUE/FALSE
     '.seed_no' = 1) # Integer
-
   expected_args <- names(default_args)
+  # Grab additional arguments:
   .args_ <- list(...)
   supplied_args <- names(.args_)
   if(any(!supplied_args %in% expected_args))
     message("Argument ",
             paste(supplied_args[!supplied_args %in% expected_args]),
             " is unknown, and therefore ignored")
-
+  # Set additional arguments:
   purrr::walk(
     .x = expected_args,
     .f = function(.arg) {
-      # cat("\n", .arg, " def:\n")
-      # print(default_args[[.arg]])
-      # cat("\n", .arg, " exp:\n")
-      # print(.args_[[.arg]])
       assign(.arg,
              if(is.null(.args_[[.arg]])) {
                default_args[[.arg]]
@@ -64,43 +75,9 @@ plot_CEplane <- function(.PSA_dt, ...) {
              }, envir = .env)
     })
 
-  # dots <- list(...)
-  # # Assign any additional arguments:
-  # .legend_pos <- if(is.null(dots[['.legend_pos']]) |
-  #                   length(dots[['.legend_pos']]) != 2) {
-  #   c(0.8, 0.2)
-  # } else {
-  #   dots[['.legend_pos']]
-  # }
-  # .wtp <- if(is.null(dots[['.wtp_threshold']])) {
-  #   c(20000, 30000, 50000)
-  # } else {
-  #   dots[['.wtp_threshold']]
-  # }
-  # .seed_no <- if(is.null(dots[['.seed_no']])) {
-  #   set.seed(1)
-  # } else {
-  #   set.seed(dots[['.seed_no']])
-  # }
-  # .show_ICER <- if(is.null(dots[['.show_ICER']])) {
-  #   TRUE
-  # } else {
-  #   dots[['.show_ICER']]
-  # }
-  # .show_wtp <- if(is.null(dots[['.show_wtp']])) {
-  #   TRUE
-  # } else {
-  #   dots[['.show_wtp']]
-  # }
-  # .nudge_labels <- if(is.null(dots[['.nudge_labels']])) {
-  #   NULL
-  # } else {
-  #   dots[['.nudge_labels']]
-  # }
-  #
-  # Prepare plot data:
+  # Plot data:
   ## CE plot points:
-  if(is.null(.ref)) {
+  if(is.null(.ref)) { # No rescaling of point data
     if(.PSA_dt$n.comparators == 2) {
       ce_plane_dt <- .PSA_dt$delta.e %>%
         mutate(sims = row_number()) %>%
@@ -124,10 +101,11 @@ plot_CEplane <- function(.PSA_dt, ...) {
                                  values_to = "Costs"),
                   by = c("sims", "interventions"))
     }
+    # Labels:
     .title_lab = "Cost Effectiveness Plane"
     .x_lab = "Effects"
     .y_lab = "Costs"
-  } else {
+  } else { # Rescale point data
     ce_plane_dt <- .PSA_dt$e %>%
       calculate_differentials_(.ref = .ref) %>%
       mutate(sims = row_number()) %>%
@@ -140,6 +118,7 @@ plot_CEplane <- function(.PSA_dt, ...) {
                   pivot_longer(cols = -sims, names_to = "interventions",
                                values_to = "Costs"),
                 by = c("sims", "interventions"))
+    # Labels:
     .title_lab = "Cost Effectiveness Plane"
     .x_lab = "Effectiveness differential"
     .y_lab = "Cost differential"
@@ -153,17 +132,17 @@ plot_CEplane <- function(.PSA_dt, ...) {
   ## CE plot x and y axis limits:
   x_lim = c(NA, max(ce_plane_dt$Effects) )
   y_lim = c(NA, max(ce_plane_dt$Costs) )
-  ## CE plot ICER labels nudgement:
+  ## CE plot ICER labels nudging values:
   .nudge_labels[1] = max(ce_plane_dt$Effects) *
     .nudge_labels[1]
   .nudge_labels[2] = (max(ce_plane_dt$Costs) - min(ce_plane_dt$Costs)) *
     .nudge_labels[2]
-  ## CE plot willingness-to-pay values:
+  ## CE plot willingness-to-pay (WTP) values:
   .wtp = .wtp_threshold %>%
     as_tibble() %>%
     mutate(x_cord = max(ce_plane_dt$Costs) /
-             .wtp_threshold, # set location dynamically
-           y_cord = max(ce_plane_dt$Costs), # set location dynamically
+             .wtp_threshold, # get coordinates dynamically
+           y_cord = max(ce_plane_dt$Costs), # get coordinates dynamically
            # set angle dynamically by relative rise/run values:
            angle_cord = atan((y_cord/y_cord) / (x_cord)) *
              (180/pi),
@@ -187,7 +166,7 @@ plot_CEplane <- function(.PSA_dt, ...) {
       labels = scales::dollar_format(prefix = "£",
                                      big.mark = ",")) +
     geom_point(
-      data = ce_plane_mean_dt, inherit.aes = FALSE,
+      data = ce_plane_mean_dt,
       aes(x = Effects,
           y = Costs,
           fill = interventions),
@@ -198,23 +177,18 @@ plot_CEplane <- function(.PSA_dt, ...) {
       breaks = ce_plane_mean_dt$interventions[1], # keep one
       labels = "Mean effects & costs") + # change its label
     theme(
-      legend.title = element_blank(),
       legend.position = .legend_pos,
-      #legend.position = 'bottom',
-      #legend.box.margin = margin(),
-      #legend.box.spacing = unit(0.5, "cm"),
-      legend.key = element_rect(fill = "white", colour = "grey"),
-      #legend.justification = c("right", "top"),
+      legend.title = element_blank(),
       # Control legend text alignment:
       legend.text.align = 0, # 0 left (default), 1 right
-      # Add a black box around the legend:
-      #legend.background = element_rect(fill = NA, color = 'black'),
-      legend.background = element_rect(fill = NA),
+      # Remove background and box around the legend:
+      legend.background = element_rect(fill = NA, color = NA),
       legend.spacing = unit(0, "cm"), # spacing between legend items
       legend.spacing.y = unit(-0.195, "cm"), # bring legends closer
+      # Add a box around the keys:
+      legend.key = element_rect(fill = "white", colour = "grey"),
       legend.key.size = unit(0.35, "cm"),
-      #legend.direction = "horizontal",
-      #panel.grid = element_line(colour = 'grey'),
+      # Add a border around the plot:
       panel.border = element_rect(colour = 'black', fill = NA)) +
     labs(
       title = .title_lab,
@@ -225,14 +199,13 @@ plot_CEplane <- function(.PSA_dt, ...) {
       color = guide_legend(
         override.aes = list(size = 1.5,
                             alpha = 1,
-                            stroke = NA, # remove storke
+                            stroke = NA, # remove stroke
                             linetype = 0)), # remove line
       # Remove the fill colour in shape 21, generalising it to all options:
       fill = guide_legend(
         override.aes = list(size = 2.5,
                             alpha = 1,
                             fill = NA, # remove fill
-                            #stroke = 1,
                             linetype = 0))) # remove line
 
   # Show/hide ICER label(s) on the CE plot:
@@ -263,12 +236,8 @@ plot_CEplane <- function(.PSA_dt, ...) {
             slope = value,
             linetype = lty_),
         show.legend = TRUE) +
-      # scale_linetype_discrete(
-      #   breaks = .wtp$label[1], # keep one
-      #   labels = "WTP thresholds") + # change its label
       scale_linetype_manual(
         breaks = .wtp$lty_[1], # keep one for the legend
-        #labels = "WTP thresholds", # change its label
         values = rep(3, nrow(.wtp))) +
       ggrepel::geom_text_repel(
         data = .wtp,
@@ -279,12 +248,13 @@ plot_CEplane <- function(.PSA_dt, ...) {
         size = 2,
         show.legend = FALSE) +
       guides(
-        # Remove the stroke from the line and adjust the size:
+        # Remove the stroke from the line:
         linetype = guide_legend(
           override.aes = list(stroke = NA)) # remove stroke
       )
   }
 
+  # Zoom to max x and y values:
   if(.zoom) {
     p <- p +
       coord_cartesian(xlim = x_lim, ylim = y_lim, expand = FALSE)
