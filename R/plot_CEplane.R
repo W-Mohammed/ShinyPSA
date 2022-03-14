@@ -10,7 +10,7 @@
 
 #' Plot Cost Effectiveness Plane (CEP).
 #'
-#' @param .PSA_dt A list of class shinyPSA that contains summary PSA
+#' @param .PSA_data A list of class shinyPSA that contains summary PSA
 #' results.
 #' @param ... Additional arguments that include:
 #' reference intervention \code{.ref = NULL} rescales interventions on CEP,
@@ -42,7 +42,7 @@
 #'                  .nudge_labels = c(0.1, -0.1))
 #' p
 #'
-plot_CEplane <- function(.PSA_dt, ...) {
+plot_CEplane <- function(.PSA_data, ...) {
   # Grab the function's environment for correct assignment in assign():
   .env = environment()
   # Define defaults:
@@ -78,24 +78,24 @@ plot_CEplane <- function(.PSA_dt, ...) {
   # Plot data:
   ## CE plot points:
   if(is.null(.ref)) { # No rescaling of point data
-    if(.PSA_dt$n.comparators == 2) {
-      ce_plane_dt <- .PSA_dt$delta.e %>%
+    if(.PSA_data$n.comparators == 2) {
+      ce_plane_dt <- .PSA_data$delta.e %>%
         mutate(sims = row_number()) %>%
         pivot_longer(cols = -sims, names_to = "interventions",
                      values_to = "Effects") %>%
         left_join(x = .,
-                  y = .PSA_dt$delta.c %>%
+                  y = .PSA_data$delta.c %>%
                     mutate(sims = row_number()) %>%
                     pivot_longer(cols = -sims, names_to = "interventions",
                                  values_to = "Costs"),
                   by = c("sims", "interventions"))
     } else {
-      ce_plane_dt <- .PSA_dt$e %>%
+      ce_plane_dt <- .PSA_data$e %>%
         mutate(sims = row_number()) %>%
         pivot_longer(cols = -sims, names_to = "interventions",
                      values_to = "Effects") %>%
         left_join(x = .,
-                  y = .PSA_dt$c %>%
+                  y = .PSA_data$c %>%
                     mutate(sims = row_number()) %>%
                     pivot_longer(cols = -sims, names_to = "interventions",
                                  values_to = "Costs"),
@@ -106,13 +106,13 @@ plot_CEplane <- function(.PSA_dt, ...) {
     .x_lab = "Effects"
     .y_lab = "Costs"
   } else { # Rescale point data
-    ce_plane_dt <- .PSA_dt$e %>%
+    ce_plane_dt <- .PSA_data$e %>%
       calculate_differentials_(.ref = .ref) %>%
       mutate(sims = row_number()) %>%
       pivot_longer(cols = -sims, names_to = "interventions",
                    values_to = "Effects") %>%
       left_join(x = .,
-                y = .PSA_dt$c %>%
+                y = .PSA_data$c %>%
                   calculate_differentials_(.ref = .ref) %>%
                   mutate(sims = row_number()) %>%
                   pivot_longer(cols = -sims, names_to = "interventions",
@@ -167,7 +167,7 @@ plot_CEplane <- function(.PSA_dt, ...) {
                         x_cord) * (180/pi)
   }
 
-  if(.PSA_dt$n.comparators == 2) angle_cord = angle_cord * 0
+  if(.PSA_data$n.comparators == 2) angle_cord = angle_cord * 0
 
   ### Put .wtp data on tibble:
   .wtp = .wtp_threshold %>%
@@ -245,7 +245,7 @@ plot_CEplane <- function(.PSA_dt, ...) {
         data = ce_plane_mean_dt,
         aes(x = Effects,
             y = Costs,
-            label = .PSA_dt$ICER$icer_label),
+            label = .PSA_data$ICER$icer_label),
         force_pull = 8,
         size = 2.5,
         point.padding = 0,

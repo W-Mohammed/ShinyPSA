@@ -1047,7 +1047,7 @@ PSA_summary = summarise_PSA_(
   .plot = TRUE)
 
 p = plot_CEplane(PSA_summary,
-                  .ref = 2,
+                  .ref = 4,
                   .show_ICER = T,
                   .legend_pos = c(0.8, 0.2),
                   .show_wtp = T,
@@ -1058,18 +1058,18 @@ p = plot_CEplane(PSA_summary,
 p
 ##################################################################
 
-tmp <- function() {
+tmp <- function(.PSA_data) {
   ################
   # CEAC:
-  ceac_df = PSA_dt$CEAC %>%
-    mutate('WTP threshold' = PSA_dt$k) %>%
+  ceac_df = .PSA_data$CEAC %>%
+    mutate('WTP threshold' = .PSA_data$k) %>%
     pivot_longer(cols = -`WTP threshold`,
                  names_to = 'Option',
                  values_to = 'Probability cost-effective')
 
-  ceaf_df = PSA_dt$CEAF$ceaf %>%
+  ceaf_df = .PSA_data$CEAF$ceaf %>%
     as_tibble() %>%
-    mutate('WTP threshold' = PSA_dt$k) %>%
+    mutate('WTP threshold' = .PSA_data$k) %>%
     rename('CEAF' = value)
 
   # CEAC with a CEAF:
