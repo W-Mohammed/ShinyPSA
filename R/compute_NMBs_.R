@@ -104,7 +104,7 @@ compute_NMBs_ <- function(.effs, .costs, .ref = NULL,
     # Compute incremental expected net benefit e.iNMB:
     e.inmb <- inmb %>%
       map_dfr(.f = function(.x) {
-        colMeans(as_tibble(.x))
+        colMeans(as_tibble(.x, .name_repair = "unique"))
       })
 
     # Select the best option for each willingness-to-pay value:
@@ -135,7 +135,7 @@ compute_NMBs_ <- function(.effs, .costs, .ref = NULL,
   # Compute expected net benefit (e.NMB):
   e.nmb <- nmb %>%
     map_dfr(.f = function(.x) {
-      colMeans(as_tibble(.x))
+      colMeans(as_tibble(.x, .name_repair = "unique"))
     })
 
   # Select the best option for each willingness-to-pay value:
@@ -186,13 +186,14 @@ compute_CEACs_ <- function(.nmb, .effs = NULL, .costs = NULL, .ref = NULL,
   if(!is.null(.ref)) {
     ceac <- .nmb %>%
       map_dfr(.f = function(.x) {
-        colMeans(as_tibble(.x) >= 0)
+        colMeans(as_tibble(.x, .name_repair = "unique")) >= 0
       })
   } else {
     # CEAC in incremental analysis:
     ceac <- .nmb %>%
       map_dfr(.f = function(.x) {
-        colMeans(do.call(pmax, as_tibble(.x)) == as_tibble(.x))})
+        colMeans(do.call(pmax, as_tibble(.x, .name_repair = "unique")) ==
+                   as_tibble(.x, .name_repair = "unique"))})
   }
 
   return(ceac)

@@ -64,7 +64,7 @@ compute_EVPIs_ = function(.effs, .costs, .interventions = NULL,
   # Compute expected net benefit (e.NMB):
   e.nmb <- nmb %>%
     map_dfr(.f = function(.x) {
-      colMeans(as_tibble(.x))
+      colMeans(as_tibble(.x, .name_repair = "unique"))
     })
 
   # Identify the best option for each willingness-to-pay value:
@@ -74,7 +74,7 @@ compute_EVPIs_ = function(.effs, .costs, .interventions = NULL,
   # Extract maximum nmb value at each iteration for each wtp/threshold:
   max_nmb_iter <- nmb %>%
     map_dfr(.f = function(.x) {
-      do.call(pmax, as_tibble(.x))
+      do.call(pmax, as_tibble(.x, .name_repair = "unique"))
     })
 
   # Compute opportunity loss (OL):
@@ -86,7 +86,7 @@ compute_EVPIs_ = function(.effs, .costs, .interventions = NULL,
   # Compute value-of-information (VI):
   vi <- map2_dfc(.x = max_nmb_iter, .y = nmb,
                  .f = function(.x, .y) {
-                   .x - max(colMeans(as_tibble(.y)))
+                   .x - max(colMeans(as_tibble(.y, .name_repair = "unique")))
                  })
 
   # Compute expected value-of-information (EVPI):

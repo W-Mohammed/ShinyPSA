@@ -31,7 +31,8 @@
 #'
 #' @examples
 summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
-                          .ref = NULL, .Kmax = 50000, .wtp = NULL) {
+                          .ref = NULL, .Kmax = 50000, .wtp = NULL,
+                          .plot = FALSE) {
 
   # Stop if .effs & .costs have different dimensions:
   stopifnot('Unequal dimensions in .effs and .costs' =
@@ -152,6 +153,13 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
   )
 
   class(results) <- "psa"
+
+  # If requested, develop and save plots:
+  if(.plot == TRUE) {
+    # Cost-Effectiveness plane:
+    CEP <- plot_CEplane(.PSA_dt = results)
+    results <- c(results, 'CEP' = list(CEP))
+  }
 
   return(results)
 }

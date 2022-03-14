@@ -1037,12 +1037,14 @@ load_all()
 PSA_summary = summarise_PSA_(
   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-  .interventions = ShinyPSA::Vaccine_PSA$treats)
+  .interventions = ShinyPSA::Vaccine_PSA$treats,
+  .plot = TRUE)
 
 PSA_summary = summarise_PSA_(
   .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
-  .interventions = ShinyPSA::Smoking_PSA$treats)
+  .interventions = ShinyPSA::Smoking_PSA$treats,
+  .plot = TRUE)
 
 p = plot_CEplane(PSA_summary,
                   .ref = 2,
