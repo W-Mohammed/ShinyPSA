@@ -157,7 +157,7 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
   # If requested, develop and save plots:
   if(.plot == TRUE) {
     # Cost-Effectiveness plane:
-    CEP <- plot_CEplane(.PSA_data = results)
+    CEP <- plot_CEplane(.PSA_data = results, .ref = .ref)
     results <- c(results, 'CEP' = list(CEP))
   }
 

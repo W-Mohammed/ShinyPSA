@@ -3,7 +3,8 @@ pacman::p_load(tidyverse, devtools, BCEA)
 load_all()
 #PSA_data <- ShinyPSA:::Smoking_PSA
 #PSA_data <- ShinyPSA:::Vaccine_PSA
-#################################################################
+#Tst_function########################################################
+
 tst = compute_NMBs_(.effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
                     .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
                     .interventions = ShinyPSA::Vaccine_PSA$treats)
@@ -46,7 +47,7 @@ compare(tst_all1$CEAC$`2: Vaccination`, 1 - tst_all1_BCEA$ceac, check.attributes
 
 compare(tst_all2$EVPI, tst_all2_BCEA$evi, check.attributes = F)
 
-#################################################################
+#CE_plane##########################################################
 
 PSA_dt <- summarise_PSA_(.effs = PSA_data$e, .costs = PSA_data$c,
                          .interventions = PSA_data$treats)
@@ -140,7 +141,7 @@ ce_plane_plot <- ggplot() +
       stroke = NA)))
 ce_plane_plot
 
-#########################################################
+#CEAC_CEAF########################################################
 # CEAC:
 ceac_df = PSA_dt$CEAC %>%
   mutate('WTP threshold' = PSA_dt$k) %>%
@@ -333,11 +334,43 @@ ceac_ceaf_plot <- ceac_plot +
       linetype = 0)))
 
 ceac_ceaf_plot
-##################################################################
+#calculate_differentials##########################################
 
 tst = calculate_differentials_(.data = PSA_summary1$e, .ref = 1)
 
-##################################################################
+#assign_extraArgs_################################################
+
+assign_extraArgs_ <- function(.default_args_ = default_args,
+                              .env_ = env_,
+                              .args_ = args_) {
+  # Grab default arguments' names:
+  if(is.null(names(.default_args_)))
+    stop(".default_args_ should contain named objects")
+  if(length(names(.default_args_)) != length(.default_args_))
+    stop("all arguments in .default_args_ should be named")
+  expected_args <- names(.default_args_)
+  # Grab additional arguments:
+  supplied_args <- names(.args_)
+  # Let user know if supplied arguments is unrecognised:
+  if(any(!supplied_args %in% expected_args))
+    message("Argument ",
+            paste(supplied_args[!supplied_args %in% expected_args]),
+            " is unknown, and therefore ignored")
+  # Set additional arguments:
+  purrr::walk(
+    .x = expected_args,
+    .f = function(.arg) {
+      assign(.arg,
+             if(is.null(.args_[[.arg]])) {
+               .default_args_[[.arg]]
+             } else {
+               .args_[[.arg]]
+             }, envir = .env_)
+    })
+}
+
+#plot_CE_plane#####################################################
+
 plot_CE_plane <- function(.PSA_dt, .ref = NULL, ...) {
   # Grab additional arguments:
   dots <- list(...)
@@ -1034,6 +1067,9 @@ plot_CE_plane <- function(.PSA_dt, .ref = NULL, ...) {
 
 load_all()
 
+#testing plot_CE_plane############################################
+load_all()
+
 PSA_summary = summarise_PSA_(
   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
@@ -1047,19 +1083,18 @@ PSA_summary = summarise_PSA_(
   .plot = TRUE)
 
 p = plot_CEplane(PSA_summary,
-                  .ref = 4,
+                 .ref = 1,
                   .show_ICER = T,
                   .legend_pos = c(0.8, 0.2),
                   .show_wtp = T,
                   .zoom = T,
                   .wtp_threshold = c(20000, 500, 100, 50),
-                  #tst = "PRINT",
+                  tst = "PRINT",
                   .nudge_labels = c(0.1, -0.1))
 p
-##################################################################
+#plot_CEAC########################################################
 
 tmp <- function(.PSA_data) {
-  ################
   # CEAC:
   ceac_df = .PSA_data$CEAC %>%
     mutate('WTP threshold' = .PSA_data$k) %>%
@@ -1139,6 +1174,8 @@ tmp <- function(.PSA_data) {
 
   ceac_ceaf_plot
 }
+
+##################################################################
 
 load_all()
 

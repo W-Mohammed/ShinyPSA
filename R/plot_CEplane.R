@@ -44,7 +44,7 @@
 #'
 plot_CEplane <- function(.PSA_data, ...) {
   # Grab the function's environment for correct assignment in assign():
-  .env = environment()
+  env_ = environment()
   # Define defaults:
   default_args <- list(
     '.ref' = NULL, # Integer 1:length(interventions)
@@ -55,52 +55,26 @@ plot_CEplane <- function(.PSA_data, ...) {
     '.show_wtp' = TRUE, # TRUE/FALSE
     '.zoom' = FALSE, # TRUE/FALSE
     '.seed_no' = 1) # Integer
-  expected_args <- names(default_args)
   # Grab additional arguments:
-  .args_ <- list(...)
-  supplied_args <- names(.args_)
-  if(any(!supplied_args %in% expected_args))
-    message("Argument ",
-            paste(supplied_args[!supplied_args %in% expected_args]),
-            " is unknown, and therefore ignored")
-  # Set additional arguments:
-  purrr::walk(
-    .x = expected_args,
-    .f = function(.arg) {
-      assign(.arg,
-             if(is.null(.args_[[.arg]])) {
-               default_args[[.arg]]
-             } else {
-               .args_[[.arg]]
-             }, envir = .env)
-    })
+  args_ <- list(...)
+  # Assign additional arguments:
+  assign_extraArgs_(.default_args_ = default_args,
+                    .args_ = args_,
+                    .env_ = env_)
 
   # Plot data:
   ## CE plot points:
   if(is.null(.ref)) { # No rescaling of point data
-    if(.PSA_data$n.comparators == 2) {
-      ce_plane_dt <- .PSA_data$delta.e %>%
-        mutate(sims = row_number()) %>%
-        pivot_longer(cols = -sims, names_to = "interventions",
-                     values_to = "Effects") %>%
-        left_join(x = .,
-                  y = .PSA_data$delta.c %>%
-                    mutate(sims = row_number()) %>%
-                    pivot_longer(cols = -sims, names_to = "interventions",
-                                 values_to = "Costs"),
-                  by = c("sims", "interventions"))
-    } else {
-      ce_plane_dt <- .PSA_data$e %>%
-        mutate(sims = row_number()) %>%
-        pivot_longer(cols = -sims, names_to = "interventions",
-                     values_to = "Effects") %>%
-        left_join(x = .,
-                  y = .PSA_data$c %>%
-                    mutate(sims = row_number()) %>%
-                    pivot_longer(cols = -sims, names_to = "interventions",
-                                 values_to = "Costs"),
-                  by = c("sims", "interventions"))
-    }
+    ce_plane_dt <- .PSA_data$e %>%
+      mutate(sims = row_number()) %>%
+      pivot_longer(cols = -sims, names_to = "interventions",
+                   values_to = "Effects") %>%
+      left_join(x = .,
+                y = .PSA_data$c %>%
+                  mutate(sims = row_number()) %>%
+                  pivot_longer(cols = -sims, names_to = "interventions",
+                               values_to = "Costs"),
+                by = c("sims", "interventions"))
     # Labels:
     .title_lab = "Cost Effectiveness Plane"
     .x_lab = "Effects"
@@ -123,62 +97,13 @@ plot_CEplane <- function(.PSA_data, ...) {
     .x_lab = "Effectiveness differential"
     .y_lab = "Cost differential"
   }
+
   ## CE plot mean values:
   ce_plane_mean_dt <- ce_plane_dt %>%
     group_by(interventions) %>%
     summarise(
       Effects = mean(Effects),
       Costs = mean(Costs))
-  ## CE plot x and y axis limits:
-  x_lim = c(NA, max(ce_plane_dt$Effects) )
-  y_lim = c(NA, max(ce_plane_dt$Costs) )
-  ## CE plot ICER labels nudging values:
-  .nudge_labels[1] = max(ce_plane_dt$Effects) *
-    .nudge_labels[1]
-  .nudge_labels[2] = (max(ce_plane_dt$Costs) - min(ce_plane_dt$Costs)) *
-    .nudge_labels[2]
-  ## CE plot willingness-to-pay (WTP) values:
-  if(max(ce_plane_dt$Effects) < max(abs(ce_plane_dt$Effects))){
-    ### Get labels' coordinates dynamically:
-    x_cord = ifelse((min(ce_plane_dt$Costs) / .wtp_threshold) <=
-                      min(ce_plane_dt$Effects),
-                    min(ce_plane_dt$Effects),
-                    (min(ce_plane_dt$Costs) / .wtp_threshold))
-    y_cord = ifelse((min(ce_plane_dt$Effects) * .wtp_threshold) <=
-                      min(ce_plane_dt$Costs),
-                    min(ce_plane_dt$Costs),
-                    (min(ce_plane_dt$Effects) * .wtp_threshold))
-    ### Set labels' angle:
-    angle_cord = y_cord * 0
-  } else {
-    ### Get labels' coordinates dynamically:
-    x_cord = ifelse((max(ce_plane_dt$Costs) / .wtp_threshold) >=
-                      max(ce_plane_dt$Effects),
-                    max(ce_plane_dt$Effects),
-                    (max(ce_plane_dt$Costs) / .wtp_threshold))
-    y_cord = ifelse((max(ce_plane_dt$Effects) * .wtp_threshold) >=
-                      max(ce_plane_dt$Costs),
-                    max(ce_plane_dt$Costs),
-                    (max(ce_plane_dt$Effects) * .wtp_threshold))
-    ### Calculate labels' angle dynamically by relative rise/run values:
-    angle_cord = atan(ifelse((max(ce_plane_dt$Effects) * .wtp_threshold) >=
-                               max(ce_plane_dt$Costs),
-                             (y_cord/y_cord), (y_cord/max(y_cord))) /
-                        x_cord) * (180/pi)
-  }
-
-  if(.PSA_data$n.comparators == 2) angle_cord = angle_cord * 0
-
-  ### Put .wtp data on tibble:
-  .wtp = .wtp_threshold %>%
-    as_tibble() %>%
-    mutate(
-      x_cord = x_cord,
-      y_cord = y_cord,
-      angle_cord = angle_cord,
-      label_cord = paste0("£", format(.wtp_threshold,
-                                      big.mark = ",")),
-      lty_ = "Willingness-to-pay threshold")
 
   # Plot:
   p <- ggplot() +
@@ -240,6 +165,13 @@ plot_CEplane <- function(.PSA_data, ...) {
 
   # Show/hide ICER label(s) on the CE plot:
   if(.show_ICER) {
+    ## CE plot ICER labels nudging values:
+    .nudge_labels[1] = max(ce_plane_dt$Effects) *
+      .nudge_labels[1]
+    .nudge_labels[2] = (max(ce_plane_dt$Costs) - min(ce_plane_dt$Costs)) *
+      .nudge_labels[2]
+
+    ## Plot:
     p <- p +
       ggrepel::geom_text_repel(
         data = ce_plane_mean_dt,
@@ -259,6 +191,59 @@ plot_CEplane <- function(.PSA_data, ...) {
 
   # Show/hide WTP label(s) on the CE plot:
   if(.show_wtp) {
+    ## CE plot willingness-to-pay (WTP) values:
+    if(max(ce_plane_dt$Effects) < max(abs(ce_plane_dt$Effects))){
+      ### Get labels' coordinates dynamically:
+      x_cord = ifelse(rep(min(ce_plane_dt$Costs), length(.wtp_threshold)) <
+                        0,
+                      ifelse((min(ce_plane_dt$Costs) / .wtp_threshold) <=
+                               min(ce_plane_dt$Effects),
+                             min(ce_plane_dt$Effects),
+                             (min(ce_plane_dt$Costs) / .wtp_threshold)),
+                      ifelse(-(min(ce_plane_dt$Costs) / .wtp_threshold) <=
+                               min(ce_plane_dt$Effects),
+                             min(ce_plane_dt$Effects),
+                             -(min(ce_plane_dt$Costs) / .wtp_threshold)))
+      y_cord = ifelse(rep(max(ce_plane_dt$Costs), length(.wtp_threshold)) <
+                        0,
+                      0,
+                      ifelse((min(ce_plane_dt$Effects) * .wtp_threshold) <=
+                               min(ce_plane_dt$Costs),
+                             min(ce_plane_dt$Costs),
+                             (min(ce_plane_dt$Effects) * .wtp_threshold)))
+    } else {
+      ### Get labels' coordinates dynamically:
+      x_cord = ifelse((max(ce_plane_dt$Costs) / .wtp_threshold) >=
+                        max(ce_plane_dt$Effects),
+                      max(ce_plane_dt$Effects),
+                      (max(ce_plane_dt$Costs) / .wtp_threshold))
+      y_cord = ifelse(rep(max(ce_plane_dt$Costs), length(.wtp_threshold)) <
+                        0,
+                      0,
+                      ifelse((max(ce_plane_dt$Effects) * .wtp_threshold) >=
+                               max(ce_plane_dt$Costs),
+                             max(ce_plane_dt$Costs),
+                             (max(ce_plane_dt$Effects) * .wtp_threshold)))
+    }
+
+    ### Get axis scale to correctly set the labels:
+    x_range <- layer_scales(p)$x$range$range
+    y_range <- layer_scales(p)$y$range$range
+    x_to_y <- (x_range[2] - x_range[1])/(y_range[2] - y_range[1])
+    ### Calculate angles:
+    angle_cord <- atan(.wtp_threshold * x_to_y) * 180/pi
+    ### Put .wtp data on tibble:
+    .wtp = .wtp_threshold %>%
+      as_tibble() %>%
+      mutate(
+        x_cord = x_cord,
+        y_cord = y_cord,
+        angle_cord = angle_cord,
+        label_cord = paste0("£", format(.wtp_threshold,
+                                        big.mark = ",")),
+        lty_ = "Willingness-to-pay threshold")
+
+    ## Plot:
     p <- p +
       geom_abline(
         data = .wtp,
@@ -273,7 +258,7 @@ plot_CEplane <- function(.PSA_data, ...) {
         data = .wtp,
         aes(x = x_cord,
             y = y_cord,
-            angle = angle_cord,
+            #angle = angle_cord,
             label = label_cord),
         size = 1.5,
         show.legend = FALSE) +
@@ -286,8 +271,14 @@ plot_CEplane <- function(.PSA_data, ...) {
 
   # Zoom to max x and y values:
   if(.zoom) {
+    ## CE plot x and y axis limits:
+    x_lim = c(NA, max(ce_plane_dt$Effects))
+    y_lim = c(NA, max(ce_plane_dt$Costs))
+
+    # Plot:
     p <- p +
-      coord_cartesian(xlim = x_lim, ylim = y_lim, expand = FALSE)
+      coord_cartesian(xlim = x_lim, ylim = y_lim, expand = !.zoom,
+                      default = .zoom)
   }
 
   return(p)
