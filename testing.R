@@ -1094,18 +1094,58 @@ p = plot_CEplane(PSA_summary,
 p
 #plot_CEAC########################################################
 
-tmp <- function(.PSA_data) {
+load_all()
+
+PSA_summary = summarise_PSA_(
+  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+  .interventions = ShinyPSA::Vaccine_PSA$treats)
+
+PSA_summary = summarise_PSA_(
+  .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
+  .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
+  .interventions = ShinyPSA::Smoking_PSA$treats)
+
+ttt <- plot_CEAC(.PSA_data = PSA_summary, .ref = 1)
+
+plot_CEAC <- function(.PSA_data, ...) {
+  # Grab the function's environment for correct assignment in assign():
+  env_ = environment()
+  # Define defaults:
+  default_args <- list(
+    '.ref' = NULL, # Integer 1:length(interventions)
+    '.wtp_threshold' = c(20000, 30000),
+    '.show_wtp' = TRUE, # TRUE/FALSE
+    '.zoom' = FALSE, # TRUE/FALSE
+    '.seed_no' = 1) # Integer
+  # Grab additional arguments:
+  args_ <- list(...)
+  # Assign additional arguments:
+  assign_extraArgs_(.default_args_ = default_args,
+                    .args_ = args_,
+                    .env_ = env_)
+
+  drop_intervention <- function(.data_, .ref = .ref) {
+    if(!is.null(.ref)) .data_ <- .data_ %>%
+        select(-all_of(.ref))
+    else .data_ <- .data_
+    return(.data_)
+  }
+
+  # Plot data:
   # CEAC:
   ceac_df = .PSA_data$CEAC %>%
-    mutate('WTP threshold' = .PSA_data$k) %>%
+    neglect_intervention(.data_ = ., .ref = .ref) %>%
+    mutate('WTP threshold' = .PSA_data$WTPs) %>%
     pivot_longer(cols = -`WTP threshold`,
                  names_to = 'Option',
                  values_to = 'Probability cost-effective')
 
-  ceaf_df = .PSA_data$CEAF$ceaf %>%
-    as_tibble() %>%
-    mutate('WTP threshold' = .PSA_data$k) %>%
-    rename('CEAF' = value)
+  ceaf_df = .PSA_data$CEAF %>%
+    mutate('Best option' = .PSA_data$best_name,
+           'WTP threshold' = .PSA_data$WTPs)
+
+  list('one' = ceac_df, 'two' = ceaf_df)
 
   # CEAC with a CEAF:
   ceac_plot = ggplot() +

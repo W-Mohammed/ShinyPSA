@@ -64,8 +64,8 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
     # If no reference was provided in a non-incremental analysis:
     if(is.null(.ref)){
       .ref <- 1
-      message(paste0("No reference selected, using [",
-                    .interventions[.ref], "] as reference."))
+      message(paste0("You did not select a reference intervention. [",
+                    .interventions[.ref], "] will be used as reference for differential values and plots."))
     }
     comp <- v.ints[-.ref]
   } else {
@@ -116,7 +116,7 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
                          .interventions = .interventions)
 
   # Compute NMB or iNMB, e.NMB or e.iNMB and best option for each k:
-  nmbs <- compute_NMBs_(.effs = .effs, .costs = .costs, .ref = .ref,
+  nmbs <- compute_NMBs_(.effs = .effs, .costs = .costs,
                         .interventions = .interventions, .Kmax = .Kmax,
                         .wtp = .wtp)
   NMB <- nmbs$nmb
@@ -127,7 +127,7 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
   kstar <- nmbs$wtp_star
 
   # Compute CEAC:
-  CEAC <- compute_CEACs_(.nmb = NMB, .ref = .ref)
+  CEAC <- compute_CEACs_(.nmb = NMB)
 
   # Compute CEAF:
   CEAF <- compute_CEAFs_(.ceac = CEAC)
