@@ -18,31 +18,30 @@
 #' show ICER information \code{.show_ICER' = TRUE},
 #' nudge ICER labels \code{.nudge_labels' = c(NULL, NULL)},
 #' willingness-to-pay threshold(s) \code{.wtp_threshold = c(20000, 30000)},
-#' show WTP threshold(s) lines and labels \code{.show_wtp = TRUE},
-#' seed number to set \code{.seed_no = 1}, and
-#' zoom to min/max values \code{.zoom = FALSE}.
+#' show WTP threshold(s) lines and labels \code{.show_wtp = TRUE}, and
+#' seed number to set \code{.seed_no = 1}.
 #'
 #' @return An object of class ggplot
 #' @export
 #'
 #' @examples
+#' library(ShinyPSA)
 #' PSA_summary = summarise_PSA_(
 #'   .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
 #'   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
 #'   .interventions = ShinyPSA::Smoking_PSA$treats)
-#' library(ShinyPSA)
-#' p = plot_CEplane(PSA_summary,
+#' p = plot_CEplane_(PSA_summary,
 #'                  .ref = 1,
 #'                  .show_ICER = F,
 #'                  .legend_pos = c(0.8, 0.2),
 #'                  .show_wtp = F,
 #'                  .zoom = T,
 #'                  .wtp_threshold = c(200),
-#'                  tst = "PRINT",
+#'                  tst = "PRINT", # this will be ignored
 #'                  .nudge_labels = c(0.1, -0.1))
 #' p
 #'
-plot_CEplane <- function(.PSA_data, ...) {
+plot_CEplane_ <- function(.PSA_data, ...) {
   # Grab the function's environment for correct assignment in assign():
   env_ = environment()
   # Define defaults:
@@ -53,8 +52,7 @@ plot_CEplane <- function(.PSA_data, ...) {
     '.nudge_labels' = c(NULL, NULL), # c(x, y) double between 0:1
     '.wtp_threshold' = c(20000, 30000),
     '.show_wtp' = TRUE, # TRUE/FALSE
-    '.zoom' = FALSE, # TRUE/FALSE
-    '.seed_no' = 1) # Integer
+    '.zoom' = FALSE) # TRUE/FALSE
   # Grab additional arguments:
   args_ <- list(...)
   # Assign additional arguments:

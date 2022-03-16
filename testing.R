@@ -1065,8 +1065,6 @@ plot_CE_plane <- function(.PSA_dt, .ref = NULL, ...) {
   return(p)
 }
 
-load_all()
-
 #testing plot_CE_plane############################################
 load_all()
 
@@ -1094,29 +1092,19 @@ p = plot_CEplane(PSA_summary,
 p
 #plot_CEAC########################################################
 
-load_all()
-
-PSA_summary = summarise_PSA_(
-  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-  .interventions = ShinyPSA::Vaccine_PSA$treats)
-
-PSA_summary = summarise_PSA_(
-  .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
-  .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
-  .interventions = ShinyPSA::Smoking_PSA$treats)
-
-ttt <- plot_CEAC(.PSA_data = PSA_summary, .ref = 1)
-
 plot_CEAC <- function(.PSA_data, ...) {
   # Grab the function's environment for correct assignment in assign():
   env_ = environment()
   # Define defaults:
   default_args <- list(
     '.ref' = NULL, # Integer 1:length(interventions)
+    '.legend_pos' = c(0.8, 0.85), # c(x, y) double between 0:1
     '.wtp_threshold' = c(20000, 30000),
-    '.show_wtp' = TRUE, # TRUE/FALSE
+    '.show_wtp' = FALSE, # TRUE/FALSE
+    '.label_wtp' = FALSE, # TRUE/FALSE
     '.zoom' = FALSE, # TRUE/FALSE
+    '.zoom_cords' = NULL, # c(x, x) double min and max x axis values
+    '.show_shapes' = FALSE, # TRUE/FALSE
     '.seed_no' = 1) # Integer
   # Grab additional arguments:
   args_ <- list(...)
@@ -1133,48 +1121,51 @@ plot_CEAC <- function(.PSA_data, ...) {
   }
 
   # Plot data:
-  # CEAC:
+  ## CEAC:
   ceac_df = .PSA_data$CEAC %>%
-    neglect_intervention(.data_ = ., .ref = .ref) %>%
+    drop_intervention(.data_ = ., .ref = .ref) %>%
     mutate('WTP threshold' = .PSA_data$WTPs) %>%
     pivot_longer(cols = -`WTP threshold`,
                  names_to = 'Option',
                  values_to = 'Probability cost-effective')
 
+  ## CEAF:
   ceaf_df = .PSA_data$CEAF %>%
     mutate('Best option' = .PSA_data$best_name,
            'WTP threshold' = .PSA_data$WTPs)
 
-  list('one' = ceac_df, 'two' = ceaf_df)
-
   # CEAC with a CEAF:
-  ceac_plot = ggplot() +
-    geom_line(data = ceac_df,
-              aes(x = `WTP threshold`,
-                  y = `Probability cost-effective`,
-                  #group = Option,
-                  color = Option),
-              size = 0.4) +
-    # geom_point(data = ceac_df,
-    #            aes(x = `WTP threshold`, y = `Probability cost-effective`,
-    #                shape = Option, color = Option),
-    #            size = 1) +
-    coord_cartesian(xlim = c(0, 10000), expand = FALSE) +
-    scale_x_continuous(labels = dollar_format(prefix = "£")) +
-    scale_y_continuous(labels = percent_format()) +
+  p <- ggplot() +
+    geom_hline(
+      yintercept = 0,
+      color = 'grey',
+      size = 0.1) +
+    geom_vline(
+      xintercept = 0,
+      color = 'grey',
+      size = 0.1) +
+    geom_line(
+      data = ceac_df,
+      aes(x = `WTP threshold`,
+          y = `Probability cost-effective`,
+          #group = Option,
+          color = Option),
+      size = 0.4) +
+    scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
+    scale_y_continuous(labels = scales::percent_format()) +
     theme(
+      legend.position = .legend_pos,
       legend.title = element_blank(),
-      legend.position = c(0.8, 0.85),
+      # Control legend text alignment:
       legend.text.align = 0, # 0 left (default), 1 right
-      legend.background = element_rect(fill = NA),
+      # Remove background and box around the legend:
+      legend.background = element_rect(fill = NA, color = NA),
+      legend.spacing = unit(0, "cm"), # spacing between legend items
+      legend.spacing.y = unit(-0.195, "cm"), # bring legends closer
+      # Add a box around the keys:
       legend.key = element_rect(fill = "white", colour = "grey"),
-      # legend.spacing = unit(0, "cm"), # spacing between legend items
-      legend.spacing.y = unit(-0.2, "cm"), # bring legends closer
-      legend.key.size = unit(0.2, "cm"),
-      # legend.position = 'bottom',
-      # legend.box.margin = margin(),
-      # legend.direction = "horizontal",
-      # panel.grid = element_line(colour = 'grey'),
+      legend.key.size = unit(0.35, "cm"),
+      # Add a border and space around the plot:
       panel.border = element_rect(colour = 'black', fill = NA),
       plot.margin = unit(c(0,1,0,0), "cm")) + # more space LHS
     labs(
@@ -1186,8 +1177,149 @@ plot_CEAC <- function(.PSA_data, ...) {
       color = guide_legend(override.aes = list(size = 1,
                                                alpha = 1,
                                                shape = NA)))
-  ceac_plot
+  # Zoom:
+  if(.zoom | (!is.null(.zoom_cords) & is.numeric(.zoom_cords))) {
+    .zoom = TRUE
+    if(is.null(.zoom_cords) |
+       (!is.null(.zoom_cords) & length(.zoom_cords) != 2))
+      .zoom_cords = c(0, 31000)
+    p <- p +
+      coord_cartesian(
+        xlim = .zoom_cords,
+        ylim = c(0, 1),
+        expand = FALSE)
+  }
 
+  # Show/hide WTP on the CEAC:
+  if(.show_wtp) {
+    ## CEAC plot willingness-to-pay (WTP) values:
+    .wtp = .wtp_threshold %>%
+      as_tibble() %>%
+      mutate(
+        x_cord = .wtp_threshold,
+        y_cord = 1,
+        angle_cord = 90,
+        label_cord = paste0("£", format(.wtp_threshold,
+                                        big.mark = ",")),
+        lty_ = "Willingness-to-pay threshold")
+
+    ## Plot:
+    p <- p +
+      geom_vline(
+        data = .wtp,
+        aes(xintercept = x_cord,
+            linetype = lty_),
+        colour = "dark gray") +
+      scale_linetype_manual(
+        breaks = .wtp$lty_[1], # keep one for the legend
+        values = rep(3, nrow(.wtp))) +
+      guides(
+        # Remove the stroke from the line:
+        linetype = guide_legend(
+          override.aes = list(shape = NA)) # remove stroke
+      )
+  }
+
+  # Label WTP value(s) on the CEAC:
+  if(.label_wtp) {
+    p <- p +
+      ggrepel::geom_text_repel(
+        data = .wtp,
+        aes(x = x_cord,
+            y = y_cord,
+            angle = angle_cord,
+            label = label_cord),
+        size = 1.5,
+        show.legend = FALSE)
+  }
+
+  # Show/hide shapes on the CEAC:
+  if(.show_shapes) {
+    ## Data:
+    n_points <- .PSA_data$WTPstar
+    n_points <- c(n_points,
+                  seq(from = 0,
+                      to = .PSA_data$WTPs[length(.PSA_data$WTPs)],
+                      length.out = 20),
+                  .PSA_data$WTPs[length(.PSA_data$WTPs)])
+    n_points <- sort(
+      unique(
+        plyr::round_any(n_points, 100, f = ceiling)))
+
+    ## Plot:
+    p <- p +
+      geom_point(
+        data = ceac_df %>%
+          filter(`WTP threshold` %in% n_points),
+        aes(x = `WTP threshold`,
+            y = `Probability cost-effective`,
+            shape = Option, color = Option),
+        size = 1,
+        show.legend = TRUE)
+  }
+
+  p
+}
+
+#Test plot_CEAC#########################################################
+
+load_all()
+
+PSA_summary = summarise_PSA_(
+  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+  .interventions = ShinyPSA::Vaccine_PSA$treats,
+  .plot = TRUE)
+
+PSA_summary = summarise_PSA_(
+  .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
+  .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
+  .interventions = ShinyPSA::Smoking_PSA$treats)
+
+load_all()
+
+p <- plot_CEAC_(.PSA_data = PSA_summary,
+                .ref = 1,
+                .legend_pos = NULL,
+                .wtp_threshold = c(2000, 10000, 20000, 25000),
+                .show_wtp = TRUE,
+                .label_wtp = FALSE,
+                .zoom = FALSE,
+                .zoom_cords = NULL,
+                .show_shapes = TRUE,
+                .add_CEAF = TRUE)
+p
+
+#Test CEAF##############################################################
+load_all()
+
+PSA_summary = summarise_PSA_(
+  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+  .interventions = ShinyPSA::Vaccine_PSA$treats,
+  .plot = TRUE)
+
+PSA_summary = summarise_PSA_(
+  .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
+  .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
+  .interventions = ShinyPSA::Smoking_PSA$treats,
+  .plot = TRUE)
+
+load_all()
+
+p <- plot_CEAF_(.PSA_data = PSA_summary,
+                .legend_pos = NULL,
+                .wtp_threshold = c(2000, 10000, 20000, 25000),
+                .show_wtp = TRUE,
+                .label_wtp = FALSE,
+                .zoom = T,
+                .zoom_cords = c(0, 5000),
+                .legend_pos = NULL,
+                .show_shapes = TRUE)
+p
+
+
+########################################################################
   ceac_ceaf_plot <- ceac_plot +
     geom_point(data = ceaf_df,
                aes(x = `WTP threshold`,
@@ -1213,7 +1345,7 @@ plot_CEAC <- function(.PSA_data, ...) {
         linetype = 0)))
 
   ceac_ceaf_plot
-}
+
 
 ##################################################################
 
