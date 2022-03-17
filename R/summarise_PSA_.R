@@ -160,10 +160,12 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
     CEP_plot <- plot_CEplane_(.PSA_data = results, .ref = .ref)
     CEAC_plot <- plot_CEAC_(.PSA_data = results, .ref = .ref)
     CEAF_plot <- plot_CEAF_(.PSA_data = results)
+    EVPI_plot <- plot_EVPI_(.PSA_data = results)
     results <- c(results,
                  'CEP_plot' = list(CEP_plot),
                  'CEAC_plot' = list(CEAC_plot),
-                 'CEAF_plot' = list(CEAF_plot))
+                 'CEAF_plot' = list(CEAF_plot),
+                 'EVPI_plot' = list(EVPI_plot))
   }
 
   return(results)

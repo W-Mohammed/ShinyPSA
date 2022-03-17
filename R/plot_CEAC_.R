@@ -23,7 +23,7 @@
 #' show 20 points/shapes along the lines \code{.show_shapes = FALSE}, and
 #' add Cost Effectiveness Acceptability Curve \code{.add_CEAF = FALSE}.
 #'
-#' @return
+#' @return An object of class ggplot.
 #' @export
 #'
 #' @examples
@@ -126,7 +126,7 @@ plot_CEAC_ <- function(.PSA_data, ...) {
       plot.margin = unit(c(0,1,0,0), "cm")) + # more space LHS
     labs(
       title = "Cost-effectiveness acceptability curve (CEAC)",
-      x = "Willingness-to-pay",
+      x = "Willingness-to-pay (£)",
       y = "Probability cost-effective") +
     guides(
       # Increase the size of the points in the legend:

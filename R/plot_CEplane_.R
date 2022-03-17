@@ -21,7 +21,7 @@
 #' show WTP threshold(s) lines and labels \code{.show_wtp = TRUE}, and
 #' seed number to set \code{.seed_no = 1}.
 #'
-#' @return An object of class ggplot
+#' @return An object of class ggplot.
 #' @export
 #'
 #' @examples
@@ -241,7 +241,7 @@ plot_CEplane_ <- function(.PSA_data, ...) {
         angle_cord = angle_cord,
         label_cord = paste0("£", format(.wtp_threshold,
                                         big.mark = ",")),
-        lty_ = "Willingness-to-pay threshold")
+        lty_ = "Willingness-to-pay (£)")
 
     ## Plot:
     p <- p +

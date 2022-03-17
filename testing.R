@@ -1318,6 +1318,15 @@ p <- plot_CEAF_(.PSA_data = PSA_summary,
                 .show_shapes = TRUE)
 p
 
+#plot_EVPI########################################################
+
+## Population EVPI:
+time_horion <- 5
+discount_rate <- 0.035
+annual_affected_population <- 15000
+discounted_population <- sum(
+  annual_affected_population /
+    ((1 + discount_rate)^(1:time_horion)))
 
 #Test All##########################################################
 
@@ -1374,6 +1383,20 @@ p <- plot_CEAC_(.PSA_data = PSA_summary,
                 .add_CEAF = TRUE)
 p
 
+load_all()
+
+p <- plot_EVPI_(.PSA_data = PSA_summary,
+                .legend_pos = NULL,
+                .wtp_threshold = c(2000, 10000, 20000, 25000),
+                .show_wtp = TRUE,
+                .label_wtp = FALSE,
+                .individual_evpi = TRUE,
+                .time_horion = 1,
+                .discount_rate = 0.035,
+                .population = 15000,
+                .zoom = TRUE,
+                .zoom_cords = NULL)
+p
 
 ##################################################################
 

@@ -85,10 +85,10 @@ assign_extraArgs_ <- function(.default_args_, .env_, .args_) {
   supplied_args_names <- names(.args_)
   # Let the user know if any of the supplied arguments were unrecognised:
   if(any(!supplied_args_names %in% expected_args_names))
-    message("Argument(s) ",
+    message("Argument(s) [",
             paste(supplied_args_names[!supplied_args_names %in%
                                         expected_args_names]),
-            " is/are unknown, and therefore ignored")
+            "] is/are unknown, and therefore ignored")
   # Set additional arguments:
   purrr::walk(
     .x = expected_args_names,
