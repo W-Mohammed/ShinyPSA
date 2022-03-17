@@ -3,7 +3,7 @@ pacman::p_load(tidyverse, devtools, BCEA)
 load_all()
 #PSA_data <- ShinyPSA:::Smoking_PSA
 #PSA_data <- ShinyPSA:::Vaccine_PSA
-#Tst_function########################################################
+#Test_function########################################################
 
 tst = compute_NMBs_(.effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
                     .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
@@ -1065,7 +1065,7 @@ plot_CE_plane <- function(.PSA_dt, .ref = NULL, ...) {
   return(p)
 }
 
-#testing plot_CE_plane############################################
+#Test plot_CE_plane############################################
 load_all()
 
 PSA_summary = summarise_PSA_(
@@ -1319,32 +1319,60 @@ p <- plot_CEAF_(.PSA_data = PSA_summary,
 p
 
 
-########################################################################
-  ceac_ceaf_plot <- ceac_plot +
-    geom_point(data = ceaf_df,
-               aes(x = `WTP threshold`,
-                   y = CEAF),
-               size = 2, alpha = 0.8, shape = 21, color = "black",
-               show.legend = TRUE) +
-    geom_point(data = ceaf_df,
-               aes(x = `WTP threshold`,
-                   y = CEAF),
-               size = 0.1, stroke = 1,
-               alpha = 1, shape = 1, color = "black",
-               show.legend = FALSE) +
-    scale_fill_manual(values = c("CEAF" = "black")) +
-    guides(
-      # Increase the size of the points in the legend:
-      shape = guide_legend(override.aes = list(size = 2,
-                                               #alpha = 1,
-                                               stroke = 1,
-                                               linetype = 0)),
-      fill = guide_legend(override.aes = list(#size = 0.3,
-        #alpha = 1,
-        stroke = 1,
-        linetype = 0)))
+#Test All##########################################################
 
-  ceac_ceaf_plot
+load_all()
+
+PSA_summary = summarise_PSA_(
+  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+  .interventions = ShinyPSA::Vaccine_PSA$treats,
+  .plot = TRUE)
+
+PSA_summary = summarise_PSA_(
+  .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
+  .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
+  .interventions = ShinyPSA::Smoking_PSA$treats,
+  .plot = TRUE)
+
+load_all()
+
+p = plot_CEplane_(PSA_summary,
+                 .ref = 1,
+                 .show_ICER = T,
+                 .legend_pos = c(0.8, 0.2),
+                 .show_wtp = T,
+                 .zoom = T,
+                 .wtp_threshold = c(20000, 500, 100, 50),
+                 .nudge_labels = c(0.1, -0.1))
+p
+
+load_all()
+
+p <- plot_CEAF_(.PSA_data = PSA_summary,
+                .legend_pos = NULL,
+                .wtp_threshold = c(2000, 10000, 20000, 25000),
+                .show_wtp = TRUE,
+                .label_wtp = FALSE,
+                .zoom = T,
+                .zoom_cords = c(0, 5000),
+                .legend_pos = NULL,
+                .show_shapes = TRUE)
+p
+
+load_all()
+
+p <- plot_CEAC_(.PSA_data = PSA_summary,
+                .ref = 1,
+                .legend_pos = NULL,
+                .wtp_threshold = c(2000, 10000, 20000, 25000),
+                .show_wtp = TRUE,
+                .label_wtp = FALSE,
+                .zoom = FALSE,
+                .zoom_cords = NULL,
+                .show_shapes = TRUE,
+                .add_CEAF = TRUE)
+p
 
 
 ##################################################################
