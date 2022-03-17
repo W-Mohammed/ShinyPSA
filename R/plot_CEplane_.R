@@ -65,35 +65,39 @@ plot_CEplane_ <- function(.PSA_data, ...) {
   if(is.null(.ref)) { # No rescaling of point data
     ce_plane_dt <- .PSA_data$e %>%
       mutate(sims = row_number()) %>%
-      pivot_longer(cols = -sims, names_to = "interventions",
+      pivot_longer(cols = -sims,
+                   names_to = "interventions",
                    values_to = "Effects") %>%
       left_join(x = .,
                 y = .PSA_data$c %>%
                   mutate(sims = row_number()) %>%
-                  pivot_longer(cols = -sims, names_to = "interventions",
+                  pivot_longer(cols = -sims,
+                               names_to = "interventions",
                                values_to = "Costs"),
                 by = c("sims", "interventions"))
     # Labels:
     .title_lab = "Cost Effectiveness Plane"
     .x_lab = "Effects"
-    .y_lab = "Costs"
+    .y_lab = "Costs (£)"
   } else { # Rescale point data
     ce_plane_dt <- .PSA_data$e %>%
       calculate_differentials_(.ref = .ref) %>%
       mutate(sims = row_number()) %>%
-      pivot_longer(cols = -sims, names_to = "interventions",
+      pivot_longer(cols = -sims,
+                   names_to = "interventions",
                    values_to = "Effects") %>%
       left_join(x = .,
                 y = .PSA_data$c %>%
                   calculate_differentials_(.ref = .ref) %>%
                   mutate(sims = row_number()) %>%
-                  pivot_longer(cols = -sims, names_to = "interventions",
+                  pivot_longer(cols = -sims,
+                               names_to = "interventions",
                                values_to = "Costs"),
                 by = c("sims", "interventions"))
     # Labels:
     .title_lab = "Cost Effectiveness Plane"
     .x_lab = "Effectiveness differential"
-    .y_lab = "Cost differential"
+    .y_lab = "Cost differential (£)"
   }
 
   ## CE plot mean values:

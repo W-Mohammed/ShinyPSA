@@ -125,7 +125,7 @@ plot_CEAC_ <- function(.PSA_data, ...) {
       panel.border = element_rect(colour = 'black', fill = NA),
       plot.margin = unit(c(0,1,0,0), "cm")) + # more space LHS
     labs(
-      title = "Cost-effectiveness acceptability curve (CEAC)",
+      title = "Cost Effectiveness Acceptability Curve (CEAC)",
       x = "Willingness-to-pay (£)",
       y = "Probability cost-effective") +
     guides(
@@ -147,7 +147,7 @@ plot_CEAC_ <- function(.PSA_data, ...) {
         angle_cord = 90,
         label_cord = paste0("£", format(.wtp_threshold,
                                         big.mark = ",")),
-        lty_ = "Willingness-to-pay threshold")
+        lty_ = "Willingness-to-pay (£)")
 
     ## Plot:
     p <- p +

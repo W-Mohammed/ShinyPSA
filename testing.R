@@ -369,7 +369,7 @@ assign_extraArgs_ <- function(.default_args_ = default_args,
     })
 }
 
-#plot_CE_plane#####################################################
+#plot_CE_plane####################################################
 
 plot_CE_plane <- function(.PSA_dt, .ref = NULL, ...) {
   # Grab additional arguments:
@@ -1065,7 +1065,7 @@ plot_CE_plane <- function(.PSA_dt, .ref = NULL, ...) {
   return(p)
 }
 
-#Test plot_CE_plane############################################
+#Test plot_CE_plane###############################################
 load_all()
 
 PSA_summary = summarise_PSA_(
@@ -1261,7 +1261,7 @@ plot_CEAC <- function(.PSA_data, ...) {
   p
 }
 
-#Test plot_CEAC#########################################################
+#Test plot_CEAC###################################################
 
 load_all()
 
@@ -1290,7 +1290,7 @@ p <- plot_CEAC_(.PSA_data = PSA_summary,
                 .add_CEAF = TRUE)
 p
 
-#Test CEAF##############################################################
+#Test CEAF########################################################
 load_all()
 
 PSA_summary = summarise_PSA_(
@@ -1328,7 +1328,7 @@ discounted_population <- sum(
   annual_affected_population /
     ((1 + discount_rate)^(1:time_horion)))
 
-#Test All##########################################################
+#Test All#########################################################
 
 load_all()
 
@@ -1396,6 +1396,18 @@ p <- plot_EVPI_(.PSA_data = PSA_summary,
                 .population = 15000,
                 .zoom = TRUE,
                 .zoom_cords = NULL)
+p
+
+load_all()
+
+p = plot_eNMB_(PSA_summary,
+               .legend_pos = NULL,
+               .wtp_threshold = c(2000, 10000, 20000, 25000),
+               .show_wtp = TRUE,
+               .label_wtp = FALSE,
+               .zoom = FALSE,
+               .zoom_cords = NULL)
+
 p
 
 ##################################################################

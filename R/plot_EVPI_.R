@@ -117,7 +117,7 @@ plot_EVPI_ <- function(.PSA_data, ...) {
     labs(
       title = "Expected Value of Perfect Information (EVPI)",
       x = "Willingness-to-pay (£)",
-      y = "Expected Value of Perfect Information",
+      y = "Expected value of perfect information",
       subtitle = subtitle_lab) +
     theme(
       legend.position = .legend_pos,
@@ -150,7 +150,7 @@ plot_EVPI_ <- function(.PSA_data, ...) {
         angle_cord = 90,
         label_cord = paste0("£", format(.wtp_threshold,
                                         big.mark = ",")),
-        lty_ = "Willingness-to-pay threshold")
+        lty_ = "Willingness-to-pay (£)")
 
     ## Plot:
     p <- p +
