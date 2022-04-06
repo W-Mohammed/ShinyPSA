@@ -1346,37 +1346,37 @@ PSA_summary2 = summarise_PSA_(
 
 load_all()
 
-p = plot_CEplane_(PSA_summary,
+p = plot_CEplane_(PSA_summary2,
                  .ref = 1,
                  .show_ICER = T,
                  .legend_pos = c(0.8, 0.2),
                  .show_wtp = T,
                  .zoom = T,
                  .wtp_threshold = c(20000, 500, 100, 50),
-                 .nudge_labels = c(0.1, -0.1))
+                 .nudge_labels = c(0.1, -0.1),
+                 .zoom_cords = c(-0.001, 0.001, -5, 5))
 p
 
 load_all()
 
-p <- plot_CEAF_(.PSA_data = PSA_summary,
+p <- plot_CEAF_(.PSA_data = PSA_summary2,
                 .legend_pos = NULL,
                 .wtp_threshold = c(2000, 10000, 20000, 25000),
                 .show_wtp = TRUE,
-                .label_wtp = FALSE,
+                .label_wtp = TRUE,
                 .zoom = T,
                 .zoom_cords = c(0, 5000),
-                .legend_pos = NULL,
                 .show_shapes = TRUE)
 p
 
 load_all()
 
-p <- plot_CEAC_(.PSA_data = PSA_summary,
+p <- plot_CEAC_(.PSA_data = PSA_summary2,
                 .ref = 1,
                 .legend_pos = NULL,
                 .wtp_threshold = c(2000, 10000, 20000, 25000),
                 .show_wtp = TRUE,
-                .label_wtp = FALSE,
+                .label_wtp = TRUE,
                 .zoom = FALSE,
                 .zoom_cords = NULL,
                 .show_shapes = TRUE,
@@ -1385,16 +1385,16 @@ p
 
 load_all()
 
-p <- plot_EVPI_(.PSA_data = PSA_summary,
+p <- plot_EVPI_(.PSA_data = PSA_summary2,
                 .legend_pos = NULL,
                 .wtp_threshold = c(2000, 10000, 20000, 25000),
                 .show_wtp = TRUE,
-                .label_wtp = FALSE,
+                .label_wtp = T,
                 .individual_evpi = TRUE,
                 .time_horion = 1,
                 .discount_rate = 0.035,
                 .population = 15000,
-                .zoom = TRUE,
+                .zoom = F,
                 .zoom_cords = NULL)
 p
 
@@ -1404,7 +1404,7 @@ p = plot_eNMB_(PSA_summary2,
                .legend_pos = NULL,
                .wtp_threshold = c(2000, 10000, 20000, 25000),
                .show_wtp = TRUE,
-               .label_wtp = FALSE,
+               .label_wtp = TRUE,
                .zoom = FALSE,
                .zoom_cords = NULL)
 

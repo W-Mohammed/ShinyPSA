@@ -18,9 +18,9 @@
 #'
 #' @return A table containing \code{.icer_data} in addition to identified
 #' dominance
-#' @export
 #'
 #' @examples
+#' \dontrun{}
 identify_dominance_ <- function(.icer_data, .qalys = qalys,
                                 .costs = costs) {
   # Check if missing key columns and create them if so:
@@ -57,9 +57,9 @@ identify_dominance_ <- function(.icer_data, .qalys = qalys,
 #'
 #' @return A vector stating whether any of the included interventions were
 #' e.dominated
-#' @export
 #'
 #' @examples
+#' \dontrun{}
 identify_e.dominance_ <- function(.icer_data, .qalys = qalys) {
   # Check if missing key columns and create them if so:
   .icer_data <- .icer_data %>%
@@ -96,9 +96,9 @@ identify_e.dominance_ <- function(.icer_data, .qalys = qalys) {
 #'
 #' @return A table of \code{effects diffrentials}, \code{costs
 #' differentials} & \code{icers}
-#' @export
 #'
 #' @examples
+#' \dontrun{}
 calculate_ICERs_ <- function(.icer_data, .qalys = qalys, .costs = costs) {
   # Check if missing key columns and create them if so:
   .icer_data <- .icer_data %>%
@@ -140,9 +140,9 @@ calculate_ICERs_ <- function(.icer_data, .qalys = qalys, .costs = costs) {
 #'
 #' @return A dataframe with data from .x in addition to dominance
 #' information, if any
-#' @export
 #'
 #' @examples
+#' \dontrun{}
 dominance_wraper_ <- function(.x) {
   # Check if missing key columns and create them if so:
   .x <- .x %>%
@@ -171,9 +171,9 @@ dominance_wraper_ <- function(.x) {
 #'
 #' @return A dataframe with data from \code{.x} in addition to extended
 #' dominance information, if any
-#' @export
 #'
 #' @examples
+#' \dontrun{}
 e.dominance_wraper_ <- function(.x) {
   # Check if missing key columns and create them if so:
   .x <- .x %>%
@@ -199,15 +199,23 @@ e.dominance_wraper_ <- function(.x) {
 #' Compute ICER(s)
 #'
 #' @param .icer_data A table containing average costs and QALYs data
-#' @param .effs A table with Quality Adjusted Life Years (QALYs) data
-#' @param .costs A table with costs data
-#' @param .interventions A vector of characters with intervention names
+#' @param .effs A tibble containing the \code{effects} from PSA. Number of
+#'  \code{columns} is equal to the interventions while the number of
+#'  \code{rows} is equal to the number of PSA simulations to be summarised.
+#' @param .costs A tibble containing the \code{costs} from PSA. Number of
+#'  \code{columns} is equal to the interventions while the number of
+#'  \code{rows} is equal to the number of PSA simulations to be summarised.
+#' @param .interventions A vector containing the names of all
+#' interventions. If not provided or less names than needed is provided,
+#' the function will generate generic names, for example
+#' \code{intervention 1}.
 #'
 #' @return A dataframe with data from icer_data in addition to
 #' \code{qalys and costs diffrential(s)}, \code{dominance} & \code{icer(s)}
 #' @export
 #'
 #' @examples
+#' \dontrun{}
 compute_ICERs_ <- function(.icer_data, .effs = NULL, .costs = NULL,
                            .interventions = NULL) {
   # If a summary table of costs, effects and intervention names supplied:

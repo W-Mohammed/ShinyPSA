@@ -20,16 +20,20 @@
 #' interventions. If not provided or less names than needed is provided,
 #' the function will generate generic names, for example
 #' \code{intervention 1}.
-#' @param .ref An integer indicating the index of the reference.
-#' intervention. This index is used against the \code{intervention} vector.
+#' @param .ref An integer indicating the index of the reference
+#' intervention. This parameter is ignored if more than two
+#' \code{interventions} are under analysis.
 #' @param .Kmax The maximum willingness-to-pay threshold to use in the
 #' analysis. This parameter is ignored if \code{wtp} is provided.
-#' @param .wtp A vector of \code{length > 0} identifying the
-#' willingness-to-pay values to use in the analysis.
+#' @param .wtp A vector of numerical values declaring the
+#' willingness-to-pay (WTP) values to use in the analysis. If \code{NULL}
+#' (default) a range of WTP values (up to \code{.Kmax} will be used.
+#'
 #' @return A list of class \code{psa} with \code{24} elements.
 #' @export
 #'
 #' @examples
+#' \dontrun{}
 summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
                           .ref = NULL, .Kmax = 100000, .wtp = NULL,
                           .plot = FALSE) {

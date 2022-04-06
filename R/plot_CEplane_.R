@@ -25,21 +25,27 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' library(ShinyPSA)
-#' PSA_summary = summarise_PSA_(
-#'   .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
-#'   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
-#'   .interventions = ShinyPSA::Smoking_PSA$treats)
-#' p = plot_CEplane_(PSA_summary,
+#'
+#' PSA_summary <- summarise_PSA_(
+#'   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+#'   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+#'   .interventions = ShinyPSA::Vaccine_PSA$treats)
+#'
+#' p <- plot_CEplane_(PSA_summary,
 #'                  .ref = 1,
-#'                  .show_ICER = F,
+#'                  .show_ICER = TRUE,
 #'                  .legend_pos = c(0.8, 0.2),
-#'                  .show_wtp = F,
+#'                  .show_wtp = FALSE,
 #'                  .zoom = T,
 #'                  .wtp_threshold = c(200),
 #'                  tst = "PRINT", # this will be ignored
-#'                  .nudge_labels = c(0.1, -0.1))
+#'                  .nudge_labels = c(0.1, -0.1),
+#'                  .zoom_cords = c(-0.001, 0.001, -5, 5)))
+#'
 #' p
+#' }
 #'
 plot_CEplane_ <- function(.PSA_data, ...) {
   # Grab the function's environment for correct assignment in assign():
@@ -52,7 +58,8 @@ plot_CEplane_ <- function(.PSA_data, ...) {
     '.nudge_labels' = c(NULL, NULL), # c(x, y) double between 0:1
     '.wtp_threshold' = c(20000, 30000),
     '.show_wtp' = TRUE, # TRUE/FALSE
-    '.zoom' = FALSE) # TRUE/FALSE
+    '.zoom' = FALSE, # TRUE/FALSE
+    '.zoom_cords' = NULL) # double c(min x, max x, min y, max y)
   # Grab additional arguments:
   args_ <- list(...)
   # Assign additional arguments:
@@ -278,10 +285,26 @@ plot_CEplane_ <- function(.PSA_data, ...) {
   }
 
   # Zoom to max x and y values:
-  if(.zoom) {
+  if(.zoom &
+     (is.null(.zoom_cords) |
+      if(!is.null(.zoom_cords)) length(.zoom_cords) < 4 else TRUE)) {
+
     ## CE plot x and y axis limits:
     x_lim = c(NA, max(ce_plane_dt$Effects))
     y_lim = c(NA, max(ce_plane_dt$Costs))
+
+    # Plot:
+    p <- p +
+      coord_cartesian(xlim = x_lim, ylim = y_lim, expand = !.zoom,
+                      default = .zoom)
+  }
+
+  if(.zoom & !is.null(.zoom_cords) &
+     if(!is.null(.zoom_cords)) length(.zoom_cords) == 4 else FALSE) {
+    print("Zoom cord")
+    ## CE plot x and y axis limits:
+    x_lim = c(.zoom_cords[1], .zoom_cords[2])
+    y_lim = c(.zoom_cords[3], .zoom_cords[4])
 
     # Plot:
     p <- p +

@@ -25,12 +25,15 @@
 #' @export
 #'
 #' @examples
-#' #' library(ShinyPSA)
-#' PSA_summary = summarise_PSA_(
+#' \dontrun{
+#' library(ShinyPSA)
+#'
+#' PSA_summary <- summarise_PSA_(
 #'   .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
 #'   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
 #'   .interventions = ShinyPSA::Smoking_PSA$treats)
-#' p = plot_CEAF_(PSA_summary,
+#'
+#' p <- plot_CEAF_(PSA_summary,
 #'                .legend_pos = NULL,
 #'                .wtp_threshold = c(2000, 10000, 20000, 25000),
 #'                .show_wtp = TRUE,
@@ -38,7 +41,9 @@
 #'                .zoom = FALSE,
 #'                .zoom_cords = NULL,
 #'                .show_shapes = TRUE)
+#'
 #' p
+#' }
 #'
 plot_CEAF_ <- function(.PSA_data, ...) {
   # Grab the function's environment for correct assignment in assign():

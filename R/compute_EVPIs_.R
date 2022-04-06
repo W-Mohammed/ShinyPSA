@@ -7,6 +7,30 @@
 #
 ################################################################################
 
+#' Compute the Expected Value of Perfect Information (EVPI)
+#'
+#' @param .effs A tibble containing the \code{effects} from PSA. Number of
+#'  \code{columns} is equal to the interventions while the number of
+#'  \code{rows} is equal to the number of PSA simulations to be summarised.
+#' @param .costs A tibble containing the \code{costs} from PSA. Number of
+#'  \code{columns} is equal to the interventions while the number of
+#'  \code{rows} is equal to the number of PSA simulations to be summarised.
+#' @param .interventions A vector containing the names of all
+#' interventions. If not provided or less names than needed is provided,
+#' the function will generate generic names, for example
+#' \code{intervention 1}.
+#' @param .Kmax The maximum willingness-to-pay threshold to use in the
+#' analysis. This parameter is ignored if \code{wtp} is provided.
+#' @param .wtp A vector of numerical values declaring the
+#' willingness-to-pay (WTP) values to use in the analysis. If \code{NULL}
+#' (default) a range of WTP values (up to \code{.Kmax} will be used.
+#'
+#' @return A list containing the EVPI vector, value of information tibble,
+#' opportunity lost tibble among others
+#' @export
+#'
+#' @examples
+#' \dontrun{}
 compute_EVPIs_ = function(.effs, .costs, .interventions = NULL,
                           .Kmax = NULL, .wtp = NULL) {
   # Stop if .effs & .costs are not of class tibble or have unequal dims:

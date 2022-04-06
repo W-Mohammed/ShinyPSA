@@ -28,12 +28,15 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' library(ShinyPSA)
-#' PSA_summary = summarise_PSA_(
+#'
+#' PSA_summary <- summarise_PSA_(
 #'   .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
 #'   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
 #'   .interventions = ShinyPSA::Smoking_PSA$treats)
-#' p = plot_EVPI_(PSA_summary,
+#'
+#' p <- plot_EVPI_(PSA_summary,
 #'                .legend_pos = NULL,
 #'                .wtp_threshold = c(2000, 10000, 20000, 25000),
 #'                .show_wtp = TRUE,
@@ -44,7 +47,9 @@
 #'                .population = 15000,
 #'                .zoom = FALSE,
 #'                .zoom_cords = NULL)
+#'
 #' p
+#' }
 #'
 plot_EVPI_ <- function(.PSA_data, ...) {
   # Grab the function's environment for correct assignment in assign():
@@ -147,8 +152,8 @@ plot_EVPI_ <- function(.PSA_data, ...) {
       as_tibble() %>%
       mutate(
         x_cord = .wtp_threshold,
-        y_cord = 1,
-        angle_cord = 90,
+        y_cord = max(evpi_df$EVPI),
+        angle_cord = 0,
         label_cord = paste0("£", format(.wtp_threshold,
                                         big.mark = ",")),
         lty_ = "Willingness-to-pay (£)")

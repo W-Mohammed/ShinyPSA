@@ -10,16 +10,28 @@
 
 #' Compute Monetary Net-Benefit (NMB) or incremental NMB (iNMB)
 #'
-#' @param .effs
-#' @param .costs
-#' @param .interventions
-#' @param .Kmax
-#' @param .wtp
+#' @param .effs A tibble containing the \code{effects} from PSA. Number of
+#'  \code{columns} is equal to the interventions while the number of
+#'  \code{rows} is equal to the number of PSA simulations to be summarised.
+#' @param .costs A tibble containing the \code{costs} from PSA. Number of
+#'  \code{columns} is equal to the interventions while the number of
+#'  \code{rows} is equal to the number of PSA simulations to be summarised.
+#' @param .interventions A vector containing the names of all
+#' interventions. If not provided or less names than needed is provided,
+#' the function will generate generic names, for example
+#' \code{intervention 1}.
+#' @param .Kmax The maximum willingness-to-pay threshold to use in the
+#' analysis. This parameter is ignored if \code{wtp} is provided.
+#' @param .wtp A vector of numerical values declaring the
+#' willingness-to-pay (WTP) values to use in the analysis. If \code{NULL}
+#' (default) a range of WTP values (up to \code{.Kmax} will be used.
 #'
-#' @return
+#' @return A list containing the NMB list, eNMB tibble, WTP tibble and
+#' other objects.
 #' @export
 #'
 #' @examples
+#' \dontrun{}
 compute_NMBs_ <- function(.effs, .costs, .interventions = NULL,
                           .Kmax = NULL, .wtp = NULL) {
   # Stop if .effs & .costs are not of class tibble or have unequal dims:
@@ -99,17 +111,33 @@ compute_NMBs_ <- function(.effs, .costs, .interventions = NULL,
 
 #' Compute Cost-Effectiveness Acceptability Curve (CEAC)
 #'
-#' @param .nmb
-#' @param .effs
-#' @param .costs
-#' @param .interventions
-#' @param .Kmax
-#' @param .wtp
+#' @param .nmb A list (with similar features to a 3D-array) containing the
+#' Net Monetary Benefits from each probabilistic sensitivity analysis (PSA)
+#' run for each intervention across a range of willingness-to-pay (WTP)
+#' values. The dimensions of this list are:
+#' \code{List:WTP, Tibble(Rows: PSA simulations, Cols: Interventions)}.
+#' @param .effs A tibble containing the \code{effects} from PSA. Number of
+#'  \code{columns} is equal to the interventions while the number of
+#'  \code{rows} is equal to the number of PSA simulations to be summarised.
+#' @param .costs A tibble containing the \code{costs} from PSA. Number of
+#'  \code{columns} is equal to the interventions while the number of
+#'  \code{rows} is equal to the number of PSA simulations to be summarised.
+#' @param .interventions A vector containing the names of all
+#' interventions. If not provided or less names than needed is provided,
+#' the function will generate generic names, for example
+#' \code{intervention 1}.
+#' @param .Kmax The maximum willingness-to-pay threshold to use in the
+#' analysis. This parameter is ignored if \code{wtp} is provided.
+#' @param .wtp A vector of numerical values declaring the
+#' willingness-to-pay (WTP) values to use in the analysis. If \code{NULL}
+#' (default) a range of WTP values (up to \code{.Kmax} will be used.
 #'
-#' @return
+#' @return A tibble containing the probability of being cost-effective
+#' for all interventions.
 #' @export
 #'
 #' @examples
+#' \dontrun{}
 compute_CEACs_ <- function(.nmb, .effs = NULL, .costs = NULL,
                            .interventions = NULL, .Kmax = NULL,
                            .wtp = NULL) {
@@ -137,13 +165,20 @@ compute_CEACs_ <- function(.nmb, .effs = NULL, .costs = NULL,
 
 #' Compute Cost-Effectiveness Acceptability Frontier
 #'
-#' @param .ceac
-#' @param .nmb
+#' @param .ceac A tibble containing the probability of being cost-effective
+#' for all interventions.
+#' @param .nmb A list (with similar features to a 3D-array) containing the
+#' Net Monetary Benefits from each probabilistic sensitivity analysis (PSA)
+#' run for each intervention across a range of willingness-to-pay (WTP)
+#' values. The dimensions of this list are:
+#' \code{List:WTP, Tibble(Rows: PSA simulations, Cols: Interventions)}.
 #'
-#' @return
+#' @return A tibble containing the probability of being cost-effective
+#' for all interventions alongside the CEAF.
 #' @export
 #'
 #' @examples
+#' \dontrun{}
 compute_CEAFs_ <- function(.ceac, .nmb = NULL) {
   # Stop if object .ceac is not of class tibble:
   stopifnot('.ceac is a not tibble' = "data.frame" %in% class(.ceac))
