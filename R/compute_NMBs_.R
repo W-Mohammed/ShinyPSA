@@ -76,6 +76,8 @@ compute_NMBs_ <- function(.effs, .costs, .interventions = NULL,
   } else {
     n.points <- .Kmax/100
     v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
+    v.k <- c(v.k, 20000, 30000, 50000)
+    v.k <- sort(unique(v.k))
     n.k <- length(v.k)
     names(v.k) <- paste0("£", format(v.k, big.mark = ","))
   }

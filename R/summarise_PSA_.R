@@ -2,7 +2,7 @@
 #
 # Script Name:        summarise_PSA.R
 # Module Name:        Economic/PSA
-# Script Description: Defines a function that summarises probabilistic
+# Script Description: Defines the function that summarises probabilistic
 #                     sensitivity analysis outputs.
 # Author:             WM-University of Sheffield (wmamohammed1@sheffield.ac.uk)
 #
@@ -28,6 +28,7 @@
 #' @param .wtp A vector of numerical values declaring the
 #' willingness-to-pay (WTP) values to use in the analysis. If \code{NULL}
 #' (default) a range of WTP values (up to \code{.Kmax} will be used.
+#' @param .plot A boolean, FALSE (default), for whether to generate plots.
 #'
 #' @return A list of class \code{psa} with \code{24} elements.
 #' @export
@@ -35,8 +36,8 @@
 #' @examples
 #' \dontrun{}
 summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
-                          .ref = NULL, .Kmax = 100000, .wtp = NULL,
-                          .plot = FALSE) {
+                           .ref = NULL, .Kmax = 100000, .wtp = NULL,
+                           .plot = FALSE) {
 
   # Stop if .effs & .costs have different dimensions:
   stopifnot('Unequal dimensions in .effs and .costs' =
@@ -69,7 +70,7 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
     if(is.null(.ref)){
       .ref <- 1
       message(paste0("You did not select a reference intervention. [",
-                    .interventions[.ref], "] will be used as reference for differential values and plots."))
+                     .interventions[.ref], "] will be used as reference for differential values and plots."))
     }
     comp <- v.ints[-.ref]
   } else {
@@ -94,6 +95,8 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
   } else {
     n.points <- .Kmax/100
     v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
+    v.k <- c(v.k, 20000, 30000, 50000)
+    v.k <- sort(unique(v.k))
     n.k <- length(v.k)
     names(v.k) <- paste0("£", format(v.k, big.mark = ","))
   }

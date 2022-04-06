@@ -2,7 +2,7 @@
 #
 # Script Name:        plot_EVPI_.R
 # Module Name:        Economic/PSA
-# Script Description: Defines a functions that plots the Expected Value
+# Script Description: Defines the function that plots the Expected Value
 #                     of Perfect Information (EVPI)
 # Author:             WM-University of Sheffield (wmamohammed1@sheffield.ac.uk)
 #

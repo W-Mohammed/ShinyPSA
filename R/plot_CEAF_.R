@@ -2,7 +2,7 @@
 #
 # Script Name:        plot_CEAF_.R
 # Module Name:        Economic/PSA
-# Script Description: Defines a functions that plots the Cost Effectiveness
+# Script Description: Defines the function that plots the Cost Effectiveness
 #                     Acceptability Frontier (CEAF)
 # Author:             WM-University of Sheffield (wmamohammed1@sheffield.ac.uk)
 #
@@ -134,7 +134,7 @@ plot_CEAF_ <- function(.PSA_data, ...) {
       mutate(
         x_cord = .wtp_threshold,
         y_cord = 1,
-        angle_cord = 90,
+        angle_cord = 0,
         label_cord = paste0("£", format(.wtp_threshold,
                                         big.mark = ",")),
         lty_ = "Willingness-to-pay (£)")
@@ -179,7 +179,8 @@ plot_CEAF_ <- function(.PSA_data, ...) {
                   seq(from = 0,
                       to = .PSA_data$WTPs[length(.PSA_data$WTPs)],
                       length.out = 20),
-                  .PSA_data$WTPs[length(.PSA_data$WTPs)])
+                  .PSA_data$WTPs[length(.PSA_data$WTPs)],
+                  .wtp_threshold)
     n_points <- sort(
       unique(
         plyr::round_any(n_points, 100, f = ceiling)))

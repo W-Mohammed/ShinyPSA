@@ -2,7 +2,7 @@
 #
 # Script Name:        plot_CEplane_.R
 # Module Name:        Economic/PSA
-# Script Description: Defines a functions that plots the Cost Effectiveness
+# Script Description: Defines the function that plots the Cost Effectiveness
 #                     Plane.
 # Author:             WM-University of Sheffield (wmamohammed1@sheffield.ac.uk)
 #
@@ -301,7 +301,6 @@ plot_CEplane_ <- function(.PSA_data, ...) {
 
   if(.zoom & !is.null(.zoom_cords) &
      if(!is.null(.zoom_cords)) length(.zoom_cords) == 4 else FALSE) {
-    print("Zoom cord")
     ## CE plot x and y axis limits:
     x_lim = c(.zoom_cords[1], .zoom_cords[2])
     y_lim = c(.zoom_cords[3], .zoom_cords[4])

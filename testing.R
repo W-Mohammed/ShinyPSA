@@ -1351,7 +1351,7 @@ p = plot_CEplane_(PSA_summary2,
                  .show_ICER = T,
                  .legend_pos = c(0.8, 0.2),
                  .show_wtp = T,
-                 .zoom = T,
+                 .zoom = F,
                  .wtp_threshold = c(20000, 500, 100, 50),
                  .nudge_labels = c(0.1, -0.1),
                  .zoom_cords = c(-0.001, 0.001, -5, 5))
@@ -1364,8 +1364,8 @@ p <- plot_CEAF_(.PSA_data = PSA_summary2,
                 .wtp_threshold = c(2000, 10000, 20000, 25000),
                 .show_wtp = TRUE,
                 .label_wtp = TRUE,
-                .zoom = T,
-                .zoom_cords = c(0, 5000),
+                .zoom = F,
+                .zoom_cords = NULL,
                 .show_shapes = TRUE)
 p
 
@@ -1409,6 +1409,22 @@ p = plot_eNMB_(PSA_summary2,
                .zoom_cords = NULL)
 
 p
+
+####################################################################
+
+PSA_test <- ShinyPSA$new(.effs = ShinyPSA::Smoking_PSA$e,
+                         .costs = ShinyPSA::Smoking_PSA$c,
+                         .interventions = ShinyPSA::Smoking_PSA$treats)
+PSA_test$get_CEAC()
+
+library(BCEA)
+data(Vaccine)
+rm(pi)
+PSA_test <- ShinyPSA$new(
+  .effs = e,
+  .costs = c,
+  .interventions = treats)
+PSA_test$get_CEAC()
 
 ##################################################################
 

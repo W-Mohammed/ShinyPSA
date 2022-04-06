@@ -1,3 +1,12 @@
+################################################################################
+#
+# Script Name:        plot_eNMB_.R
+# Module Name:        Economic/PSA
+# Script Description: Defines the function that plots the expected Net
+#                     Monitory Benefit (eNMB)
+# Author:             WM-University of Sheffield (wmamohammed1@sheffield.ac.uk)
+#
+################################################################################
 
 #' Plot Expected Net Monetary Benefit (eNMB)
 #'
