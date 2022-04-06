@@ -110,6 +110,7 @@ plot_CEAC_ <- function(.PSA_data, ...) {
     scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
     scale_y_continuous(labels = scales::percent_format()) +
     theme(
+      plot.title.position = "plot", # Start title from near the margin
       legend.position = .legend_pos,
       legend.title = element_blank(),
       # Control legend text alignment:
@@ -123,7 +124,8 @@ plot_CEAC_ <- function(.PSA_data, ...) {
       legend.key.size = unit(0.35, "cm"),
       # Add a border and space around the plot:
       panel.border = element_rect(colour = 'black', fill = NA),
-      plot.margin = unit(c(0,1,0,0), "cm")) + # more space LHS
+      plot.margin = unit(c(5.5, 1, 5.5, 5.5), # more space LHS
+                         c("points", "cm", "points", "points"))) +
     labs(
       title = "Cost Effectiveness Acceptability Curve (CEAC)",
       x = "Willingness-to-pay (£)",

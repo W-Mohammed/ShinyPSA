@@ -80,15 +80,13 @@ plot_eNMB_ <- function(.PSA_data, ...) {
       aes(x = `WTP threshold`,
           y = eNMB,
           group = Option,
-          linetype = Option),
+          linetype = Option,
+          color = Option),
       size = 0.4) +
     scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
     scale_y_continuous(labels = scales::dollar_format(prefix = "£")) +
-    labs(
-      title = "Expected Net Monetary Benefit (eNMB)",
-      x = "Willingness-to-pay (£)",
-      y = "Expected Net Monetary Benefit (£)") +
     theme(
+      plot.title.position = "plot", # Start title from near the margin
       legend.position = .legend_pos,
       legend.title = element_blank(),
       # Control legend text alignment:
@@ -103,7 +101,13 @@ plot_eNMB_ <- function(.PSA_data, ...) {
       legend.key.size = unit(0.35, "cm"),
       # Add a border and space around the plot:
       panel.border = element_rect(colour = 'black', fill = NA),
-      plot.margin = unit(c(0,1,0,0), "cm")) # more space LHS
+      plot.margin = unit(c(5.5, 1, 5.5, 5.5), # more space LHS
+                         c("points", "cm", "points", "points"))) +
+    labs(
+      title = "Expected Net Monetary Benefit (eNMB)",
+      x = "Willingness-to-pay (£)",
+      y = "Expected Net Monetary Benefit (£)")
+
 
   # Show/hide WTP on the CEAF:
   if(.show_wtp) {
@@ -123,14 +127,18 @@ plot_eNMB_ <- function(.PSA_data, ...) {
       geom_vline(
         data = .wtp,
         aes(xintercept = x_cord,
-            color = lty_),
+            alpha = lty_),
+        color = 'dark gray',
         linetype = 3) +
-      scale_color_manual(
+      scale_alpha_manual(
         breaks = .wtp$lty_[1], # keep one for the legend
-        values = rep("dark gray", nrow(.wtp))) +
-      guides(
+        values = rep(1, nrow(.wtp))) +
+      # scale_colour_manual(
+      #   breaks = .wtp$lty_[1], # keep one for the legend
+      #   values = rep("dark gray", nrow(.wtp)))
+    guides(
         # Remove the shapes from the line:
-        linetype = guide_legend(
+        alpha = guide_legend(
           override.aes = list(order = 2,
                               shape = NA, # remove shape
                               color = 'black')))

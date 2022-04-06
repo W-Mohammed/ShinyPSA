@@ -38,7 +38,7 @@ compute_EVPIs_ = function(.effs, .costs, .interventions = NULL,
 
   # Set up willingness-to-pay:
   if (is.null(.Kmax)) {
-    .Kmax <- 50000
+    .Kmax <- 100000
   }
   if (!is.null(.wtp)) {
     .wtp <- sort(unique(.wtp))

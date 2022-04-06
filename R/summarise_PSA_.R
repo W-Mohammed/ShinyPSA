@@ -31,7 +31,7 @@
 #'
 #' @examples
 summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
-                          .ref = NULL, .Kmax = 50000, .wtp = NULL,
+                          .ref = NULL, .Kmax = 100000, .wtp = NULL,
                           .plot = FALSE) {
 
   # Stop if .effs & .costs have different dimensions:
@@ -79,7 +79,7 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
 
   # Set up willingness-to-pay:
   if (is.null(.Kmax)) {
-    .Kmax <- 50000
+    .Kmax <- 100000
   }
   if (!is.null(.wtp)) {
     .wtp <- sort(unique(.wtp))
@@ -88,7 +88,7 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
     n.k <- length(.wtp)
     names(v.k) <- paste0("£", format(v.k, big.mark = ","))
   } else {
-    n.points <- 500
+    n.points <- .Kmax/100
     v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
     n.k <- length(v.k)
     names(v.k) <- paste0("£", format(v.k, big.mark = ","))

@@ -134,6 +134,7 @@ plot_CEplane_ <- function(.PSA_data, ...) {
       breaks = ce_plane_mean_dt$interventions[1], # keep one
       labels = "Mean effects/costs") + # change its label
     theme(
+      plot.title.position = "plot", # Start title from near the margin
       legend.position = .legend_pos,
       legend.title = element_blank(),
       # Control legend text alignment:
@@ -146,7 +147,9 @@ plot_CEplane_ <- function(.PSA_data, ...) {
       legend.key = element_rect(fill = "white", colour = "grey"),
       legend.key.size = unit(0.35, "cm"),
       # Add a border around the plot:
-      panel.border = element_rect(colour = 'black', fill = NA)) +
+      panel.border = element_rect(colour = 'black', fill = NA),
+      plot.margin = unit(c(5.5, 1, 5.5, 5.5), # more space LHS
+                         c("points", "cm", "points", "points"))) +
     labs(
       title = .title_lab,
       x = .x_lab,

@@ -114,12 +114,10 @@ plot_EVPI_ <- function(.PSA_data, ...) {
       size = 0.4) +
     scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
     scale_y_continuous(labels = scales::dollar_format(prefix = "£")) +
-    labs(
-      title = "Expected Value of Perfect Information (EVPI)",
-      x = "Willingness-to-pay (£)",
-      y = "Expected value of perfect information",
-      subtitle = subtitle_lab) +
     theme(
+      # Adjust title size and position:
+      plot.title.position = "plot", # Start title from near the margin
+      plot.subtitle = element_text(size = 6, face = "italic"),
       legend.position = .legend_pos,
       legend.title = element_blank(),
       # Control legend text alignment:
@@ -134,10 +132,13 @@ plot_EVPI_ <- function(.PSA_data, ...) {
       legend.key.size = unit(0.35, "cm"),
       # Add a border and space around the plot:
       panel.border = element_rect(colour = 'black', fill = NA),
-      plot.margin = unit(c(0,1,0,0), "cm"), # more space LHS
-      # Adjust title size and position:
-      #plot.title.position = "plot"
-      plot.subtitle = element_text(size = 6, face = "italic"))
+      plot.margin = unit(c(5.5, 1, 5.5, 5.5), # more space LHS
+                         c("points", "cm", "points", "points"))) +
+    labs(
+      title = "Expected Value of Perfect Information (EVPI)",
+      x = "Willingness-to-pay (£)",
+      y = "Expected value of perfect information",
+      subtitle = subtitle_lab)
 
   # Show/hide WTP on the CEAF:
   if(.show_wtp) {

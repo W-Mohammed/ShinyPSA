@@ -1338,7 +1338,7 @@ PSA_summary = summarise_PSA_(
   .interventions = ShinyPSA::Vaccine_PSA$treats,
   .plot = TRUE)
 
-PSA_summary = summarise_PSA_(
+PSA_summary2 = summarise_PSA_(
   .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
   .interventions = ShinyPSA::Smoking_PSA$treats,
@@ -1400,7 +1400,7 @@ p
 
 load_all()
 
-p = plot_eNMB_(PSA_summary,
+p = plot_eNMB_(PSA_summary2,
                .legend_pos = NULL,
                .wtp_threshold = c(2000, 10000, 20000, 25000),
                .show_wtp = TRUE,
