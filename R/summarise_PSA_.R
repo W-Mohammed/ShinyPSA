@@ -103,27 +103,27 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
 
   # Ensure .effs and .costs are tibbles and name columns appropriately:
   .effs <- .effs %>%
-    as_tibble(.name_repair = "unique") %>%
+    dplyr::as_tibble(.name_repair = "unique") %>%
     `colnames<-`(.interventions)
   .costs <- .costs %>%
-    as_tibble(.name_repair = "unique") %>%
+    dplyr::as_tibble(.name_repair = "unique") %>%
     `colnames<-`(.interventions)
 
   # Compute effects and costs differentials:
   if(n.comparators == 2) {
-    delta.effs <- calculate_differentials_(.data = .effs, .ref = .ref)
-    delta.costs <- calculate_differentials_(.data = .costs, .ref = .ref)
+    delta.effs <- ShinyPSA::calculate_differentials_(.data = .effs, .ref = .ref)
+    delta.costs <- ShinyPSA::calculate_differentials_(.data = .costs, .ref = .ref)
   } else {
     delta.effs <- NULL
     delta.costs <- NULL
   }
 
   # Compute ICER(s):
-  ICER <- compute_ICERs_(.icer_data = NULL, .effs = .effs, .costs = .costs,
+  ICER <- ShinyPSA::compute_ICERs_(.icer_data = NULL, .effs = .effs, .costs = .costs,
                          .interventions = .interventions)
 
   # Compute NMB or iNMB, e.NMB or e.iNMB and best option for each k:
-  nmbs <- compute_NMBs_(.effs = .effs, .costs = .costs,
+  nmbs <- ShinyPSA::compute_NMBs_(.effs = .effs, .costs = .costs,
                         .interventions = .interventions, .Kmax = .Kmax,
                         .wtp = .wtp)
   NMB <- nmbs$nmb
@@ -134,13 +134,13 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
   kstar <- nmbs$wtp_star
 
   # Compute CEAC:
-  CEAC <- compute_CEACs_(.nmb = NMB)
+  CEAC <- ShinyPSA::compute_CEACs_(.nmb = NMB)
 
   # Compute CEAF:
-  CEAF <- compute_CEAFs_(.ceac = CEAC)
+  CEAF <- ShinyPSA::compute_CEAFs_(.ceac = CEAC)
 
   # Compute EVPI:
-  EVPIs <- compute_EVPIs_(.effs = .effs, .costs = .costs, .Kmax = .Kmax,
+  EVPIs <- ShinyPSA::compute_EVPIs_(.effs = .effs, .costs = .costs, .Kmax = .Kmax,
                           .interventions = .interventions, .wtp = .wtp)
   U <- EVPIs$U
   Ustar <- EVPIs$Ustar
@@ -164,11 +164,11 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
   # If requested, develop and save plots:
   if(.plot == TRUE) {
     # Cost-Effectiveness plane:
-    CEP_plot <- plot_CEplane_(.PSA_data = results, .ref = .ref)
-    CEAC_plot <- plot_CEAC_(.PSA_data = results, .ref = .ref)
-    CEAF_plot <- plot_CEAF_(.PSA_data = results)
-    EVPI_plot <- plot_EVPI_(.PSA_data = results)
-    eNMB_plot <- plot_eNMB_(.PSA_data = results)
+    CEP_plot <- ShinyPSA::plot_CEplane_(.PSA_data = results, .ref = .ref)
+    CEAC_plot <- ShinyPSA::plot_CEAC_(.PSA_data = results, .ref = .ref)
+    CEAF_plot <- ShinyPSA::plot_CEAF_(.PSA_data = results)
+    EVPI_plot <- ShinyPSA::plot_EVPI_(.PSA_data = results)
+    eNMB_plot <- ShinyPSA::plot_eNMB_(.PSA_data = results)
     results <- c(results,
                  'CEP_plot' = list(CEP_plot),
                  'CEAC_plot' = list(CEAC_plot),

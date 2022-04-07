@@ -83,18 +83,18 @@ compute_NMBs_ <- function(.effs, .costs, .interventions = NULL,
   }
 
   # Compute monetary net benefit (NMB) (default):
-  nmb <- map2(.x = .effs,
+  nmb <- purrr::map2(.x = .effs,
               .y = .costs,
               .f = function(.eff = .x, .cost = .y) {
-                map_dfc(as.list(v.k),
+                purrr::map_dfc(as.list(v.k),
                         .f = function(.k = .x) {
                           .eff * .k - .cost})}) %>%
-    transpose()
+    purrr::transpose()
 
   # Compute expected net benefit (e.NMB):
   e.nmb <- nmb %>%
-    map_dfr(.f = function(.x) {
-      colMeans(as_tibble(.x, .name_repair = "unique"))
+    purrr::map_dfr(.f = function(.x) {
+      colMeans(dplyr::as_tibble(.x, .name_repair = "unique"))
     })
 
   # Select the best option for each willingness-to-pay value:
@@ -145,7 +145,7 @@ compute_CEACs_ <- function(.nmb, .effs = NULL, .costs = NULL,
                            .wtp = NULL) {
   # If .nmb was not available but raw data were:
   if(is.null(.nmb) & !is.null(.effs) & !is.null(.costs)){
-    .nmb <- compute_NMBs_(.effs = .effs,
+    .nmb <- ShinyPSA::compute_NMBs_(.effs = .effs,
                           .costs = .costs,
                           .interventions = .interventions,
                           .Kmax = .Kmax,
@@ -158,9 +158,9 @@ compute_CEACs_ <- function(.nmb, .effs = NULL, .costs = NULL,
 
   # CEAC in incremental analysis:
   ceac <- .nmb %>%
-    map_dfr(.f = function(.x) {
-      colMeans(do.call(pmax, as_tibble(.x, .name_repair = "unique")) ==
-                 as_tibble(.x, .name_repair = "unique"))})
+    purrr::map_dfr(.f = function(.x) {
+      colMeans(do.call(pmax, dplyr::as_tibble(.x, .name_repair = "unique")) ==
+                 dplyr::as_tibble(.x, .name_repair = "unique"))})
 
   return(ceac)
 }
@@ -189,11 +189,11 @@ compute_CEAFs_ <- function(.ceac, .nmb = NULL) {
 
   # If .ceac was not available but .nmb was:
   if(is.null(.ceac) & !is.null(.nmb))
-    .ceac <- compute_CEACs_(.nmb = .nmb)
+    .ceac <- ShinyPSA::compute_CEACs_(.nmb = .nmb)
 
   # Compute CEAF:
   ceaf <- .ceac %>%
-    mutate('ceaf' = if(any(rowSums(.) != 1)) NA_real_
+    dplyr::mutate('ceaf' = if(any(rowSums(.) != 1)) NA_real_
            else do.call(pmax, .))
 
   return(ceaf)

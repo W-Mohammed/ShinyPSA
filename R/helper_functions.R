@@ -27,7 +27,7 @@
 # \donotrun{}
 add_missing_columns_ <- function(.x, .characters, .numerics) {
   # Check for missing columns:
-  missing_nms <- setdiff(c(.numerics, .characters), names(.x))
+  missing_nms <- dplyr::setdiff(c(.numerics, .characters), names(.x))
 
   # In case there were missing columns:
   if(!length(missing_nms) == 0) {
@@ -35,13 +35,13 @@ add_missing_columns_ <- function(.x, .characters, .numerics) {
     .x <- .x %>%
       cbind(missing_nms %>%
               `names<-`(missing_nms) %>%
-              map_dfc(.f = function(.x) {
+              purrr::map_dfc(.f = function(.x) {
                 .x = ifelse(.x %in% .numerics, NA_real_, NA_character_)
               }))
   }
   .x <- .x %>%
-    select(".id", everything()) %>%
-    mutate(.id = row_number())
+    dplyr::select(".id", dplyr::everything()) %>%
+    dplyr::mutate(.id = dplyr::row_number())
 
   return(.x)
 }
@@ -59,9 +59,9 @@ add_missing_columns_ <- function(.x, .characters, .numerics) {
 # \donotrun{}
 calculate_differentials_ <- function(.data_, .ref) {
   differentials_data <- .data_ %>%
-    mutate(across(.fns = function(.x) {
+    dplyr::mutate(dplyr::across(.fns = function(.x) {
       .x - .data_ %>%
-        pull({{.ref}})
+        dplyr::pull({{.ref}})
     }))
 
   return(differentials_data)

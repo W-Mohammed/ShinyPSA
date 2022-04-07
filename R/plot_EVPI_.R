@@ -69,7 +69,7 @@ plot_EVPI_ <- function(.PSA_data, ...) {
   # Grab additional arguments:
   args_ <- list(...)
   # Assign additional arguments:
-  assign_extraArgs_(.default_args_ = default_args,
+  ShinyPSA::assign_extraArgs_(.default_args_ = default_args,
                     .args_ = args_,
                     .env_ = env_)
 
@@ -88,7 +88,7 @@ plot_EVPI_ <- function(.PSA_data, ...) {
                           "Discount rate: ", .discount_rate, ".]")
   }
   ## EVPI data:
-  evpi_df <- tibble('EVPI' = .PSA_data$EVPI * discounted_population,
+  evpi_df <- dplyr::tibble('EVPI' = .PSA_data$EVPI * discounted_population,
                     'WTP threshold' = .PSA_data$WTPs,
                     'Best option' = .PSA_data$best_name)
 
@@ -102,44 +102,44 @@ plot_EVPI_ <- function(.PSA_data, ...) {
   }
 
   # CEAC main plot:
-  p <- ggplot() +
-    coord_cartesian(ylim = y_cords, xlim = .zoom_cords, expand = FALSE) +
-    geom_hline(
+  p <- ggplot2::ggplot() +
+    ggplot2::coord_cartesian(ylim = y_cords, xlim = .zoom_cords, expand = FALSE) +
+    ggplot2::geom_hline(
       yintercept = 0,
       color = 'grey',
       size = 0.1) +
-    geom_vline(
+    ggplot2::geom_vline(
       xintercept = 0,
       color = 'grey',
       size = 0.1) +
-    geom_line(
+    ggplot2::geom_line(
       data = evpi_df,
-      aes(x = `WTP threshold`,
+      ggplot2::aes(x = `WTP threshold`,
           y = EVPI),
       size = 0.4) +
-    scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
-    scale_y_continuous(labels = scales::dollar_format(prefix = "£")) +
-    theme(
+    ggplot2::scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
+    ggplot2::scale_y_continuous(labels = scales::dollar_format(prefix = "£")) +
+    ggplot2::theme(
       # Adjust title size and position:
       plot.title.position = "plot", # Start title from near the margin
-      plot.subtitle = element_text(size = 6, face = "italic"),
+      plot.subtitle = ggplot2::element_text(size = 6, face = "italic"),
       legend.position = .legend_pos,
-      legend.title = element_blank(),
+      legend.title = ggplot2::element_blank(),
       # Control legend text alignment:
       legend.text.align = 0, # 0 left (default), 1 right
       # Remove background and box around the legend:
-      legend.background = element_rect(fill = NA, color = NA),
-      legend.spacing = unit(0, "cm"), # spacing between legend items
-      legend.spacing.y = unit(-0.195, "cm"), # bring legends closer
-      legend.margin=margin(t = -8), # remove space between it x-axis
+      legend.background = ggplot2::element_rect(fill = NA, color = NA),
+      legend.spacing = ggplot2::unit(0, "cm"), # spacing between legend items
+      legend.spacing.y = ggplot2::unit(-0.195, "cm"), # bring legends closer
+      legend.margin=ggplot2::margin(t = -8), # remove space between it x-axis
       # Add a box around the keys:
-      legend.key = element_rect(fill = "white", colour = "grey"),
-      legend.key.size = unit(0.35, "cm"),
+      legend.key = ggplot2::element_rect(fill = "white", colour = "grey"),
+      legend.key.size = ggplot2::unit(0.35, "cm"),
       # Add a border and space around the plot:
-      panel.border = element_rect(colour = 'black', fill = NA),
-      plot.margin = unit(c(5.5, 1, 5.5, 5.5), # more space LHS
+      panel.border = ggplot2::element_rect(colour = 'black', fill = NA),
+      plot.margin = ggplot2::unit(c(5.5, 1, 5.5, 5.5), # more space LHS
                          c("points", "cm", "points", "points"))) +
-    labs(
+    ggplot2::labs(
       title = "Expected Value of Perfect Information (EVPI)",
       x = "Willingness-to-pay (£)",
       y = "Expected value of perfect information",
@@ -149,8 +149,8 @@ plot_EVPI_ <- function(.PSA_data, ...) {
   if(.show_wtp) {
     ## CEAF plot willingness-to-pay (WTP) values:
     .wtp = .wtp_threshold %>%
-      as_tibble() %>%
-      mutate(
+      dplyr::as_tibble() %>%
+      dplyr::mutate(
         x_cord = .wtp_threshold,
         y_cord = max(evpi_df$EVPI),
         angle_cord = 0,
@@ -160,17 +160,17 @@ plot_EVPI_ <- function(.PSA_data, ...) {
 
     ## Plot:
     p <- p +
-      geom_vline(
+      ggplot2::geom_vline(
         data = .wtp,
-        aes(xintercept = x_cord,
+        ggplot2::aes(xintercept = x_cord,
             linetype = lty_),
         colour = "dark gray") +
-      scale_linetype_manual(
+      ggplot2::scale_linetype_manual(
         breaks = .wtp$lty_[1], # keep one for the legend
         values = rep(3, nrow(.wtp))) +
-      guides(
+      ggplot2::guides(
         # Remove the shapes from the line:
-        linetype = guide_legend(
+        linetype = ggplot2::guide_legend(
           override.aes = list(order = 2,
                               shape = NA, # remove shape
                               color = 'black')))
@@ -181,7 +181,7 @@ plot_EVPI_ <- function(.PSA_data, ...) {
     p <- p +
       ggrepel::geom_text_repel(
         data = .wtp,
-        aes(x = x_cord,
+        ggplot2::aes(x = x_cord,
             y = y_cord,
             angle = angle_cord,
             label = label_cord),

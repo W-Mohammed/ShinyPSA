@@ -1331,6 +1331,7 @@ discounted_population <- sum(
 #Test All#########################################################
 
 load_all()
+#prefixer::prefixer()
 
 PSA_summary = summarise_PSA_(
   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),

@@ -63,7 +63,7 @@ plot_CEplane_ <- function(.PSA_data, ...) {
   # Grab additional arguments:
   args_ <- list(...)
   # Assign additional arguments:
-  assign_extraArgs_(.default_args_ = default_args,
+  ShinyPSA::assign_extraArgs_(.default_args_ = default_args,
                     .args_ = args_,
                     .env_ = env_)
 
@@ -71,14 +71,14 @@ plot_CEplane_ <- function(.PSA_data, ...) {
   ## CE plot points:
   if(is.null(.ref)) { # No rescaling of point data
     ce_plane_dt <- .PSA_data$e %>%
-      mutate(sims = row_number()) %>%
-      pivot_longer(cols = -sims,
+      dplyr::mutate(sims = dplyr::row_number()) %>%
+      tidyr::pivot_longer(cols = -sims,
                    names_to = "interventions",
                    values_to = "Effects") %>%
-      left_join(x = .,
+      dplyr::left_join(x = .,
                 y = .PSA_data$c %>%
-                  mutate(sims = row_number()) %>%
-                  pivot_longer(cols = -sims,
+                  dplyr::mutate(sims = dplyr::row_number()) %>%
+                  tidyr::pivot_longer(cols = -sims,
                                names_to = "interventions",
                                values_to = "Costs"),
                 by = c("sims", "interventions"))
@@ -88,16 +88,16 @@ plot_CEplane_ <- function(.PSA_data, ...) {
     .y_lab = "Costs (£)"
   } else { # Rescale point data
     ce_plane_dt <- .PSA_data$e %>%
-      calculate_differentials_(.ref = .ref) %>%
-      mutate(sims = row_number()) %>%
-      pivot_longer(cols = -sims,
+      ShinyPSA::calculate_differentials_(.ref = .ref) %>%
+      dplyr::mutate(sims = dplyr::row_number()) %>%
+      tidyr::pivot_longer(cols = -sims,
                    names_to = "interventions",
                    values_to = "Effects") %>%
-      left_join(x = .,
+      dplyr::left_join(x = .,
                 y = .PSA_data$c %>%
-                  calculate_differentials_(.ref = .ref) %>%
-                  mutate(sims = row_number()) %>%
-                  pivot_longer(cols = -sims,
+                  ShinyPSA::calculate_differentials_(.ref = .ref) %>%
+                  dplyr::mutate(sims = dplyr::row_number()) %>%
+                  tidyr::pivot_longer(cols = -sims,
                                names_to = "interventions",
                                values_to = "Costs"),
                 by = c("sims", "interventions"))
@@ -109,68 +109,68 @@ plot_CEplane_ <- function(.PSA_data, ...) {
 
   ## CE plot mean values:
   ce_plane_mean_dt <- ce_plane_dt %>%
-    group_by(interventions) %>%
-    summarise(
+    dplyr::group_by(interventions) %>%
+    dplyr::summarise(
       Effects = mean(Effects),
       Costs = mean(Costs))
 
   # Plot:
-  p <- ggplot() +
-    geom_hline(
+  p <- ggplot2::ggplot() +
+    ggplot2::geom_hline(
       yintercept = 0, colour = "dark gray") +
-    geom_vline(
+    ggplot2::geom_vline(
       xintercept = 0, colour = "dark gray") +
-    geom_point(
+    ggplot2::geom_point(
       data = ce_plane_dt,
-      aes(x = Effects,
+      ggplot2::aes(x = Effects,
           y = Costs,
           color = interventions),
       size = 1, alpha = 0.5) +
-    scale_y_continuous(
+    ggplot2::scale_y_continuous(
       labels = scales::dollar_format(prefix = "£",
                                      big.mark = ",")) +
-    geom_point(
+    ggplot2::geom_point(
       data = ce_plane_mean_dt,
-      aes(x = Effects,
+      ggplot2::aes(x = Effects,
           y = Costs,
           fill = interventions),
       shape = 21, colour = "black", show.legend = TRUE,
       size = 2, alpha = 1, stroke = 0.6) +
     ## Keep one value in the legend:
-    scale_fill_discrete(
+    ggplot2::scale_fill_discrete(
       breaks = ce_plane_mean_dt$interventions[1], # keep one
       labels = "Mean effects/costs") + # change its label
-    theme(
+    ggplot2::theme(
       plot.title.position = "plot", # Start title from near the margin
       legend.position = .legend_pos,
-      legend.title = element_blank(),
+      legend.title = ggplot2::element_blank(),
       # Control legend text alignment:
       legend.text.align = 0, # 0 left (default), 1 right
       # Remove background and box around the legend:
-      legend.background = element_rect(fill = NA, color = NA),
-      legend.spacing = unit(0, "cm"), # spacing between legend items
-      legend.spacing.y = unit(-0.195, "cm"), # bring legends closer
+      legend.background = ggplot2::element_rect(fill = NA, color = NA),
+      legend.spacing = ggplot2::unit(0, "cm"), # spacing between legend items
+      legend.spacing.y = ggplot2::unit(-0.195, "cm"), # bring legends closer
       # Add a box around the keys:
-      legend.key = element_rect(fill = "white", colour = "grey"),
-      legend.key.size = unit(0.35, "cm"),
+      legend.key = ggplot2::element_rect(fill = "white", colour = "grey"),
+      legend.key.size = ggplot2::unit(0.35, "cm"),
       # Add a border around the plot:
-      panel.border = element_rect(colour = 'black', fill = NA),
-      plot.margin = unit(c(5.5, 1, 5.5, 5.5), # more space LHS
+      panel.border = ggplot2::element_rect(colour = 'black', fill = NA),
+      plot.margin = ggplot2::unit(c(5.5, 1, 5.5, 5.5), # more space LHS
                          c("points", "cm", "points", "points"))) +
-    labs(
+    ggplot2::labs(
       title = .title_lab,
       x = .x_lab,
       y = .y_lab) +
-    guides(
+    ggplot2::guides(
       # Increase the size of the points in the legend:
-      color = guide_legend(
+      color = ggplot2::guide_legend(
         override.aes = list(order = 1,
                             size = 1.5,
                             alpha = 1,
                             stroke = NA, # remove stroke
                             linetype = 0)), # remove line
       # Remove the fill colour in shape 21, generalising it to all options:
-      fill = guide_legend(
+      fill = ggplot2::guide_legend(
         override.aes = list(order = 2,
                             size = 2.5,
                             alpha = 1,
@@ -189,7 +189,7 @@ plot_CEplane_ <- function(.PSA_data, ...) {
     p <- p +
       ggrepel::geom_text_repel(
         data = ce_plane_mean_dt,
-        aes(x = Effects,
+        ggplot2::aes(x = Effects,
             y = Costs,
             label = .PSA_data$ICER$icer_label),
         force_pull = 8,
@@ -198,7 +198,7 @@ plot_CEplane_ <- function(.PSA_data, ...) {
         nudge_x = .nudge_labels[1],
         nudge_y = .nudge_labels[2],
         segment.curvature = 1e-8,
-        arrow = arrow(length = unit(0.015, "npc")),
+        arrow = ggplot2::arrow(length = ggplot2::unit(0.015, "npc")),
         max.overlaps = Inf,
         min.segment.length = 0)
   }
@@ -241,15 +241,15 @@ plot_CEplane_ <- function(.PSA_data, ...) {
     }
 
     ### Get axis scale to correctly set the labels:
-    x_range <- layer_scales(p)$x$range$range
-    y_range <- layer_scales(p)$y$range$range
+    x_range <- ggplot2::layer_scales(p)$x$range$range
+    y_range <- ggplot2::layer_scales(p)$y$range$range
     x_to_y <- (x_range[2] - x_range[1])/(y_range[2] - y_range[1])
     ### Calculate angles:
     angle_cord <- atan(.wtp_threshold * x_to_y) * 180/pi
     ### Put .wtp data on tibble:
     .wtp = .wtp_threshold %>%
-      as_tibble() %>%
-      mutate(
+      dplyr::as_tibble() %>%
+      dplyr::mutate(
         x_cord = x_cord,
         y_cord = y_cord,
         angle_cord = angle_cord,
@@ -259,26 +259,26 @@ plot_CEplane_ <- function(.PSA_data, ...) {
 
     ## Plot:
     p <- p +
-      geom_abline(
+      ggplot2::geom_abline(
         data = .wtp,
-        aes(intercept = 0,
+        ggplot2::aes(intercept = 0,
             slope = value,
             linetype = lty_),
         show.legend = TRUE) +
-      scale_linetype_manual(
+      ggplot2::scale_linetype_manual(
         breaks = .wtp$lty_[1], # keep one for the legend
         values = rep(3, nrow(.wtp))) +
       ggrepel::geom_text_repel(
         data = .wtp,
-        aes(x = x_cord,
+        ggplot2::aes(x = x_cord,
             y = y_cord,
             #angle = angle_cord,
             label = label_cord),
         size = 1.5,
         show.legend = FALSE) +
-      guides(
+      ggplot2::guides(
         # Remove the stroke from the line:
-        linetype = guide_legend(
+        linetype = ggplot2::guide_legend(
           override.aes = list(order = 3,
                               stroke = NA)) # remove stroke
       )
@@ -295,7 +295,7 @@ plot_CEplane_ <- function(.PSA_data, ...) {
 
     # Plot:
     p <- p +
-      coord_cartesian(xlim = x_lim, ylim = y_lim, expand = !.zoom,
+      ggplot2::coord_cartesian(xlim = x_lim, ylim = y_lim, expand = !.zoom,
                       default = .zoom)
   }
 
@@ -307,7 +307,7 @@ plot_CEplane_ <- function(.PSA_data, ...) {
 
     # Plot:
     p <- p +
-      coord_cartesian(xlim = x_lim, ylim = y_lim, expand = !.zoom,
+      ggplot2::coord_cartesian(xlim = x_lim, ylim = y_lim, expand = !.zoom,
                       default = .zoom)
   }
 

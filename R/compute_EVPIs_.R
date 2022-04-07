@@ -80,17 +80,17 @@ compute_EVPIs_ = function(.effs, .costs, .interventions = NULL,
   }
 
   # Compute monetary net benefit (NMB) (default):
-  nmb <- map2(.x = .effs, .y = .costs,
+  nmb <- purrr::map2(.x = .effs, .y = .costs,
               .f = function(.eff = .x, .cost = .y) {
-                map_dfc(as.list(v.k),
+                purrr::map_dfc(as.list(v.k),
                         .f = function(.k = .x) {
                           .eff * .k - .cost})}) %>%
-    transpose()
+    purrr::transpose()
 
   # Compute expected net benefit (e.NMB):
   e.nmb <- nmb %>%
-    map_dfr(.f = function(.x) {
-      colMeans(as_tibble(.x, .name_repair = "unique"))
+    purrr::map_dfr(.f = function(.x) {
+      colMeans(dplyr::as_tibble(.x, .name_repair = "unique"))
     })
 
   # Identify the best option for each willingness-to-pay value:
@@ -99,20 +99,20 @@ compute_EVPIs_ = function(.effs, .costs, .interventions = NULL,
 
   # Extract maximum nmb value at each iteration for each wtp/threshold:
   max_nmb_iter <- nmb %>%
-    map_dfr(.f = function(.x) {
-      do.call(pmax, as_tibble(.x, .name_repair = "unique"))
+    purrr::map_dfr(.f = function(.x) {
+      do.call(pmax, dplyr::as_tibble(.x, .name_repair = "unique"))
     })
 
   # Compute opportunity loss (OL):
-  ol <- pmap_dfc(.l = list(nmb, best_interv, max_nmb_iter),
+  ol <- purrr::pmap_dfc(.l = list(nmb, best_interv, max_nmb_iter),
                  .f = function(.x, .y, .z) {
                    .z - .x[[.y]]
                  })
 
   # Compute value-of-information (VI):
-  vi <- map2_dfc(.x = max_nmb_iter, .y = nmb,
+  vi <- purrr::map2_dfc(.x = max_nmb_iter, .y = nmb,
                  .f = function(.x, .y) {
-                   .x - max(colMeans(as_tibble(.y, .name_repair = "unique")))
+                   .x - max(colMeans(dplyr::as_tibble(.y, .name_repair = "unique")))
                  })
 
   # Compute expected value-of-information (EVPI):
