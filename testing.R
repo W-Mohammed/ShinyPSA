@@ -1410,12 +1410,120 @@ p = plot_eNMB_(PSA_summary2,
 
 p
 
-####################################################################
+#Test R6 class###########################################################
 
 PSA_test <- ShinyPSA$new(.effs = ShinyPSA::Smoking_PSA$e,
                          .costs = ShinyPSA::Smoking_PSA$c,
                          .interventions = ShinyPSA::Smoking_PSA$treats)
-PSA_test$get_CEAC()
+PSA_test$get_CEP(
+  .ref = 1,
+  .show_ICER = T,
+  .legend_pos = c(0.8, 0.2),
+  .show_wtp = T,
+  .zoom = T,
+  .wtp_threshold = c(20000, 500, 100, 50),
+  .nudge_labels = c(0.1, -0.1),
+  .zoom_cords = c(-0.001, 0.001, -5, 5)
+)
+PSA_test$get_CEAC(
+  .ref = 1,
+  .legend_pos = NULL,
+  .wtp_threshold = c(2000, 10000, 20000, 25000),
+  .show_wtp = TRUE,
+  .label_wtp = TRUE,
+  .zoom = FALSE,
+  .zoom_cords = NULL,
+  .show_shapes = TRUE,
+  .add_CEAF = TRUE
+)
+PSA_test$get_CEAF(
+  .legend_pos = NULL,
+  .wtp_threshold = c(2000, 10000, 20000, 25000),
+  .show_wtp = TRUE,
+  .label_wtp = TRUE,
+  .zoom = F,
+  .zoom_cords = NULL,
+  .show_shapes = TRUE
+)
+PSA_test$get_eNMB(
+  .legend_pos = NULL,
+  .wtp_threshold = c(2000, 10000, 20000, 25000),
+  .show_wtp = TRUE,
+  .label_wtp = TRUE,
+  .zoom = FALSE,
+  .zoom_cords = NULL
+)
+PSA_test$get_EVPI(
+  .PSA_data = PSA_summary2,
+  .legend_pos = NULL,
+  .wtp_threshold = c(2000, 10000, 20000, 25000),
+  .show_wtp = TRUE,
+  .label_wtp = T,
+  .individual_evpi = TRUE,
+  .time_horion = 1,
+  .discount_rate = 0.035,
+  .population = 15000,
+  .zoom = F,
+  .zoom_cords = NULL
+)
+PSA_test$get_Summary_table() %>% View()
+
+PSA_test <- ShinyPSA$new(.effs = ShinyPSA::Vaccine_PSA$e,
+                         .costs = ShinyPSA::Vaccine_PSA$c,
+                         .interventions = ShinyPSA::Vaccine_PSA$treats)
+
+PSA_test$get_CEP(
+  .ref = 1,
+  .show_ICER = T,
+  .legend_pos = c(0.8, 0.2),
+  .show_wtp = T,
+  .zoom = T,
+  .wtp_threshold = c(20000, 500, 100, 50),
+  .nudge_labels = c(0.1, -0.1),
+  .zoom_cords = c(-0.001, 0.001, -5, 5)
+)
+PSA_test$get_CEAC(
+  .ref = 1,
+  .legend_pos = NULL,
+  .wtp_threshold = c(2000, 10000, 20000, 25000),
+  .show_wtp = TRUE,
+  .label_wtp = TRUE,
+  .zoom = FALSE,
+  .zoom_cords = NULL,
+  .show_shapes = TRUE,
+  .add_CEAF = TRUE
+)
+PSA_test$get_CEAF(
+  .legend_pos = NULL,
+  .wtp_threshold = c(2000, 10000, 20000, 25000),
+  .show_wtp = TRUE,
+  .label_wtp = TRUE,
+  .zoom = F,
+  .zoom_cords = NULL,
+  .show_shapes = TRUE
+)
+PSA_test$get_eNMB(
+  .legend_pos = NULL,
+  .wtp_threshold = c(2000, 10000, 20000, 25000),
+  .show_wtp = TRUE,
+  .label_wtp = TRUE,
+  .zoom = FALSE,
+  .zoom_cords = NULL
+)
+PSA_test$get_EVPI(
+  .PSA_data = PSA_summary2,
+  .legend_pos = NULL,
+  .wtp_threshold = c(2000, 10000, 20000, 25000),
+  .show_wtp = TRUE,
+  .label_wtp = T,
+  .individual_evpi = TRUE,
+  .time_horion = 1,
+  .discount_rate = 0.035,
+  .population = 15000,
+  .zoom = F,
+  .zoom_cords = NULL
+)
+PSA_test$get_Summary_table() %>% View()
 
 library(BCEA)
 data(Vaccine)
@@ -1440,10 +1548,7 @@ PSA_summary = summarise_PSA_(
   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
   .interventions = ShinyPSA::Smoking_PSA$treats)
 
-
-
-
-
+######################################################################
 
 
 

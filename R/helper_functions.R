@@ -8,16 +8,23 @@
 #
 ################################################################################
 
-#' Check and add any missing columns expected by ICER computation functions
-#'
-#' @param .characters
-#' @param .numerics
-#' @param .x
-#'
-#' @return
-#' @export
-#'
-#' @examples
+# Check and add any missing columns expected by ICER computation functions
+#
+# @param .x Dataframe/tibble for which the function will ensure existence
+# of, and if required creation of, columns with given names in
+# \code{.characters} and \code{.numerics}
+# @param .characters A vector of character strings defining the names of
+# of columns of type \code{character} that the function would check if
+# exist in the dataframe, and creating the ones that do not exist.
+# @param .numerics A vector of character strings defining the names of
+# of columns of type \code{numeric} that the function would check if
+# exist in the dataframe, and creating the ones that do not exist.
+#
+# @return A tibble with all columns from tibble \code{.x} in addition to
+# any columns with names in \code{.characters} and \code{.numerics}.
+#
+# @examples
+# \donotrun{}
 add_missing_columns_ <- function(.x, .characters, .numerics) {
   # Check for missing columns:
   missing_nms <- setdiff(c(.numerics, .characters), names(.x))
@@ -39,16 +46,17 @@ add_missing_columns_ <- function(.x, .characters, .numerics) {
   return(.x)
 }
 
-#' Calculate differential costs and QALYs
-#'
-#' @param .data_ A dataframe containing costs or QALYs data for which the
-#' function is to estimate differential values
-#' @param .ref An integer indicating the index of the reference intervention
-#'
-#' @return
-#' @export
-#'
-#' @examples
+# Calculate differential costs and QALYs
+#
+# @param .data_ A dataframe containing costs or QALYs data for which the
+# function is to estimate differential values
+# @param .ref An integer indicating the index of the reference intervention
+#
+# @return A tibble with the same dimensions of \code{.data_}, but with
+# differential values based on the data in column \code{.ref}.
+#
+# @examples
+# \donotrun{}
 calculate_differentials_ <- function(.data_, .ref) {
   differentials_data <- .data_ %>%
     mutate(across(.fns = function(.x) {
@@ -59,21 +67,21 @@ calculate_differentials_ <- function(.data_, .ref) {
   return(differentials_data)
 }
 
-#' Assign extra arguments/parameters in parent function
-#'
-#' @param .default_args_ # A list containing default arguments names and
-#' their values.
-#' @param .env_ # Environment object grabbed from the parent function's
-#' environment to correctly assign arguments to that function.
-#' @param .args_ # A list containing supplied/additional arguments names
-#' and their values. Arguments in .default_args_ but existing in .args_
-#' will be assigned values from .args_ and vice versa.
-#'
-#' @return This function assigns variables/objects in the parent's function
-#' environment, hence it returns nothing.
-#' @export
-#'
-#' @examples
+# Assign extra arguments/parameters in parent function
+#
+# @param .default_args_ A list containing default arguments names and
+# their values.
+# @param .env_ Environment object grabbed from the parent function's
+# environment to correctly assign arguments to that function.
+# @param .args_ A list containing supplied/additional arguments names
+# and their values. Arguments in .default_args_ but existing in .args_
+# will be assigned values from .args_ and vice versa.
+#
+# @return This function assigns variables/objects in the parent's function
+# environment, hence it returns nothing.
+#
+# @examples
+# \donotrun{}
 assign_extraArgs_ <- function(.default_args_, .env_, .args_) {
   # Grab default arguments' names:
   if(is.null(names(.default_args_)))
@@ -101,38 +109,3 @@ assign_extraArgs_ <- function(.default_args_, .env_, .args_) {
              }, envir = .env_)
     })
 }
-
-#' Check and add any missing columns expected by ICER computation functions
-#'
-#' @param .characters
-#' @param .numerics
-#' @param .x
-#'
-#' @return
-#' @export
-#'
-#' @examples
-add_missing_columns <- function(.x, .characters, .numerics) {
-  nms <- c(.characters, .numerics)
-  missing_nms <- setdiff(nms, names(.x))
-  .x[missing_nms[missing_nms %in% .numerics]] <- NA_real_
-  .x[missing_nms[missing_nms %in% .characters]] <- NA_character_
-
-  return(.x)
-}
-
-#' Get the maximum value in all rows in a dataframe.
-#'
-#' @param x A matrix or dataframe with \code{r} rows and \code{c} columns
-#'
-#' @return A dataframe with \code{r} rows and \code{1} column
-#' @export
-#'
-#' @examples
-#'
-#'
-#'
-get_row_max <- function(x){
-  do.call(pmax, as.data.frame(x))
-}
-

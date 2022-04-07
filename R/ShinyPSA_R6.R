@@ -26,9 +26,6 @@ ShinyPSA <- R6::R6Class(
   # Public elements:
   public = list(
 
-    #' @field Summary_table a summary table with differentials, ICER(S),
-    #' net benefits and probability being cost-effective.
-    Summary_table = NULL,
     #' @field CEP_plot the Cost-Effectiveness plane.
     CEP_plot = NULL,
     #' @field CEAC_plot the Cost-Effectiveness Acceptability Curve.
@@ -100,9 +97,20 @@ ShinyPSA <- R6::R6Class(
     },
 
     #' @description
-    #' Get the default Cost-Effectiveness plane
+    #' Get the default results summary table
+    #'
+    #' @param .wtp_ A numeric vector containing the willingness-to-pay
+    #' value(s) to be considered in the summary table. Default values are
+    #' \code{c(20,000, 30,000)}
+    #' @param .units_ A character, the units to associate with the
+    #' monitory values in the summary table. Default is sterling pounds
+    #' (GBP) \code{£}.
+    #' @param .effects_label The label or name to be given to the effects
+    #' column in the summary table. Default is QALYs.
+    #'
     #'
     #' @return A ggplot2 object
+    #' @importFrom tidyselect vars_select_helpers
     #' @export
     #'
     #' @examples
@@ -113,15 +121,94 @@ ShinyPSA <- R6::R6Class(
     #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
     #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
     #'
-    #' PSA_outputs$get_summary_table()
+    #' PSA_outputs$get_Summary_table()
     #' }
-    get_Summary_table = function() {
+    get_Summary_table = function(.wtp_ = c(20000, 30000), .units_ = "£",
+                                 .effects_label = "QALYs") {
+      if(is.null(private$Summary_table)){
+        if(is.null(.units_) | length(.units_) != 1) .units_ = "£"
+        # ICER:
+        ICER_tbl <- private$PSA_summary[["ICER"]]
+        # eNMB:
+        eNMB <- private$PSA_summary[["e.NMB"]] %>%
+          mutate('WTP' = private$PSA_summary[["WTPs"]]) %>%
+          filter(WTP %in% .wtp_) %>%
+          mutate(WTP = paste0("NMB @ ", .units_,
+                             format(WTP, digits = 1, big.mark = ","))) %>%
+          pivot_longer(
+            cols = -WTP,
+            names_to = 'intervention',
+            values_to = 'NMB') %>%
+          pivot_wider(
+            id_cols = 'intervention',
+            names_from = 'WTP',
+            values_from = 'NMB')
+        # CEAF:
+        CEAF <- tibble(
+          'CEAF - values' = private$PSA_summary[["CEAF"]]$ceaf,
+          'CEAF - WTP' = private$PSA_summary[["WTPs"]],
+          'intervention' = private$PSA_summary[["best_name"]]) %>%
+          filter(`CEAF - WTP` %in% .wtp_) %>%
+          mutate(`CEAF - WTP` = paste0("Prob. CE @ ", .units_,
+                                      format(`CEAF - WTP`, digits = 1,
+                                             big.mark = ",")))
 
-      return(private$PSA_summary[["Summary_table"]])
+        # EVPI:
+        EVPI <- tibble(
+          'EVPI - values' = private$PSA_summary[["EVPI"]],
+          'EVPI - WTP' = private$PSA_summary[["WTPs"]],
+          'intervention' = private$PSA_summary[["best_name"]]) %>%
+          filter(`EVPI - WTP` %in% .wtp_) %>%
+          mutate(`EVPI - WTP` = paste0("EVPI @ ", .units_,
+                                      format(`EVPI - WTP`, digits = 1,
+                                             big.mark = ",")))
+
+        # Summary table:
+        differential_col <- paste("Differential", .effects_label)
+        ICER_tbl <- ICER_tbl %>%
+          # join the expected NMB to the ICER results:
+          left_join(x = ., y = eNMB, by = 'intervention') %>%
+          # join the probability of being cost-effective:
+          left_join(x = ., y = CEAF, by = 'intervention') %>%
+          pivot_wider(
+            names_from = `CEAF - WTP`,
+            values_from = `CEAF - values`) %>%
+          # drop any NAs resulting from pivot_wider:
+          select(tidyselect::vars_select_helpers$where(
+            fn = function(.x) !all(is.na(.x)))) %>%
+          # join the EVPI:
+          left_join(x = ., y = EVPI, by = 'intervention') %>%
+          pivot_wider(
+            names_from = `EVPI - WTP`,
+            values_from = `EVPI - values`) %>%
+          # drop any NAs resulting from pivot_wider:
+          select(tidyselect::vars_select_helpers$where(
+            fn = function(.x) !all(is.na(.x)))) %>%
+          # do some formatting:
+          mutate(across(tidyselect::vars_select_helpers$where(
+            is.numeric) & !c(qalys, delta.e, starts_with("Prob.")),
+            ~ round(.x, digits = 0))) %>%
+          mutate(across(c(qalys, delta.e, starts_with("Prob.")),
+                        ~ round(.x, digits = 4))) %>%
+          select(-any_of('dominance')) %>%
+          dplyr::rename({{.effects_label}} := qalys,
+                        Comparators = intervention,
+                        {{differential_col}} := delta.e,
+                        "Differential Costs" = delta.c,
+                        "ICER information" = icer_label) %>%
+          dplyr::rename_with(stringr::str_to_title, costs) %>%
+          dplyr::rename_with(toupper, icer)
+
+        private$Summary_table <- ICER_tbl
+      }
+
+      return(private$Summary_table)
     },
 
     #' @description
-    #' Get the default Cost-Effectiveness plane
+    #' Get the Cost-Effectiveness plane
+    #'
+    #' @param ... Extra arguments passed to the plotting functions
     #'
     #' @return A ggplot2 object
     #' @export
@@ -133,16 +220,37 @@ ShinyPSA <- R6::R6Class(
     #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
     #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
     #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
-    #'
+    #' # Get default plot:
     #' PSA_outputs$get_CEP()
+    #'
+    #' PSA_outputs$get_CEP(
+    #'   .ref = 1,
+    #'   .show_ICER = T,
+    #'   .legend_pos = c(0.8, 0.2),
+    #'   .show_wtp = T,
+    #'   .zoom = T,
+    #'   .wtp_threshold = c(20000, 500, 100, 50),
+    #'   .nudge_labels = c(0.1, -0.1),
+    #'   .zoom_cords = c(-0.001, 0.001, -5, 5)
+    #'   )
     #' }
-    get_CEP = function() {
+    get_CEP = function(...) {
+      # pass arguments to the plotting function:
+      self$CEP_plot <- private$plot_CEplane_(...)
 
-      return(private$PSA_summary[["CEP_plot"]])
+      # return default plot if no arguments were passed to the function:
+      dots_ <- list(...)
+      if(length(dots_) == 0)
+        return(private$PSA_summary[["CEP_plot"]])
+
+      # if any arguments exist, then return the new plot:
+      return(self$CEP_plot)
     },
 
     #' @description
-    #' Get the default Cost-Effectiveness Acceptability Curve
+    #' Get the Cost-Effectiveness Acceptability Curve
+    #'
+    #' @param ... Extra arguments passed to the plotting functions
     #'
     #' @return A ggplot2 object
     #' @export
@@ -157,13 +265,23 @@ ShinyPSA <- R6::R6Class(
     #'
     #' PSA_outputs$get_CEAC()
     #' }
-    get_CEAC = function() {
+    get_CEAC = function(...) {
+      # pass arguments to the plotting function:
+      self$CEAC_plot <- private$plot_CEAC_(...)
 
-      return(private$PSA_summary[["CEAC_plot"]])
+      # return default plot if no arguments were passed to the function:
+      dots_ <- list(...)
+      if(length(dots_) == 0)
+        return(private$PSA_summary[["CEAC_plot"]])
+
+      # if any arguments exist, then return the new plot:
+      return(self$CEAC_plot)
     },
 
     #' @description
-    #' Get the default Cost-Effectiveness Acceptability Frontier
+    #' Get the Cost-Effectiveness Acceptability Frontier
+    #'
+    #' @param ... Extra arguments passed to the plotting functions
     #'
     #' @return A ggplot2 object
     #' @export
@@ -178,34 +296,23 @@ ShinyPSA <- R6::R6Class(
     #'
     #' PSA_outputs$get_CEAF()
     #' }
-    get_CEAF = function() {
+    get_CEAF = function(...) {
+      # pass arguments to the plotting function:
+      self$CEAF_plot <- private$plot_CEAF_(...)
 
-      return(private$PSA_summary[["CEAF_plot"]])
+      # return default plot if no arguments were passed to the function:
+      dots_ <- list(...)
+      if(length(dots_) == 0)
+        return(private$PSA_summary[["CEAF_plot"]])
+
+      # if any arguments exist, then return the new plot:
+      return(self$CEAF_plot)
     },
 
     #' @description
-    #' Get the default Expected Value of Perfect Information
+    #' Get the expected Net Monitory Benefit
     #'
-    #' @return A ggplot2 object
-    #' @export
-    #'
-    #' @examples
-    #' \dontrun{
-    #' # Instantiate a copy of class ShinyPSA:
-    #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
-    #'                   .interventions = ShinyPSA::Smoking_PSA$treats)
-    #'
-    #' PSA_outputs$get_EVPI()
-    #' }
-    get_EVPI = function() {
-
-      return(private$PSA_summary[["EVPI_plot"]])
-    },
-
-    #' @description
-    #' Get the default expected Net Monitory Benefit
+    #' @param ... Extra arguments passed to the plotting functions
     #'
     #' @return A ggplot2 object
     #' @export
@@ -220,9 +327,48 @@ ShinyPSA <- R6::R6Class(
     #'
     #' PSA_outputs$get_eNMB()
     #' }
-    get_eNMB = function() {
+    get_eNMB = function(...) {
+      # pass arguments to the plotting function:
+      self$eNMB_plot <- private$plot_eNMB_(...)
 
-      return(private$PSA_summary[["eNMB_plot"]])
+      # return default plot if no arguments were passed to the function:
+      dots_ <- list(...)
+      if(length(dots_) == 0)
+        return(private$PSA_summary[["eNMB_plot"]])
+
+      # if any arguments exist, then return the new plot:
+      return(self$eNMB_plot)
+    },
+
+    #' @description
+    #' Get the Expected Value of Perfect Information
+    #'
+    #' @param ... Extra arguments passed to the plotting functions
+    #'
+    #' @return A ggplot2 object
+    #' @export
+    #'
+    #' @examples
+    #' \dontrun{
+    #' # Instantiate a copy of class ShinyPSA:
+    #' PSA_outputs <- ShinyPSA$new(
+    #'                   .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
+    #'                   .interventions = ShinyPSA::Smoking_PSA$treats)
+    #'
+    #' PSA_outputs$get_EVPI()
+    #' }
+    get_EVPI = function(...) {
+      # pass arguments to the plotting function:
+      self$EVPI_plot <- private$plot_EVPI_(...)
+
+      # return default plot if no arguments were passed to the function:
+      dots_ <- list(...)
+      if(length(dots_) == 0)
+        return(private$PSA_summary[["EVPI_plot"]])
+
+      # if any arguments exist, then return the new plot:
+      return(self$EVPI_plot)
     }
 
   ),
@@ -233,6 +379,9 @@ ShinyPSA <- R6::R6Class(
     effects = NULL,
     costs = NULL,
     PSA_summary = NULL,
+    # Summary_table a summary table with differentials, ICER(S),
+    # net benefits and probability being cost-effective.
+    Summary_table = NULL,
 
     # Summarise PSA outputs and report results
     #
@@ -263,8 +412,8 @@ ShinyPSA <- R6::R6Class(
     #
     # \dontrun{}
     summarise_PSA_ = function(.effs, .costs, .interventions = NULL,
-                               .ref = NULL, .Kmax = 100000, .wtp = NULL,
-                               .plot = FALSE) {
+                              .ref = NULL, .Kmax = 100000, .wtp = NULL,
+                              .plot = FALSE) {
 
       # Stop if .effs & .costs have different dimensions:
       stopifnot('Unequal dimensions in .effs and .costs' =
@@ -347,12 +496,12 @@ ShinyPSA <- R6::R6Class(
 
       # Compute ICER(s):
       ICER <- private$compute_ICERs_(.icer_data = NULL, .effs = .effs, .costs = .costs,
-                             .interventions = .interventions)
+                                     .interventions = .interventions)
 
       # Compute NMB or iNMB, e.NMB or e.iNMB and best option for each k:
       nmbs <- private$compute_NMBs_(.effs = .effs, .costs = .costs,
-                            .interventions = .interventions, .Kmax = .Kmax,
-                            .wtp = .wtp)
+                                    .interventions = .interventions, .Kmax = .Kmax,
+                                    .wtp = .wtp)
       NMB <- nmbs$nmb
       e.NMB <- nmbs$e.nmb
       best <- nmbs$best_interv
@@ -368,7 +517,7 @@ ShinyPSA <- R6::R6Class(
 
       # Compute EVPI:
       EVPIs <- private$compute_EVPIs_(.effs = .effs, .costs = .costs, .Kmax = .Kmax,
-                              .interventions = .interventions, .wtp = .wtp)
+                                      .interventions = .interventions, .wtp = .wtp)
       U <- EVPIs$U
       Ustar <- EVPIs$Ustar
       ol <- EVPIs$ol
@@ -420,13 +569,13 @@ ShinyPSA <- R6::R6Class(
     #
     # \dontrun{}
     identify_dominance_ = function(.icer_data, .qalys = qalys,
-                                    .costs = costs) {
+                                   .costs = costs) {
       # Check if missing key columns and create them if so:
       .icer_data <- .icer_data %>%
         private$add_missing_columns_(.x = .,
-                             .characters = c("dominance", "icer_label"),
-                             .numerics = c(".id", "delta.e", "delta.c",
-                                           "icer"))
+                                     .characters = c("dominance", "icer_label"),
+                                     .numerics = c(".id", "delta.e", "delta.c",
+                                                   "icer"))
 
       # Identify dominated interventions:
       .icer_data <- .icer_data %>%
@@ -461,8 +610,8 @@ ShinyPSA <- R6::R6Class(
       # Check if missing key columns and create them if so:
       .icer_data <- .icer_data %>%
         private$add_missing_columns_(.x = .,
-                             .characters = c("dominance", "icer_label"),
-                             .numerics = c(".id", "delta.e", "delta.c", "icer"))
+                                     .characters = c("dominance", "icer_label"),
+                                     .numerics = c(".id", "delta.e", "delta.c", "icer"))
 
       # Identify extendedly dominated interventions:
       .icer_data <- .icer_data %>%
@@ -496,13 +645,13 @@ ShinyPSA <- R6::R6Class(
     #
     # \dontrun{}
     calculate_ICERs_ = function(.icer_data, .qalys = qalys,
-                                 .costs = costs) {
+                                .costs = costs) {
       # Check if missing key columns and create them if so:
       .icer_data <- .icer_data %>%
         private$add_missing_columns_(.x = .,
-                             .characters = c("dominance", "icer_label"),
-                             .numerics = c(".id", "delta.e", "delta.c",
-                                           "icer"))
+                                     .characters = c("dominance", "icer_label"),
+                                     .numerics = c(".id", "delta.e", "delta.c",
+                                                   "icer"))
 
       # Compute Incremental Cost-Effectiveness Ratio (ICER):
       .icer_data <- .icer_data %>%
@@ -543,9 +692,9 @@ ShinyPSA <- R6::R6Class(
       # Check if missing key columns and create them if so:
       .x <- .x %>%
         private$add_missing_columns_(.x = .,
-                             .characters = c("dominance", "icer_label"),
-                             .numerics = c(".id", "delta.e", "delta.c",
-                                           "icer"))
+                                     .characters = c("dominance", "icer_label"),
+                                     .numerics = c(".id", "delta.e", "delta.c",
+                                                   "icer"))
 
       # Check for unidentified dominance
       while (any("dominated" %in%
@@ -573,9 +722,9 @@ ShinyPSA <- R6::R6Class(
       # Check if missing key columns and create them if so:
       .x <- .x %>%
         private$add_missing_columns_(.x = .,
-                             .characters = c("dominance", "icer_label"),
-                             .numerics = c(".id", "delta.e", "delta.c",
-                                           "icer"))
+                                     .characters = c("dominance", "icer_label"),
+                                     .numerics = c(".id", "delta.e", "delta.c",
+                                                   "icer"))
 
       # Check for any remaining e.dominance
       while (any("e.dominated" %in% (.x %>%
@@ -619,9 +768,9 @@ ShinyPSA <- R6::R6Class(
         # Check if missing key columns and create them if so:
         icer_tmp <- .icer_data %>%
           private$add_missing_columns_(.x = .,
-                               .characters = c("dominance", "icer_label"),
-                               .numerics = c(".id", "delta.e", "delta.c",
-                                             "icer"))
+                                       .characters = c("dominance", "icer_label"),
+                                       .numerics = c(".id", "delta.e", "delta.c",
+                                                     "icer"))
       } else if(!is.null(.effs) & !is.null(.costs)) {
 
         # Stop if .effs & .costs are not of class tibble or have unequal dims:
@@ -651,9 +800,9 @@ ShinyPSA <- R6::R6Class(
           'qalys' = colMeans(.effs),
           'costs' = colMeans(.costs)) %>%
           private$add_missing_columns_(.x = .,
-                               .characters = c("dominance", "icer_label"),
-                               .numerics = c(".id", "delta.e", "delta.c",
-                                             "icer"))
+                                       .characters = c("dominance", "icer_label"),
+                                       .numerics = c(".id", "delta.e", "delta.c",
+                                                     "icer"))
       } else {
         stop("Please supply costs and effects from PSA, each in a separate
          tibble/dataframe, or a summary table with interventions' names,
@@ -705,7 +854,7 @@ ShinyPSA <- R6::R6Class(
     #
     # \dontrun{}
     compute_NMBs_ = function(.effs, .costs, .interventions = NULL,
-                              .Kmax = NULL, .wtp = NULL) {
+                             .Kmax = NULL, .wtp = NULL) {
       # Stop if .effs & .costs are not of class tibble or have unequal dims:
       stopifnot('.effs is a not tibble' = "data.frame" %in% class(.effs),
                 '.costs is a not tibble' = "data.frame" %in% class(.costs),
@@ -816,15 +965,15 @@ ShinyPSA <- R6::R6Class(
     #
     # \dontrun{}
     compute_CEACs_ = function(.nmb, .effs = NULL, .costs = NULL,
-                               .interventions = NULL, .Kmax = NULL,
-                               .wtp = NULL) {
+                              .interventions = NULL, .Kmax = NULL,
+                              .wtp = NULL) {
       # If .nmb was not available but raw data were:
       if(is.null(.nmb) & !is.null(.effs) & !is.null(.costs)){
         .nmb <- private$compute_NMBs_(.effs = .effs,
-                              .costs = .costs,
-                              .interventions = .interventions,
-                              .Kmax = .Kmax,
-                              .wtp = .wtp)
+                                      .costs = .costs,
+                                      .interventions = .interventions,
+                                      .Kmax = .Kmax,
+                                      .wtp = .wtp)
         .nmb <- .nmb$nmb
       }
 
@@ -1028,7 +1177,7 @@ ShinyPSA <- R6::R6Class(
     # p
     # }
     #
-    plot_CEAC_ = function(.PSA_data, ...) {
+    plot_CEAC_ = function(.PSA_data = private$PSA_summary, ...) {
       # Grab the function's environment for correct assignment in assign():
       env_ = environment()
       # Define defaults:
@@ -1046,8 +1195,8 @@ ShinyPSA <- R6::R6Class(
       args_ <- list(...)
       # Assign additional arguments:
       private$assign_extraArgs_(.default_args_ = default_args,
-                        .args_ = args_,
-                        .env_ = env_)
+                                .args_ = args_,
+                                .env_ = env_)
       # Override .ref if more than two interventions exist:
       if(!is.null(.ref) & (length(.PSA_data$interventions) > 2)) .ref = NULL
       # Function to remove intervention from plot data:
@@ -1274,7 +1423,7 @@ ShinyPSA <- R6::R6Class(
     # p
     # }
     #
-    plot_CEAF_ = function(.PSA_data, ...) {
+    plot_CEAF_ = function(.PSA_data = private$PSA_summary, ...) {
       # Grab the function's environment for correct assignment in assign():
       env_ = environment()
       # Define defaults:
@@ -1290,8 +1439,8 @@ ShinyPSA <- R6::R6Class(
       args_ <- list(...)
       # Assign additional arguments:
       private$assign_extraArgs_(.default_args_ = default_args,
-                        .args_ = args_,
-                        .env_ = env_)
+                                .args_ = args_,
+                                .env_ = env_)
 
       # Plot data:
       ceaf_df = .PSA_data$CEAF %>%
@@ -1469,7 +1618,7 @@ ShinyPSA <- R6::R6Class(
     # p
     # }
     #
-    plot_CEplane_ = function(.PSA_data, ...) {
+    plot_CEplane_ = function(.PSA_data = private$PSA_summary, ...) {
       # Get the function's environment for correct assignment in assign():
       env_ = environment()
       # Define defaults:
@@ -1486,8 +1635,8 @@ ShinyPSA <- R6::R6Class(
       args_ <- list(...)
       # Assign additional arguments:
       private$assign_extraArgs_(.default_args_ = default_args,
-                        .args_ = args_,
-                        .env_ = env_)
+                                .args_ = args_,
+                                .env_ = env_)
 
       # Plot data:
       ## CE plot points:
@@ -1780,7 +1929,7 @@ ShinyPSA <- R6::R6Class(
     # p
     # }
     #
-    plot_EVPI_ = function(.PSA_data, ...) {
+    plot_EVPI_ = function(.PSA_data = private$PSA_summary, ...) {
       # Grab the function's environment for correct assignment in assign():
       env_ = environment()
       # Define defaults:
@@ -1799,8 +1948,8 @@ ShinyPSA <- R6::R6Class(
       args_ <- list(...)
       # Assign additional arguments:
       private$assign_extraArgs_(.default_args_ = default_args,
-                        .args_ = args_,
-                        .env_ = env_)
+                                .args_ = args_,
+                                .env_ = env_)
 
       # Plot data:
       discounted_population = 1
@@ -1955,7 +2104,7 @@ ShinyPSA <- R6::R6Class(
     # p
     # }
     #
-    plot_eNMB_ = function(.PSA_data, ...) {
+    plot_eNMB_ = function(.PSA_data = private$PSA_summary, ...) {
       # Grab the function's environment for correct assignment in assign():
       env_ = environment()
       # Define defaults:
@@ -1970,8 +2119,8 @@ ShinyPSA <- R6::R6Class(
       args_ <- list(...)
       # Assign additional arguments:
       private$assign_extraArgs_(.default_args_ = default_args,
-                        .args_ = args_,
-                        .env_ = env_)
+                                .args_ = args_,
+                                .env_ = env_)
 
       # Plot data:
       enmb_df <- .PSA_data$e.NMB %>%

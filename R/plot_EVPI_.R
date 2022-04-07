@@ -16,11 +16,11 @@
 #' legend position \code{.legend_pos = "bottom"},
 #' willingness-to-pay threshold(s) \code{.wtp_threshold = c(20000, 30000)},
 #' show WTP threshold(s) lines \code{.show_wtp = TRUE},
-#' show WTP threshold(s) labels \code{.label_wtp' = TRUE},
-#' plot individual EVPI \code{.individual_evpi' = TRUE},
+#' show WTP threshold(s) labels \code{.label_wtp = TRUE},
+#' plot individual EVPI \code{.individual_evpi = TRUE},
 #' time horizon to estimate population EVPI \code{.time_horion = 5},
 #' discount rate to estimate population EVPI \code{.discount_rate = 0.035},
-#' population size for population EVPI \code{.population' = 15000},
+#' population size for population EVPI \code{.population = 15000},
 #' zoom to min/max values \code{.zoom = FALSE}, and
 #' zoom to supplied coordinates values \code{.zoom_cords = NULL}.
 #'

@@ -16,7 +16,7 @@
 #' legend position \code{.legend_pos = c(0.8, 0.85)},
 #' willingness-to-pay threshold(s) \code{.wtp_threshold = c(20000, 30000)},
 #' show WTP threshold(s) lines \code{.show_wtp = TRUE},
-#' show WTP threshold(s) labels \code{.label_wtp' = TRUE},
+#' show WTP threshold(s) labels \code{.label_wtp = TRUE},
 #' zoom to min/max values \code{.zoom = FALSE},
 #' zoom to supplied coordinates values \code{.zoom_cords = NULL}, and
 #' show 20 points/shapes along the lines \code{.show_shapes = FALSE}.

@@ -8,19 +8,19 @@
 #
 ################################################################################
 
-#' Identify dominated interventions
-#'
-#' @param .icer_data A table containing average costs and QALYs data
-#' @param .qalys Character indicating the name of the column containing
-#' Quality Adjusted Life Years (QALYs) in \code{.icer_data}
-#' @param .costs Character indicating the name of the column containing
-#' cost data in \code{.icer_data}
-#'
-#' @return A table containing \code{.icer_data} in addition to identified
-#' dominance
-#'
-#' @examples
-#' \dontrun{}
+# Identify dominated interventions
+#
+# @param .icer_data A table containing average costs and QALYs data
+# @param .qalys Character indicating the name of the column containing
+# Quality Adjusted Life Years (QALYs) in \code{.icer_data}
+# @param .costs Character indicating the name of the column containing
+# cost data in \code{.icer_data}
+#
+# @return A table containing \code{.icer_data} in addition to identified
+# dominance
+#
+# @examples
+# \dontrun{}
 identify_dominance_ <- function(.icer_data, .qalys = qalys,
                                 .costs = costs) {
   # Check if missing key columns and create them if so:
@@ -49,17 +49,17 @@ identify_dominance_ <- function(.icer_data, .qalys = qalys,
   return(.icer_data)
 }
 
-#' Identify extendedly dominated interventions
-#'
-#' @param .icer_data A table containing average costs and QALYs data
-#' @param .qalys Character indicating the name of the column containing
-#' Quality Adjusted Life Years (QALYs) in \code{.icer_data}
-#'
-#' @return A vector stating whether any of the included interventions were
-#' e.dominated
-#'
-#' @examples
-#' \dontrun{}
+# Identify extendedly dominated interventions
+#
+# @param .icer_data A table containing average costs and QALYs data
+# @param .qalys Character indicating the name of the column containing
+# Quality Adjusted Life Years (QALYs) in \code{.icer_data}
+#
+# @return A vector stating whether any of the included interventions were
+# e.dominated
+#
+# @examples
+# \dontrun{}
 identify_e.dominance_ <- function(.icer_data, .qalys = qalys) {
   # Check if missing key columns and create them if so:
   .icer_data <- .icer_data %>%
@@ -86,19 +86,19 @@ identify_e.dominance_ <- function(.icer_data, .qalys = qalys) {
   return(.icer_data)
 }
 
-#' Calculate ICER(s) and effects and costs differentials
-#'
-#' @param .icer_data A table containing average costs and QALYs data
-#' @param .qalys Character indicating the name of the column containing
-#' Quality Adjusted Life Years (QALYs) data in .icer_data
-#' @param .costs Character indicating the name of the column containing
-#' cost data in .icer_data
-#'
-#' @return A table of \code{effects diffrentials}, \code{costs
-#' differentials} & \code{icers}
-#'
-#' @examples
-#' \dontrun{}
+# Calculate ICER(s) and effects and costs differentials
+#
+# @param .icer_data A table containing average costs and QALYs data
+# @param .qalys Character indicating the name of the column containing
+# Quality Adjusted Life Years (QALYs) data in .icer_data
+# @param .costs Character indicating the name of the column containing
+# cost data in .icer_data
+#
+# @return A table of \code{effects diffrentials}, \code{costs
+# differentials} & \code{icers}
+#
+# @examples
+# \dontrun{}
 calculate_ICERs_ <- function(.icer_data, .qalys = qalys, .costs = costs) {
   # Check if missing key columns and create them if so:
   .icer_data <- .icer_data %>%
@@ -134,15 +134,15 @@ calculate_ICERs_ <- function(.icer_data, .qalys = qalys, .costs = costs) {
   return(.icer_data)
 }
 
-#' Identify, iteratively, all dominated interventions
-#'
-#' @param .x A table containing average costs and QALYs data
-#'
-#' @return A dataframe with data from .x in addition to dominance
-#' information, if any
-#'
-#' @examples
-#' \dontrun{}
+# Identify, iteratively, all dominated interventions
+#
+# @param .x A table containing average costs and QALYs data
+#
+# @return A dataframe with data from .x in addition to dominance
+# information, if any
+#
+# @examples
+# \dontrun{}
 dominance_wraper_ <- function(.x) {
   # Check if missing key columns and create them if so:
   .x <- .x %>%
@@ -165,15 +165,15 @@ dominance_wraper_ <- function(.x) {
   return(.x)
 }
 
-#' Identify, iteratively, all extendedly dominated interventions
-#'
-#' @param .x A table containing average costs and QALYs data
-#'
-#' @return A dataframe with data from \code{.x} in addition to extended
-#' dominance information, if any
-#'
-#' @examples
-#' \dontrun{}
+# Identify, iteratively, all extendedly dominated interventions
+#
+# @param .x A table containing average costs and QALYs data
+#
+# @return A dataframe with data from \code{.x} in addition to extended
+# dominance information, if any
+#
+# @examples
+# \dontrun{}
 e.dominance_wraper_ <- function(.x) {
   # Check if missing key columns and create them if so:
   .x <- .x %>%

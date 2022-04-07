@@ -20,4 +20,7 @@ Depends:
     tidyverse
 Imports: 
     ggrepel,
-    scales
+    plyr,
+    purrr,
+    scales,
+    tidyselect
