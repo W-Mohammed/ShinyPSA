@@ -1082,13 +1082,13 @@ PSA_summary = summarise_PSA_(
 
 p = plot_CEplane(PSA_summary,
                  .ref = 1,
-                  .show_ICER = T,
-                  .legend_pos = c(0.8, 0.2),
-                  .show_wtp = T,
-                  .zoom = T,
-                  .wtp_threshold = c(20000, 500, 100, 50),
-                  tst = "PRINT",
-                  .nudge_labels = c(0.1, -0.1))
+                 .show_ICER = T,
+                 .legend_pos = c(0.8, 0.2),
+                 .show_wtp = T,
+                 .zoom = T,
+                 .wtp_threshold = c(20000, 500, 100, 50),
+                 tst = "PRINT",
+                 .nudge_labels = c(0.1, -0.1))
 p
 #plot_CEAC########################################################
 
@@ -1348,14 +1348,14 @@ PSA_summary2 = summarise_PSA_(
 load_all()
 
 p = plot_CEplane_(PSA_summary2,
-                 .ref = 1,
-                 .show_ICER = T,
-                 .legend_pos = c(0.8, 0.2),
-                 .show_wtp = T,
-                 .zoom = F,
-                 .wtp_threshold = c(20000, 500, 100, 50),
-                 .nudge_labels = c(0.1, -0.1),
-                 .zoom_cords = c(-0.001, 0.001, -5, 5))
+                  .ref = 1,
+                  .show_ICER = T,
+                  .legend_pos = c(0.8, 0.2),
+                  .show_wtp = T,
+                  .zoom = F,
+                  .wtp_threshold = c(20000, 500, 100, 50),
+                  .nudge_labels = c(0.1, -0.1),
+                  .zoom_cords = c(-0.001, 0.001, -5, 5))
 p
 
 load_all()
@@ -1550,6 +1550,26 @@ PSA_summary = summarise_PSA_(
   .interventions = ShinyPSA::Smoking_PSA$treats)
 
 ######################################################################
+
+
+
+
+
+
+
+
+
+
+#Shiny app:
+tst = R6_container$new()
+tst$add(.objectName_ = "Vaccine",
+        .object_ = ShinyPSA$new(
+          .effs = ShinyPSA::Vaccine_PSA$e,
+          .costs = ShinyPSA::Vaccine_PSA$c,
+          .interventions = ShinyPSA::Vaccine_PSA$.interventions
+        )
+)
+tst$store[["Vaccine"]]$get_CEP()
 
 
 
