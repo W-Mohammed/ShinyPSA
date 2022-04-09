@@ -16,9 +16,6 @@ ShinyPSA_R6_App <- R6::R6Class(
     iContainer = NULL, # inputs container
     ## Page elements:----
     theme = NULL,
-    ## Input elements:----
-    actionButton2 = NULL,
-    inputChoices2 = NULL,
 
     # Methods:----
     ## Initialise:----
@@ -59,12 +56,6 @@ ShinyPSA_R6_App <- R6::R6Class(
         )
       )
 
-      self$actionButton2 <- actionButton$new(
-        .label_ = "Remove"
-      )
-      self$inputChoices2 <- inputSelection$new(
-        .label_ = "UN-USED"
-      )
     },
     ## UI:----
     ui = function() {
@@ -107,28 +98,21 @@ ShinyPSA_R6_App <- R6::R6Class(
               ui_input()
           )
         ),
+        ### Main body:----
         fluidRow(
           column(
-            width = 2,
+            width = 12,
             offset = 0,
-            class = "mt-2 ml-2", # width 11 to work
-            tagList(
-              tags$hr(),
-              self$actionButton2$ui_input()
-            )
-          ),
-          column(
-            width = 9,
-            offset = 0,
-            class = "mr-5 pb-5",
+            class = "pl-5 pr-5",
             tabsetPanel(
-              id = "outputs"
+              id = "outputs",
+              tabPanel(title = "a",
+                self$iContainer$store[["CEP"]]$
+                  ui_output(),
+                self$iContainer$store[["sumTbl"]]$
+                  ui_output()
+              )
             ),
-            self$iContainer$store[["CEP"]]$
-              ui_output(),
-            self$iContainer$store[["sumTbl"]]$
-              ui_output()
-
           )
         )
       )
