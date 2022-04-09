@@ -12,8 +12,8 @@ ShinyPSA_R6_App <- R6::R6Class(
   public = list(
     # Fields:
     ## Global elements:----
-    oContainer = NULL, # objects container
-    iContainer = NULL, # inputs container
+    oContainer = list(), # objects container
+    iContainer = list(), # inputs container
     ## Page elements:----
     theme = NULL,
 
@@ -23,38 +23,21 @@ ShinyPSA_R6_App <- R6::R6Class(
       self$theme <- bslib::bs_theme(bg = "black",
                                     fg = "white",
                                     primary = "purple")
-      self$oContainer <- R6_container$new()
-      self$iContainer <- R6_container$new()
-      self$iContainer$add(
-        .objectName_ = "themeSwch",
-        .object_ = prettySwitch$new(
+      self$iContainer[["themeSwch"]] <- prettySwitch$new(
           .label_ = "light_mode"
         )
+      self$iContainer[["addBtn"]] <- actionButton$new(
+        .label_ = "Add"
       )
-      self$iContainer$add(
-        .objectName_ = "addBtn",
-        .object_ = actionButton$new(
-          .label_ = "Add"
-        )
+      self$iContainer[["getData"]] <- inputSelection$new(
+        .label_ = "Choose a dataset:"
       )
-      self$iContainer$add(
-        .objectName_ = "getData",
-        .object_ = inputSelection$new(
-          .label_ = "Choose a dataset:"
-        )
-      )
-      self$iContainer$add(
-        .objectName_ = "CEP",
-        .object_ = ggplot2Plot$new(
+      self$iContainer[["CEP"]] <- ggplot2Plot$new(
           .label_ = "CEP"
         )
-      )
-      self$iContainer$add(
-        .objectName_ = "sumTbl",
-        .object_ = dataTableDT$new(
+      self$iContainer[["sumTbl"]] <-  dataTableDT$new(
           .label_ = "PSA summary table"
         )
-      )
 
     },
     ## UI:----
@@ -79,13 +62,13 @@ ShinyPSA_R6_App <- R6::R6Class(
               fluidRow(
                 tagList(
                   #### Data drop-list:----
-                  self$iContainer$store[["getData"]]$
+                  self$iContainer[["getData"]]$
                     ui_input(
                       .choices_ = NULL,
                       .class_ = "d-flex align-items-center"
                     ),
                   #### Selection confirmation button:----
-                  self$iContainer$store[["addBtn"]]$
+                  self$iContainer[["addBtn"]]$
                     ui_input(
                       .class_ = "ml-2 pt-3 d-flex
                       align-items-center text-right"
@@ -94,7 +77,7 @@ ShinyPSA_R6_App <- R6::R6Class(
               )
             ),
             #### Theme switcher:----
-            self$iContainer$store[["themeSwch"]]$
+            self$iContainer[["themeSwch"]]$
               ui_input()
           )
         ),
@@ -107,9 +90,9 @@ ShinyPSA_R6_App <- R6::R6Class(
             tabsetPanel(
               id = "outputs",
               tabPanel(title = "a",
-                self$iContainer$store[["CEP"]]$
+                self$iContainer[["CEP"]]$
                   ui_output(),
-                self$iContainer$store[["sumTbl"]]$
+                self$iContainer[["sumTbl"]]$
                   ui_output()
               )
             ),
@@ -121,7 +104,7 @@ ShinyPSA_R6_App <- R6::R6Class(
     server = function(input, output, session) {
       ## Data selector:----
       ### Data drop-down list:----
-      self$iContainer$store[["getData"]]$
+      self$iContainer[["getData"]]$
         server(
           session = session,
           input = input,
@@ -132,7 +115,7 @@ ShinyPSA_R6_App <- R6::R6Class(
       ### Reactive data set object:----
       dataList <- reactive(
         get(
-          x = input[[self$iContainer$store[["getData"]]$
+          x = input[[self$iContainer[["getData"]]$
                        get_uiInId()]],
           pos = "package:ShinyPSA"
         )
@@ -141,39 +124,36 @@ ShinyPSA_R6_App <- R6::R6Class(
       ### Actions once user adds a dataset:----
       observeEvent(
         # eventExpr = input[[self$actionButton1$get_uiInId()]],
-        eventExpr = input[[self$iContainer$store[["addBtn"]]$
+        eventExpr = input[[self$iContainer[["addBtn"]]$
                              get_uiInId()]],
         handlerExpr = {
           #### Reactive data name object:----
           data_name <- reactive(
-            input[[self$iContainer$store[["getData"]]$
+            input[[self$iContainer[["getData"]]$
                      get_uiInId()]]
           )
           #### Create an instance of class ShinyPSA using the data:----
-          self$oContainer$add(
-            .objectName_ = data_name(),
-            .object_ = ShinyPSA$new(
+          self$oContainer[[data_name()]] <- ShinyPSA$new(
               .effs = dataList()$e,
               .costs = dataList()$c,
               .interventions = dataList()$treats
             )
-          )
           #### Retrieve the CEP from the ShinyPSA object:----
-          self$iContainer$store[["CEP"]]$
+          self$iContainer[["CEP"]]$
             server(
               session = session,
               input = input,
               output = output,
-              .plot_ = self$oContainer$store[[data_name()]]$
+              .plot_ = self$oContainer[[data_name()]]$
                 get_CEP()
             )
           #### Retrieve the Summary table from the ShinyPSA object:----
-          self$iContainer$store[["sumTbl"]]$
+          self$iContainer[["sumTbl"]]$
             server(
               session = session,
               input = input,
               output = output,
-              .table_ = self$oContainer$store[[data_name()]]$
+              .table_ = self$oContainer[[data_name()]]$
                 get_Summary_table()
             )
         },
@@ -186,8 +166,7 @@ ShinyPSA_R6_App <- R6::R6Class(
         x = {
           session$setCurrentTheme(
             if(isTRUE(
-              # input[[self$prettySwitch1$get_uiInId()]]
-              input[[self$iContainer$store[["themeSwch"]]$
+              input[[self$iContainer[["themeSwch"]]$
                      get_uiInId()]]
             )) {
               bslib::bs_theme()

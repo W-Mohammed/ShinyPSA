@@ -36,6 +36,8 @@ ShinyPSA <- R6::R6Class(
     EVPI_plot = NULL,
     #' @field eNMB_plot the expected Net Monitory Benefit.
     eNMB_plot = NULL,
+    #' @field app a list to store shiny app elements
+    app = NULL,
 
     #' @description
     #' Initialisation method (triggered when a new object is created).
