@@ -66,32 +66,34 @@ ShinyPSA_R6_App <- R6::R6Class(
         .label_ = "UN-USED"
       )
     },
-    ## UI:
+    ## UI:----
     ui = function() {
-      # Main UI:
       fluidPage(
         theme = self$theme,
         waiter::use_waiter(),
-        # Title
+        ### Title panel:----
         titlePanel(
           windowTitle = "ShinyPSA demo",
           div(
             class = "d-flex p-2 bd-highlight",
+            #### App logo:----
             img(
               src = "https://pbs.twimg.com/profile_images/959365885537456128/tC4OVmkX_400x400.jpg",
               height = "35px",
               class = "pr-2 mb-1"),
+            #### Title:----
             span("ShinyPSA demo app!"),
             div(
-              # class = "d-flex align-items-center",
               class = "pt-3 pb-0 mb-0 pl-3",
               fluidRow(
                 tagList(
+                  #### Data drop-list:----
                   self$iContainer$store[["getData"]]$
                     ui_input(
                       .choices_ = NULL,
                       .class_ = "d-flex align-items-center"
                     ),
+                  #### Selection confirmation button:----
                   self$iContainer$store[["addBtn"]]$
                     ui_input(
                       .class_ = "ml-2 pt-3 d-flex
@@ -100,6 +102,7 @@ ShinyPSA_R6_App <- R6::R6Class(
                 )
               )
             ),
+            #### Theme switcher:----
             self$iContainer$store[["themeSwch"]]$
               ui_input()
           )
