@@ -24,20 +24,32 @@ ShinyPSA_R6_App <- R6::R6Class(
                                     fg = "white",
                                     primary = "purple")
       self$iContainer[["themeSwch"]] <- prettySwitch$new(
-          .label_ = "light_mode"
-        )
+        .label_ = "light_mode"
+      )
       self$iContainer[["addBtn"]] <- actionButton$new(
         .label_ = "Add"
       )
       self$iContainer[["getData"]] <- inputSelection$new(
         .label_ = "Choose a dataset:"
       )
-      self$iContainer[["CEP"]] <- ggplot2Plot$new(
-          .label_ = "CEP"
-        )
       self$iContainer[["sumTbl"]] <-  dataTableDT$new(
-          .label_ = "PSA summary table"
-        )
+        .label_ = "PSA summary table"
+      )
+      self$iContainer[["CEP"]] <- ggplot2Plot$new(
+        .label_ = "CEP"
+      )
+      self$iContainer[["CEAC"]] <- ggplot2Plot$new(
+        .label_ = "CEAC"
+      )
+      self$iContainer[["CEAF"]] <- ggplot2Plot$new(
+        .label_ = "CEAF"
+      )
+      self$iContainer[["NMB"]] <- ggplot2Plot$new(
+        .label_ = "NMB"
+      )
+      self$iContainer[["EVPI"]] <- ggplot2Plot$new(
+        .label_ = "EVPI"
+      )
 
     },
     ## UI:----
@@ -89,11 +101,29 @@ ShinyPSA_R6_App <- R6::R6Class(
             class = "pl-5 pr-5",
             tabsetPanel(
               id = "outputs",
-              tabPanel(title = "a",
-                self$iContainer[["CEP"]]$
-                  ui_output(),
+              tabPanel(
+                title = "Summary table",
                 self$iContainer[["sumTbl"]]$
                   ui_output()
+              ),
+              bslib::nav(
+                width = 9,
+                title = "CEP",
+                fluidRow(
+                  column(
+                    width = 2,
+                    selectInput(
+                      inputId = "tst",
+                      label = "How things are",
+                      choices = c("one", "two")
+                    )
+                  ),
+                  column(
+                    width = 10,
+                    self$iContainer[["CEP"]]$
+                      ui_output()
+                  )
+                )
               )
             ),
           )
@@ -134,10 +164,10 @@ ShinyPSA_R6_App <- R6::R6Class(
           )
           #### Create an instance of class ShinyPSA using the data:----
           self$oContainer[[data_name()]] <- ShinyPSA$new(
-              .effs = dataList()$e,
-              .costs = dataList()$c,
-              .interventions = dataList()$treats
-            )
+            .effs = dataList()$e,
+            .costs = dataList()$c,
+            .interventions = dataList()$treats
+          )
           #### Retrieve the CEP from the ShinyPSA object:----
           self$iContainer[["CEP"]]$
             server(
