@@ -1,45 +1,70 @@
-# pacman::p_load(httr, RJSONIO, osmdata, sf, spData, ggmap, tidyverse,
-#                leaflet, leaflet.extras, R6, bslib, uuid)
+################################################################################
+#
+# Script Name:        shiny_R6_elements.R
+# Module Name:        Economic/PSA/demo app
+# Script Description: Defines and triggers the shiny app
+# Author:             WM-University of Sheffield (wmamohammed1@sheffield.ac.uk)
+#
+################################################################################
 
-Healthsites_App <- R6::R6Class(
-  classname = 'Healthsites_App',
+ShinyPSA_R6_App <- R6::R6Class(
+  classname = 'ShinyPSA_R6_App',
   public = list(
-    # Global elements:----
-    container = NULL, # objects container
-    # Page elements:----
+    # Fields:
+    ## Global elements:----
+    oContainer = NULL, # objects container
+    iContainer = NULL, # inputs container
+    ## Page elements:----
     theme = NULL,
-    # Input elements:----
-    prettySwitch1 = NULL,
-    actionButton1 = NULL,
+    ## Input elements:----
     actionButton2 = NULL,
-    inputChoices1 = NULL,
     inputChoices2 = NULL,
-    ggplotPlot1 = NULL,
 
-    # Methods:
-    ## Initialise:
+    # Methods:----
+    ## Initialise:----
     initialize = function() {
       self$theme <- bslib::bs_theme(bg = "black",
                                     fg = "white",
                                     primary = "purple")
-      self$container <- R6_container$new()
-      self$prettySwitch1 <- prettySwitch$new(
-        .label_ = "light_mode"
+      self$oContainer <- R6_container$new()
+      self$iContainer <- R6_container$new()
+      self$iContainer$add(
+        .objectName_ = "themeSwch",
+        .object_ = prettySwitch$new(
+          .label_ = "light_mode"
+        )
       )
-      self$actionButton1 <- actionButton$new(
-        .label_ = "Add"
+      self$iContainer$add(
+        .objectName_ = "addBtn",
+        .object_ = actionButton$new(
+          .label_ = "Add"
+        )
       )
+      self$iContainer$add(
+        .objectName_ = "getData",
+        .object_ = inputSelection$new(
+          .label_ = "Choose a dataset:"
+        )
+      )
+      self$iContainer$add(
+        .objectName_ = "CEP",
+        .object_ = ggplot2Plot$new(
+          .label_ = "CEP"
+        )
+      )
+      self$iContainer$add(
+        .objectName_ = "sumTbl",
+        .object_ = dataTableDT$new(
+          .label_ = "PSA summary table"
+        )
+      )
+
       self$actionButton2 <- actionButton$new(
         .label_ = "Remove"
-      )
-      self$inputChoices1 <- inputSelection$new(
-        .label_ = "Choose a dataset:"
       )
       self$inputChoices2 <- inputSelection$new(
         .label_ = "UN-USED"
       )
-      self$ggplotPlot1 <- ggplot2Plot$new(
-        .label_ = "CEP")
     },
     ## UI:
     ui = function() {
@@ -58,15 +83,25 @@ Healthsites_App <- R6::R6Class(
               class = "pr-2 mb-1"),
             span("ShinyPSA demo app!"),
             div(
-              class = "d-flex align-items-center",
+              # class = "d-flex align-items-center",
+              class = "pt-3 pb-0 mb-0 pl-3",
               fluidRow(
                 tagList(
-                  self$inputChoices1$ui_input(.choices_ = NULL),
-                  self$actionButton1$ui_input()
+                  self$iContainer$store[["getData"]]$
+                    ui_input(
+                      .choices_ = NULL,
+                      .class_ = "d-flex align-items-center"
+                    ),
+                  self$iContainer$store[["addBtn"]]$
+                    ui_input(
+                      .class_ = "ml-2 pt-3 d-flex
+                      align-items-center text-right"
+                    )
                 )
               )
             ),
-            self$prettySwitch1$ui_input()
+            self$iContainer$store[["themeSwch"]]$
+              ui_input()
           )
         ),
         fluidRow(
@@ -83,73 +118,77 @@ Healthsites_App <- R6::R6Class(
             width = 9,
             offset = 0,
             class = "mr-5 pb-5",
-            self$ggplotPlot1$ui_output()
+            tabsetPanel(
+              id = "outputs"
+            ),
+            self$iContainer$store[["CEP"]]$
+              ui_output(),
+            self$iContainer$store[["sumTbl"]]$
+              ui_output()
+
           )
         )
       )
     },
     # Server:----
     server = function(input, output, session) {
-      observeEvent(
-        eventExpr = input[[self$actionButton1$get_uiInId()]],
-        handlerExpr = {
-          print('1')
-          session$setCurrentTheme(
-            bslib::bs_theme(bg = "black",
-                            fg = "white",
-                            primary = "purple")
-          )
-        })
-
-      observeEvent(
-        eventExpr = input[[self$actionButton2$get_uiInId()]],
-        handlerExpr = {
-          print('black')
-          session$setCurrentTheme(
-            bslib::bs_theme()
-          )
-        })
-
       ## Data selector:----
-      self$inputChoices1$server(
-        session = session,
-        input = input,
-        output = output,
-        .choices_ = c("Vaccine_PSA", "Smoking_PSA")
-      )
+      ### Data drop-down list:----
+      self$iContainer$store[["getData"]]$
+        server(
+          session = session,
+          input = input,
+          output = output,
+          .choices_ = c("Vaccine_PSA", "Smoking_PSA")
+        )
 
+      ### Reactive data set object:----
       dataList <- reactive(
         get(
-          x = input[[self$inputChoices1$get_uiInId()]],
+          x = input[[self$iContainer$store[["getData"]]$
+                       get_uiInId()]],
           pos = "package:ShinyPSA"
         )
       )
 
+      ### Actions once user adds a dataset:----
       observeEvent(
-        eventExpr = input[[self$actionButton1$get_uiInId()]],
+        # eventExpr = input[[self$actionButton1$get_uiInId()]],
+        eventExpr = input[[self$iContainer$store[["addBtn"]]$
+                             get_uiInId()]],
         handlerExpr = {
+          #### Reactive data name object:----
           data_name <- reactive(
-            input[[self$inputChoices1$get_uiInId()]]
+            input[[self$iContainer$store[["getData"]]$
+                     get_uiInId()]]
           )
-
-          self$container$add(
+          #### Create an instance of class ShinyPSA using the data:----
+          self$oContainer$add(
             .objectName_ = data_name(),
             .object_ = ShinyPSA$new(
               .effs = dataList()$e,
               .costs = dataList()$c,
-              .interventions = dataList()$.interventions
+              .interventions = dataList()$treats
             )
           )
-
-            self$ggplotPlot1$server(
+          #### Retrieve the CEP from the ShinyPSA object:----
+          self$iContainer$store[["CEP"]]$
+            server(
               session = session,
               input = input,
               output = output,
-              .plot_ = self$container$store[[data_name()]]$get_CEP()
+              .plot_ = self$oContainer$store[[data_name()]]$
+                get_CEP()
             )
-          # output[["CEP"]] <- renderPlot({
-          #   self$container$store[[data_name()]]$get_CEP()
-          # })
+          #### Retrieve the Summary table from the ShinyPSA object:----
+          self$iContainer$store[["sumTbl"]]$
+            server(
+              session = session,
+              input = input,
+              output = output,
+              .table_ = self$oContainer$store[[data_name()]]$
+                get_Summary_table()
+            )
         },
         ignoreNULL = TRUE,
         ignoreInit = TRUE
@@ -160,7 +199,9 @@ Healthsites_App <- R6::R6Class(
         x = {
           session$setCurrentTheme(
             if(isTRUE(
-              input[[self$prettySwitch1$get_uiInId()]]
+              # input[[self$prettySwitch1$get_uiInId()]]
+              input[[self$iContainer$store[["themeSwch"]]$
+                     get_uiInId()]]
             )) {
               bslib::bs_theme()
             } else {
@@ -182,6 +223,6 @@ Healthsites_App <- R6::R6Class(
   )
 )
 
-app = Healthsites_App$new()
+app = ShinyPSA_R6_App$new()
 
 shiny::shinyApp(app$ui(), app$server)

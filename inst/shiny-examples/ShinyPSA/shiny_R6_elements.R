@@ -1,3 +1,12 @@
+################################################################################
+#
+# Script Name:        shiny_R6_elements.R
+# Module Name:        Economic/PSA/demo app
+# Script Description: Defines a set of classes used in the shiny app
+# Author:             WM-University of Sheffield (wmamohammed1@sheffield.ac.uk)
+#
+################################################################################
+
 # Objects container:----
 R6_container = R6::R6Class(
   classname = "R6_container",
@@ -139,14 +148,15 @@ actionButton = R6::R6Class(
     },
     ### UI:----
     #### UI input:----
-    ui_input = function(.tag_ = "UI_input") {
+    ui_input = function(.tag_ = "UI_input",
+                        .class_ = "ml-2 pt-2 d-flex align-items-center text-right") {
 
       private$uiInput_Id_ <- private$ns_(.tag_)
 
       tagList(
         div(
-          class = "d-flex align-items-center text-right", #ml-2
-          style = "margin-top: 2rem !important;",
+          class = .class_, #ml-2 "d-flex align-items-center text-right"
+          style = "display: flex; margin-top: 2rem !important;",
           actionButton(
             inputId = private$uiInput_Id_,
             label = private$label_,
@@ -247,14 +257,15 @@ inputSelection = R6::R6Class(
     ### UI:----
     #### UI input:----
     ui_input = function(.tag_ = "UI_input", .choices_, .selected_ = NULL,
-                        .multiple_ = FALSE, .width_ = "100%") {
+                        .multiple_ = FALSE, .width_ = "100%",
+                        .class_ = "d-flex align-items-center") {
 
       private$uiInput_Id_ <- private$ns_(.tag_)
 
       tagList(
         div(
-          style = "display: flex;",
-          class = "px-5 py-4", #d-flex align-items-center
+          style = "display: flex; margin-top: 2rem !important;",
+        class = .class_, #d-flex align-items-center text-right #px-5 py-4
           selectizeInput(
             inputId = private$uiInput_Id_,
             label = private$label_,
@@ -380,30 +391,112 @@ ggplot2Plot = R6::R6Class(
 
       private$uiRenderedOutput_Id_ <- private$ns_(.tag_)
 
-#       plotOutput(
-#         outputId = private$uiOutput_Id_,
-#         height = .height_
-#       )
-#
-#       ren <- renderUI({
-#         tagList(
-#           plotOutput(
-#             outputId = private$uiOutput_Id_,
-#             height = .height_
-#           )
-#         )
-#       })
-#
-#       return(ren)
-
     },
 
     ### server:----
     server = function(input, output, session, .plot_) {
 
       output[[private$uiOutput_Id_]] <- renderPlot({
-         .plot_
+        .plot_
       })
+
+    },
+    ### Getters:----
+    #### Get UI input ID:----
+    get_uiInId = function() {
+
+      return(private$uiInput_Id_)
+    },
+    #### Get UI output ID:----
+    get_uiOtId = function() {
+
+      return(private$uiOutput_Id_)
+    },
+    #### Get UI rendered output ID:----
+    get_uiRdOtId = function() {
+
+      return(private$uiRenderedOutput_Id_)
+    }
+
+  ),
+
+  private = list(
+    ## Fields:----
+    label_ = NULL,
+    id_ = NULL,
+    ns_ = NULL,
+    uiInput_Id_ = NULL,
+    uiOutput_Id_ = NULL,
+    uiRenderedOutput_Id_ = NULL
+
+    ## Methods:----
+
+  )
+)
+
+# Table - DT:----
+dataTableDT = R6::R6Class(
+  classname = 'dataTableDT',
+  public = list(
+    ## Fields:----
+
+    ## Methods:----
+    ### Initialise:----
+    initialize = function(.label_) {
+
+      private$label_ = .label_
+      private$id_ = uuid::UUIDgenerate()
+      private$ns_ = NS(private$id_)
+
+    },
+    ### UI:----
+    #### UI input:----
+    ui_input = function(.tag_ = "UI_input") {
+
+      private$uiInput_Id_ <- private$ns_(.tag_)
+
+      tagList(
+
+      )
+
+    },
+    #### UI output:----
+    ui_output = function(.tag_ = "UI_output", .width_ = "100%") {
+
+      private$uiOutput_Id_ <- private$ns_(.tag_)
+
+      tagList(
+        DT::dataTableOutput(outputId = private$uiOutput_Id_,
+                            width = .width_)
+      )
+
+    },
+    #### UI rendered output:----
+    ui_render_output = function(.tag_ = "UI_render_output") {
+
+      private$uiRenderedOutput_Id_ <- private$ns_(.tag_)
+
+    },
+
+    ### server:----
+    server = function(input, output, session, .table_) {
+
+      output[[private$uiOutput_Id_]] <- DT::renderDataTable(
+        server = FALSE,
+        expr = {
+          DT::datatable(
+            extensions = 'Buttons',
+            options = list(
+              dom = 'Bfrtip',
+              scrollX = T,
+              pageLength = 10,
+              buttons = c('csv', 'excel'),
+              filter = c("none")
+            ),
+            .table_
+          )
+        }
+      )
 
     },
     ### Getters:----
