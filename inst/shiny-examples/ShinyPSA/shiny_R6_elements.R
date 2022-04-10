@@ -149,7 +149,9 @@ actionButton = R6::R6Class(
     ### UI:----
     #### UI input:----
     ui_input = function(.tag_ = "UI_input",
-                        .class_ = "ml-2 pt-2 d-flex align-items-center text-right") {
+                        .class_ = "ml-2 pt-2 d-flex align-items-center
+                        text-right",
+                        .width_ = NULL) {
 
       private$uiInput_Id_ <- private$ns_(.tag_)
 
@@ -160,7 +162,8 @@ actionButton = R6::R6Class(
           actionButton(
             inputId = private$uiInput_Id_,
             label = private$label_,
-            class = "btn-primary"
+            class = "btn-primary",
+            width = .width_
           )
         )
       )

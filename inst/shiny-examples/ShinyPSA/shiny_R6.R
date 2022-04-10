@@ -12,7 +12,6 @@ ShinyPSA_R6_App <- R6::R6Class(
   public = list(
     # Fields:
     ## Global elements:----
-    oContainer = list(), # objects container
     iContainer = list(), # inputs container
     ## Page elements:----
     theme = NULL,
@@ -54,11 +53,16 @@ ShinyPSA_R6_App <- R6::R6Class(
         .label_ = "Select the reference intervention:"
       )
       self$iContainer[["icrSwch"]] <- prettySwitch$new(
-        .label_ = "Show ICER information")
+        .label_ = "Show ICER information"
+      )
       self$iContainer[["wtpSwch"]] <- prettySwitch$new(
-        .label_ = "Show WTP information")
+        .label_ = "Show WTP information"
+      )
       self$iContainer[["zmSldr"]] <- sliderInput$new(
         .label_ = "Test slider"
+      )
+      self$iContainer[["CEPBtn"]] <- actionButton$new(
+        .label_ = "Update Cost-Effectiveness Plane"
       )
 
     },
@@ -110,46 +114,61 @@ ShinyPSA_R6_App <- R6::R6Class(
             offset = 0,
             class = "pl-5 pr-5",
             tabsetPanel(
-              id = "outputs",
+              id = "dataName",
               tabPanel(
-                title = "Summary table",
-                self$iContainer[["sumTbl"]]$
-                  ui_output()
-              ),
-              bslib::nav(
-                width = 9,
-                title = "CEP",
-                fluidRow(
-                  column(
-                    width = 2,
-                    self$iContainer[["getRef"]]$
-                      ui_input(
-                        .choices_ = NULL
-                      ),
-                    hr(),
-                    self$iContainer[["icrSwch"]]$
-                      ui_input(
-                      ),
-                    h4("Willingness-to-pay:"),
-                    self$iContainer[["wtpSwch"]]$
-                      ui_input(
-                      ),
-                    hr(),
-                    self$iContainer[["zmSldr"]]$
-                      ui_input(
-                        .min_ = 0,
-                        .max_ = 1,
-                        .value_ = c(0.4, 0.6)
-                      ),
-                  ),
-                  column(
-                    width = 10,
-                    self$iContainer[["CEP"]]$
+                title = uiOutput(
+                  outputId = "selectedData",
+                  inline = TRUE
+                ),
+                tabsetPanel(
+                  id = "outputs",
+                  tabPanel(
+                    title = "Summary table",
+                    self$iContainer[["sumTbl"]]$
                       ui_output()
+                  ),
+                  bslib::nav(
+                    width = 9,
+                    title = "CEP",
+                    fluidRow(
+                      column(
+                        width = 2,
+                        self$iContainer[["CEPBtn"]]$
+                          ui_input(
+                            .class_ = " align-items-left
+                        text-right",
+                            .width_ = "100%"
+                          ),
+                        self$iContainer[["getRef"]]$
+                          ui_input(
+                            .choices_ = NULL
+                          ),
+                        hr(),
+                        self$iContainer[["icrSwch"]]$
+                          ui_input(
+                          ),
+                        h4("Willingness-to-pay:"),
+                        self$iContainer[["wtpSwch"]]$
+                          ui_input(
+                          ),
+                        hr(),
+                        self$iContainer[["zmSldr"]]$
+                          ui_input(
+                            .min_ = 0,
+                            .max_ = 1,
+                            .value_ = c(0.4, 0.6)
+                          ),
+                      ),
+                      column(
+                        width = 10,
+                        self$iContainer[["CEP"]]$
+                          ui_output()
+                      )
+                    )
                   )
                 )
               )
-            ),
+            )
           )
         )
       )
@@ -174,6 +193,15 @@ ShinyPSA_R6_App <- R6::R6Class(
           pos = "package:ShinyPSA"
         )
       )
+      #### Reactive data name object:----
+      data_name <- reactive(
+        input[[self$iContainer[["getData"]]$
+                 get_uiInId()]]
+      )
+
+      sData_name <- reactiveVal()
+
+      rContainer <- reactiveValues()
 
       ### Actions once user adds a dataset:----
       observeEvent(
@@ -181,13 +209,15 @@ ShinyPSA_R6_App <- R6::R6Class(
         eventExpr = input[[self$iContainer[["addBtn"]]$
                              get_uiInId()]],
         handlerExpr = {
-          #### Reactive data name object:----
-          data_name <- reactive(
-            input[[self$iContainer[["getData"]]$
-                     get_uiInId()]]
+          #### Show the name of the summarised data:
+          sData_name(
+            data_name()
           )
+          output$selectedData <- renderText({
+            sData_name()
+          })
           #### Create an instance of class ShinyPSA using the data:----
-          self$oContainer[[data_name()]] <- ShinyPSA$new(
+          rContainer[[sData_name()]] <- ShinyPSA$new(
             .effs = dataList()$e,
             .costs = dataList()$c,
             .interventions = dataList()$treats
@@ -198,7 +228,7 @@ ShinyPSA_R6_App <- R6::R6Class(
               session = session,
               input = input,
               output = output,
-              .plot_ = self$oContainer[[data_name()]]$
+              .plot_ = rContainer[[data_name()]]$
                 get_CEP()
             )
           self$iContainer[["zmSldr"]]$
@@ -222,8 +252,31 @@ ShinyPSA_R6_App <- R6::R6Class(
               session = session,
               input = input,
               output = output,
-              .table_ = self$oContainer[[data_name()]]$
+              .table_ = rContainer[[data_name()]]$
                 get_Summary_table()
+            )
+        },
+        ignoreNULL = TRUE,
+        ignoreInit = TRUE
+      )
+
+      observeEvent(
+        eventExpr = (input[[self$iContainer[["CEPBtn"]]$
+                              get_uiInId()]]),
+        handlerExpr = {
+          print(sData_name()) # try reset
+          self$iContainer[["CEP"]]$
+            server(
+              session = session,
+              input = input,
+              output = output,
+              .plot_ = rContainer[[sData_name()]]$
+                get_CEP(
+                  .show_ICER = input[[self$iContainer[["icrSwch"]]$
+                                        get_uiInId()]],
+                  .show_wtp = input[[self$iContainer[["wtpSwch"]]$
+                                       get_uiInId()]]
+                )
             )
         },
         ignoreNULL = TRUE,
