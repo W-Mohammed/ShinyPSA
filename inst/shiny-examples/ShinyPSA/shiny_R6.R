@@ -50,6 +50,16 @@ ShinyPSA_R6_App <- R6::R6Class(
       self$iContainer[["EVPI"]] <- ggplot2Plot$new(
         .label_ = "EVPI"
       )
+      self$iContainer[["getRef"]] <- inputSelection$new(
+        .label_ = "Select the reference intervention:"
+      )
+      self$iContainer[["icrSwch"]] <- prettySwitch$new(
+        .label_ = "Show ICER information")
+      self$iContainer[["wtpSwch"]] <- prettySwitch$new(
+        .label_ = "Show WTP information")
+      self$iContainer[["zmSldr"]] <- sliderInput$new(
+        .label_ = "Test slider"
+      )
 
     },
     ## UI:----
@@ -112,11 +122,25 @@ ShinyPSA_R6_App <- R6::R6Class(
                 fluidRow(
                   column(
                     width = 2,
-                    selectInput(
-                      inputId = "tst",
-                      label = "How things are",
-                      choices = c("one", "two")
-                    )
+                    self$iContainer[["getRef"]]$
+                      ui_input(
+                        .choices_ = NULL
+                      ),
+                    hr(),
+                    self$iContainer[["icrSwch"]]$
+                      ui_input(
+                      ),
+                    h4("Willingness-to-pay:"),
+                    self$iContainer[["wtpSwch"]]$
+                      ui_input(
+                      ),
+                    hr(),
+                    self$iContainer[["zmSldr"]]$
+                      ui_input(
+                        .min_ = 0,
+                        .max_ = 1,
+                        .value_ = c(0.4, 0.6)
+                      ),
                   ),
                   column(
                     width = 10,
@@ -176,6 +200,21 @@ ShinyPSA_R6_App <- R6::R6Class(
               output = output,
               .plot_ = self$oContainer[[data_name()]]$
                 get_CEP()
+            )
+          self$iContainer[["zmSldr"]]$
+            server(
+              session = session,
+              input = input,
+              output = output,
+              .min_ = min(dataList()$e),
+              .max_ = max(dataList()$c)
+            )
+          self$iContainer[["getRef"]]$
+            server(
+              session = session,
+              input = input,
+              output = output,
+              .choices_ = dataList()$treats
             )
           #### Retrieve the Summary table from the ShinyPSA object:----
           self$iContainer[["sumTbl"]]$
