@@ -62,7 +62,10 @@ ShinyPSA_R6_App <- R6::R6Class(
         .label_ = "Test slider"
       )
       self$iContainer[["CEPBtn"]] <- actionButton$new(
-        .label_ = "Update Cost-Effectiveness Plane"
+        .label_ = "Update CEP plot"
+      )
+      self$iContainer[["CEPRstBtn"]] <- actionButton$new(
+        .label_ = "Reset CEP plot"
       )
 
     },
@@ -135,15 +138,14 @@ ShinyPSA_R6_App <- R6::R6Class(
                         width = 2,
                         self$iContainer[["CEPBtn"]]$
                           ui_input(
-                            .class_ = " align-items-left
-                        text-right",
+                            # .class_ = " align-items-left text-right",
                             .width_ = "100%"
                           ),
+                        h4("ICER controls:"),
                         self$iContainer[["getRef"]]$
                           ui_input(
                             .choices_ = NULL
                           ),
-                        hr(),
                         self$iContainer[["icrSwch"]]$
                           ui_input(
                           ),
@@ -151,12 +153,18 @@ ShinyPSA_R6_App <- R6::R6Class(
                         self$iContainer[["wtpSwch"]]$
                           ui_input(
                           ),
-                        hr(),
+                        h4("Zoom controls:"),
                         self$iContainer[["zmSldr"]]$
                           ui_input(
                             .min_ = 0,
                             .max_ = 1,
                             .value_ = c(0.4, 0.6)
+                          ),
+                        hr(),
+                        self$iContainer[["CEPRstBtn"]]$
+                          ui_input(
+                            # .class_ = " align-items-left text-right",
+                            .width_ = "100%"
                           ),
                       ),
                       column(
@@ -193,19 +201,20 @@ ShinyPSA_R6_App <- R6::R6Class(
           pos = "package:ShinyPSA"
         )
       )
-      #### Reactive data name object:----
+      ### Reactive data name object:----
       data_name <- reactive(
         input[[self$iContainer[["getData"]]$
                  get_uiInId()]]
       )
 
+      ### Reactive/static data name object:----
       sData_name <- reactiveVal()
 
+      ### Reactive container for R6 objects:----
       rContainer <- reactiveValues()
 
-      ### Actions once user adds a dataset:----
+      ### Actions on add button:----
       observeEvent(
-        # eventExpr = input[[self$actionButton1$get_uiInId()]],
         eventExpr = input[[self$iContainer[["addBtn"]]$
                              get_uiInId()]],
         handlerExpr = {
@@ -260,6 +269,7 @@ ShinyPSA_R6_App <- R6::R6Class(
         ignoreInit = TRUE
       )
 
+      ### Actions on CEP update button:----
       observeEvent(
         eventExpr = (input[[self$iContainer[["CEPBtn"]]$
                               get_uiInId()]]),
@@ -282,6 +292,26 @@ ShinyPSA_R6_App <- R6::R6Class(
         ignoreNULL = TRUE,
         ignoreInit = TRUE
       )
+
+      ### Actions on CEP reset button:----
+      observeEvent(
+        eventExpr = (input[[self$iContainer[["CEPRstBtn"]]$
+                              get_uiInId()]]),
+        handlerExpr = {
+          print(sData_name()) # try reset
+          self$iContainer[["CEP"]]$
+            server(
+              session = session,
+              input = input,
+              output = output,
+              .plot_ = rContainer[[sData_name()]]$
+                get_CEP()
+            )
+        },
+        ignoreNULL = TRUE,
+        ignoreInit = TRUE
+      )
+
 
       ## Theme switcher:----
       observe(
