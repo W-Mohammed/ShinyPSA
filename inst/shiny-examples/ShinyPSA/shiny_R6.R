@@ -155,11 +155,17 @@ ShinyPSA_R6_App <- R6::R6Class(
                             .choices_ = NULL
                           ),
                         self$iContainer[["icrSwch"]]$
-                          ui_input(),
+                          ui_input(
+                            .class_ = "pl-2 flex-fill text-left"
+                          ),
                         self$iContainer[["wtpSwch"]]$
-                          ui_input(),
+                          ui_input(
+                            .class_ = "pl-2 flex-fill text-left"
+                          ),
                         self$iContainer[["zomSwch"]]$
-                          ui_input(),
+                          ui_input(
+                            .class_ = "pl-2 flex-fill text-left"
+                          ),
                         self$iContainer[["lgdSldrX"]]$
                           ui_input(
                             .min_ = 0,
@@ -298,8 +304,8 @@ ShinyPSA_R6_App <- R6::R6Class(
         handlerExpr = {
           # Get the reference intervention, if any:
           ref_ <- which(sData_list[[sData_name()]]$treats %in%
-                         input[[self$iContainer[["getRef"]]$
-                                  get_uiInId()]])
+                          input[[self$iContainer[["getRef"]]$
+                                   get_uiInId()]])
           if(length(ref_) != 1)
             ref_ <- NULL
           print(ref_)

@@ -50,13 +50,14 @@ prettySwitch = R6::R6Class(
     },
     ### UI:----
     #### UI input:----
-    ui_input = function(.tag_ = "UI_input", .value_ = FALSE) {
+    ui_input = function(.tag_ = "UI_input", .value_ = FALSE,
+                        .class_ = "flex-fill text-right") {
 
       private$uiInput_Id_ <- private$ns_(.tag_)
 
       tagList(
         div(
-          class = "flex-fill text-right",
+          class = .class_, #"flex-fill text-right"
           style = "font-size: 1rem;",
           shinyWidgets::prettySwitch(
             inputId = private$uiInput_Id_,
@@ -399,9 +400,12 @@ ggplot2Plot = R6::R6Class(
     ### server:----
     server = function(input, output, session, .plot_) {
 
-      output[[private$uiOutput_Id_]] <- renderPlot({
+      output[[private$uiOutput_Id_]] <- renderPlot(
+        expr = {
         .plot_
-      })
+      },
+      res = 148,
+      bg = "transparent")
 
     },
     ### Getters:----
