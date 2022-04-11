@@ -7,17 +7,18 @@
 #
 ################################################################################
 
+# Define a shiny R6 class:----
 ShinyPSA_R6_App <- R6::R6Class(
   classname = 'ShinyPSA_R6_App',
   public = list(
-    # Fields:
-    ## Global elements:----
+    ## Fields:----
+    ### Global elements:----
     iContainer = list(), # inputs container
-    ## Page elements:----
+    ### Page elements:----
     theme = NULL,
 
-    # Methods:----
-    ## Initialise:----
+    ## Methods:----
+    ### Initialise:----
     initialize = function() {
       self$theme <- bslib::bs_theme(bg = "black",
                                     fg = "white",
@@ -78,34 +79,34 @@ ShinyPSA_R6_App <- R6::R6Class(
       # )
 
     },
-    ## UI:----
+    ### UI:----
     ui = function() {
       fluidPage(
         theme = self$theme,
         waiter::use_waiter(),
-        ### Title panel:----
+        #### Title panel:----
         titlePanel(
           windowTitle = "ShinyPSA demo",
           div(
             class = "d-flex p-2 bd-highlight",
-            #### App logo:----
+            ##### App logo:----
             img(
               src = "https://pbs.twimg.com/profile_images/959365885537456128/tC4OVmkX_400x400.jpg",
               height = "35px",
               class = "pr-2 mb-1"),
-            #### Title:----
+            ##### Title:----
             span("ShinyPSA demo app!"),
             div(
               class = "pt-3 pb-0 mb-0 pl-3",
               fluidRow(
                 tagList(
-                  #### Data drop-list:----
+                  ##### Data drop-list:----
                   self$iContainer[["getData"]]$
                     ui_input(
                       .choices_ = NULL,
                       .class_ = "d-flex align-items-center"
                     ),
-                  #### Selection confirmation button:----
+                  ##### Selection confirmation button:----
                   self$iContainer[["addBtn"]]$
                     ui_input(
                       .class_ = "ml-2 pt-3 d-flex
@@ -114,12 +115,12 @@ ShinyPSA_R6_App <- R6::R6Class(
                 )
               )
             ),
-            #### Theme switcher:----
+            ##### Theme switcher:----
             self$iContainer[["themeSwch"]]$
               ui_input()
           )
         ),
-        ### Main body:----
+        #### Main body:----
         fluidRow(
           column(
             width = 12,
@@ -206,10 +207,10 @@ ShinyPSA_R6_App <- R6::R6Class(
         )
       )
     },
-    # Server:----
+    ### Server:----
     server = function(input, output, session) {
-      ## Data selector:----
-      ### Data drop-down list:----
+      #### Data handlers:----
+      ##### Data drop-down list:----
       self$iContainer[["getData"]]$
         server(
           session = session,
@@ -218,7 +219,7 @@ ShinyPSA_R6_App <- R6::R6Class(
           .choices_ = c("Vaccine_PSA", "Smoking_PSA")
         )
 
-      ### Reactive data set object:----
+      ##### Reactive data set object:----
       data_list <- reactive(
         get(
           x = input[[self$iContainer[["getData"]]$
@@ -226,40 +227,41 @@ ShinyPSA_R6_App <- R6::R6Class(
           pos = "package:ShinyPSA"
         )
       )
-      ### Reactive data name object:----
+      ##### Reactive data name object:----
       data_name <- reactive(
         input[[self$iContainer[["getData"]]$
                  get_uiInId()]]
       )
 
-      ### Reactive/static data set and data name object:----
+      ##### Reactive/static data set and data name object:----
       sData_list <- reactiveValues()
       sData_name <- reactiveVal()
 
-      ### Reactive container for R6 objects:----
+      ##### Reactive container for R6 objects:----
       rContainer <- reactiveValues()
 
-      ### Actions on add button:----
+      #### Renderers:----
+      ##### Actions on add button:----
       observeEvent(
         eventExpr = input[[self$iContainer[["addBtn"]]$
                              get_uiInId()]],
         handlerExpr = {
-          #### Store name and data set for later:----
+          ###### Store name and data set for later:----
           sData_name(
             data_name()
           )
           sData_list[[sData_name()]] <- data_list()
-          #### Render the name of the summarised data:----
+          ###### Render the name of the summarised data:----
           output$selectedData <- renderText({
             sData_name()
           })
-          #### Create an instance of class ShinyPSA using the data:----
+          ###### Create an instance of class ShinyPSA using the data:----
           rContainer[[sData_name()]] <- ShinyPSA$new(
             .effs = data_list()$e,
             .costs = data_list()$c,
             .interventions = data_list()$treats
           )
-          #### Retrieve the CEP from the ShinyPSA object:----
+          ###### Retrieve the CEP from the ShinyPSA object:----
           self$iContainer[["CEP"]]$
             server(
               session = session,
@@ -281,9 +283,9 @@ ShinyPSA_R6_App <- R6::R6Class(
               session = session,
               input = input,
               output = output,
-              .choices_ = c("NULL", data_list()$treats)
+              .choices_ = c("Do not set a reference", data_list()$treats)
             )
-          #### Retrieve the Summary table from the ShinyPSA object:----
+          ###### Retrieve the Summary table from the ShinyPSA object:----
           self$iContainer[["sumTbl"]]$
             server(
               session = session,
@@ -297,7 +299,7 @@ ShinyPSA_R6_App <- R6::R6Class(
         ignoreInit = TRUE
       )
 
-      ### Actions on CEP update button:----
+      ##### Actions on CEP update button:----
       observeEvent(
         eventExpr = (input[[self$iContainer[["CEPBtn"]]$
                               get_uiInId()]]),
@@ -335,7 +337,7 @@ ShinyPSA_R6_App <- R6::R6Class(
         ignoreInit = TRUE
       )
 
-      ### Actions on CEP reset button:----
+      ##### Actions on CEP reset button:----
       observeEvent(
         eventExpr = (input[[self$iContainer[["CEPRstBtn"]]$
                               get_uiInId()]]),
@@ -354,8 +356,8 @@ ShinyPSA_R6_App <- R6::R6Class(
         ignoreInit = TRUE
       )
 
-
-      ## Theme switcher:----
+      #### Global handlers:----
+      ##### Theme switcher:----
       observe(
         x = {
           session$setCurrentTheme(
@@ -374,15 +376,18 @@ ShinyPSA_R6_App <- R6::R6Class(
           )
         }
       )
-
     }
 
   ),
+
   private = list(
 
   )
 )
 
+# Instantiate a copy of class ShinyPSA_R6_App:
 app = ShinyPSA_R6_App$new()
 
+# Run the app:
+#thematic::thematic_shiny(font = "auto") # allows themes on ggplot2 plots
 shiny::shinyApp(app$ui(), app$server)
