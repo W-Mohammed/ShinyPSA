@@ -251,7 +251,7 @@ if (interactive()) {
   # shinyApp(ui, server)
 }
 
-extract <- function(text) {
+extract_numerics_ <- function(text) {
   text <- gsub(" ", "", text)
   split <- strsplit(text, ",", fixed = FALSE)[[1]]
   as.numeric(split)

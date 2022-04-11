@@ -404,7 +404,7 @@ ggplot2Plot = R6::R6Class(
         expr = {
         .plot_
       },
-      res = 148,
+      res = 148, # 96 120 are good values for resolution in shiny
       bg = "transparent")
 
     },
@@ -557,14 +557,13 @@ sliderInput = R6::R6Class(
     ### UI:----
     #### UI input:----
     ui_input = function(.tag_ = "UI_input", .min_, .max_, .value_,
-                        .width_ = "100%",
                         .class_ = "d-flex align-items-center") {
 
       private$uiInput_Id_ <- private$ns_(.tag_)
 
       tagList(
         div(
-          style = "display: flex; margin-top: 2rem !important;",
+          style = "display: flex;", #"margin-top: 2rem !important;",
           class = .class_, #d-flex align-items-center text-right #px-5 py-4
           sliderInput(
             inputId = private$uiInput_Id_,
@@ -613,6 +612,114 @@ sliderInput = R6::R6Class(
         min = .min_,
         max = .max_
       )
+
+    },
+    ### Getters:----
+    #### Get UI input ID:----
+    get_uiInId = function() {
+
+      return(private$uiInput_Id_)
+    },
+    #### Get UI output ID:----
+    get_uiOtId = function() {
+
+      return(private$uiOutput_Id_)
+    },
+    #### Get UI rendered output ID:----
+    get_uiRdOtId = function() {
+
+      return(private$uiRenderedOutput_Id_)
+    }
+
+  ),
+
+  private = list(
+    ## Fields:----
+    label_ = NULL,
+    id_ = NULL,
+    ns_ = NULL,
+    uiInput_Id_ = NULL,
+    uiOutput_Id_ = NULL,
+    uiRenderedOutput_Id_ = NULL
+
+    ## Methods:----
+
+  )
+)
+
+# textInput:----
+textInput = R6::R6Class(
+  classname = 'textInput',
+  public = list(
+    ## Fields:----
+
+    ## Methods:----
+    ### Initialise:----
+    initialize = function(.label_) {
+
+      private$label_ = .label_
+      private$id_ = uuid::UUIDgenerate()
+      private$ns_ = NS(private$id_)
+
+    },
+    ### UI:----
+    #### UI input:----
+    ui_input = function(.tag_ = "UI_input", .width_ = "100%",
+                        .class_ = "d-flex align-items-center",
+                        .value_ = "500, 20000, 30000, 50000") {
+
+      private$uiInput_Id_ <- private$ns_(.tag_)
+
+      tagList(
+        div(
+          style = "display: flex;", # "margin-top: 2rem !important;",
+          class = .class_, #d-flex align-items-center text-right #px-5 py-4
+          textInput(
+            inputId = private$uiInput_Id_,
+            label = private$label_,
+            width = .width_,
+            value = .value_
+          )
+        )
+      )
+
+    },
+    #### UI output:----
+    ui_output = function(.tag_ = "UI_output") {
+
+      private$uiOutput_Id_ <- private$ns_(.tag_)
+
+      tagList(
+        # renderUI(
+        #   inputId = private$uiOutput_Id_,
+        #   label = private$label_
+        # )
+      )
+
+    },
+    #### UI rendered output:----
+    ui_render_output = function(.tag_ = "UI_render_output") {
+
+      private$uiRenderedOutput_Id_ <- private$ns_(.tag_)
+
+      tagList(
+        # renderUI(
+        #   inputId = private$uiRenderedOutput_Id_,
+        #   label = private$label_
+        # )
+      )
+
+    },
+
+    ### server:----
+    server = function(input, output, session, .min_, .max_) {
+
+      # updateSliderInput(
+      #   session = session,
+      #   inputId = private$uiInput_Id_,
+      #   min = .min_,
+      #   max = .max_
+      # )
 
     },
     ### Getters:----

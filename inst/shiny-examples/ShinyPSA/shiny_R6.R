@@ -74,9 +74,16 @@ ShinyPSA_R6_App <- R6::R6Class(
       self$iContainer[["lgdSldrY"]] <- sliderInput$new(
         .label_ = "Legend Y coordinate:"
       )
-      # self$iContainer[["zmSldrX"]] <- sliderInput$new(
-      #   .label_ = "Zoom slider:"
-      # )
+      self$iContainer[["wtpTxt"]] <- textInput$new(
+        .label_ = "Enter WTP vector (comma delimited):"
+      )
+      self$iContainer[["lblSldrX"]] <- sliderInput$new(
+        .label_ = "ICER label X nudge:"
+      )
+      self$iContainer[["lblSldrY"]] <- sliderInput$new(
+        .label_ = "ICER label Y nudge:"
+      )
+
 
     },
     ### UI:----
@@ -155,18 +162,12 @@ ShinyPSA_R6_App <- R6::R6Class(
                           ui_input(
                             .choices_ = NULL
                           ),
-                        self$iContainer[["icrSwch"]]$
-                          ui_input(
-                            .class_ = "pl-2 flex-fill text-left"
-                          ),
                         self$iContainer[["wtpSwch"]]$
                           ui_input(
                             .class_ = "pl-2 flex-fill text-left"
                           ),
-                        self$iContainer[["zomSwch"]]$
-                          ui_input(
-                            .class_ = "pl-2 flex-fill text-left"
-                          ),
+                        self$iContainer[["wtpTxt"]]$
+                          ui_input(),
                         self$iContainer[["lgdSldrX"]]$
                           ui_input(
                             .min_ = 0,
@@ -178,6 +179,26 @@ ShinyPSA_R6_App <- R6::R6Class(
                             .min_ = 0,
                             .max_ = 1,
                             .value_ = 0.2
+                          ),
+                        self$iContainer[["icrSwch"]]$
+                          ui_input(
+                            .class_ = "pl-2 flex-fill text-left"
+                          ),
+                        self$iContainer[["lblSldrX"]]$
+                          ui_input(
+                            .min_ = 0,
+                            .max_ = 1,
+                            .value_ = 0.1
+                          ),
+                        self$iContainer[["lblSldrY"]]$
+                          ui_input(
+                            .min_ = 0,
+                            .max_ = 1,
+                            .value_ = 0.1
+                          ),
+                        self$iContainer[["zomSwch"]]$
+                          ui_input(
+                            .class_ = "pl-2 flex-fill text-left"
                           ),
                         # h4("Zoom controls:"),
                         # self$iContainer[["zmSldrX"]]$
@@ -310,7 +331,17 @@ ShinyPSA_R6_App <- R6::R6Class(
                                    get_uiInId()]])
           if(length(ref_) != 1)
             ref_ <- NULL
-          print(ref_)
+          # Get user defined WTP values:
+          wtp_ <- input[[self$iContainer[["wtpTxt"]]$
+                           get_uiInId()]]
+          wtp_ <- strsplit(wtp_, ",") %>%
+            unlist() %>%
+            as.numeric()
+          if(!is.null(wtp_))
+            wtp_ <- wtp_[!is.na(wtp_)]
+          if(!is.null(wtp_))
+            if(length(wtp_) < 1)
+              wtp_ <- NULL
           # Pass values to the get_CEP function:
           self$iContainer[["CEP"]]$
             server(
@@ -326,10 +357,15 @@ ShinyPSA_R6_App <- R6::R6Class(
                                         get_uiInId()]],
                   .show_wtp = input[[self$iContainer[["wtpSwch"]]$
                                        get_uiInId()]],
+                  .wtp_threshold = wtp_,
                   .legend_pos = c(input[[self$iContainer[["lgdSldrX"]]$
                                            get_uiInId()]],
                                   input[[self$iContainer[["lgdSldrY"]]$
-                                           get_uiInId()]])
+                                           get_uiInId()]]),
+                  .nudge_labels = c(input[[self$iContainer[["lblSldrX"]]$
+                                             get_uiInId()]],
+                                    input[[self$iContainer[["lblSldrY"]]$
+                                             get_uiInId()]])
                 )
             )
         },
