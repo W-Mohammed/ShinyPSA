@@ -55,11 +55,11 @@ ShinyPSA_R6_App <- R6::R6Class(
       self$iContainer[["icrSwch"]] <- prettySwitch$new(
         .label_ = "Show ICER information"
       )
+      self$iContainer[["zomSwch"]] <- prettySwitch$new(
+        .label_ = "Zoom to min/max values"
+      )
       self$iContainer[["wtpSwch"]] <- prettySwitch$new(
         .label_ = "Show WTP information"
-      )
-      self$iContainer[["zmSldr"]] <- sliderInput$new(
-        .label_ = "Test slider"
       )
       self$iContainer[["CEPBtn"]] <- actionButton$new(
         .label_ = "Update CEP plot"
@@ -67,6 +67,15 @@ ShinyPSA_R6_App <- R6::R6Class(
       self$iContainer[["CEPRstBtn"]] <- actionButton$new(
         .label_ = "Reset CEP plot"
       )
+      self$iContainer[["lgdSldrX"]] <- sliderInput$new(
+        .label_ = "Legend X coordinate:"
+      )
+      self$iContainer[["lgdSldrY"]] <- sliderInput$new(
+        .label_ = "Legend Y coordinate:"
+      )
+      # self$iContainer[["zmSldrX"]] <- sliderInput$new(
+      #   .label_ = "Zoom slider:"
+      # )
 
     },
     ## UI:----
@@ -141,26 +150,36 @@ ShinyPSA_R6_App <- R6::R6Class(
                             # .class_ = " align-items-left text-right",
                             .width_ = "100%"
                           ),
-                        h4("ICER controls:"),
                         self$iContainer[["getRef"]]$
                           ui_input(
                             .choices_ = NULL
                           ),
                         self$iContainer[["icrSwch"]]$
-                          ui_input(
-                          ),
-                        h4("Willingness-to-pay:"),
+                          ui_input(),
                         self$iContainer[["wtpSwch"]]$
-                          ui_input(
-                          ),
-                        h4("Zoom controls:"),
-                        self$iContainer[["zmSldr"]]$
+                          ui_input(),
+                        self$iContainer[["zomSwch"]]$
+                          ui_input(),
+                        self$iContainer[["lgdSldrX"]]$
                           ui_input(
                             .min_ = 0,
                             .max_ = 1,
-                            .value_ = c(0.4, 0.6)
+                            .value_ = 0.8
                           ),
-                        hr(),
+                        self$iContainer[["lgdSldrY"]]$
+                          ui_input(
+                            .min_ = 0,
+                            .max_ = 1,
+                            .value_ = 0.2
+                          ),
+                        # h4("Zoom controls:"),
+                        # self$iContainer[["zmSldrX"]]$
+                        #   ui_input(
+                        #     .min_ = 0,
+                        #     .max_ = 1,
+                        #     .value_ = c(0.4, 0.6)
+                        #   ),
+                        # hr(),
                         self$iContainer[["CEPRstBtn"]]$
                           ui_input(
                             # .class_ = " align-items-left text-right",
@@ -194,7 +213,7 @@ ShinyPSA_R6_App <- R6::R6Class(
         )
 
       ### Reactive data set object:----
-      dataList <- reactive(
+      data_list <- reactive(
         get(
           x = input[[self$iContainer[["getData"]]$
                        get_uiInId()]],
@@ -207,7 +226,8 @@ ShinyPSA_R6_App <- R6::R6Class(
                  get_uiInId()]]
       )
 
-      ### Reactive/static data name object:----
+      ### Reactive/static data set and data name object:----
+      sData_list <- reactiveValues()
       sData_name <- reactiveVal()
 
       ### Reactive container for R6 objects:----
@@ -218,18 +238,20 @@ ShinyPSA_R6_App <- R6::R6Class(
         eventExpr = input[[self$iContainer[["addBtn"]]$
                              get_uiInId()]],
         handlerExpr = {
-          #### Show the name of the summarised data:
+          #### Store name and data set for later:----
           sData_name(
             data_name()
           )
+          sData_list[[sData_name()]] <- data_list()
+          #### Render the name of the summarised data:----
           output$selectedData <- renderText({
             sData_name()
           })
           #### Create an instance of class ShinyPSA using the data:----
           rContainer[[sData_name()]] <- ShinyPSA$new(
-            .effs = dataList()$e,
-            .costs = dataList()$c,
-            .interventions = dataList()$treats
+            .effs = data_list()$e,
+            .costs = data_list()$c,
+            .interventions = data_list()$treats
           )
           #### Retrieve the CEP from the ShinyPSA object:----
           self$iContainer[["CEP"]]$
@@ -240,20 +262,20 @@ ShinyPSA_R6_App <- R6::R6Class(
               .plot_ = rContainer[[data_name()]]$
                 get_CEP()
             )
-          self$iContainer[["zmSldr"]]$
-            server(
-              session = session,
-              input = input,
-              output = output,
-              .min_ = min(dataList()$e),
-              .max_ = max(dataList()$c)
-            )
+          # self$iContainer[["zmSldrX"]]$
+          #   server(
+          #     session = session,
+          #     input = input,
+          #     output = output,
+          #     .min_ = min(data_list()$e),
+          #     .max_ = max(data_list()$c)
+          #   )
           self$iContainer[["getRef"]]$
             server(
               session = session,
               input = input,
               output = output,
-              .choices_ = dataList()$treats
+              .choices_ = c("NULL", data_list()$treats)
             )
           #### Retrieve the Summary table from the ShinyPSA object:----
           self$iContainer[["sumTbl"]]$
@@ -274,7 +296,14 @@ ShinyPSA_R6_App <- R6::R6Class(
         eventExpr = (input[[self$iContainer[["CEPBtn"]]$
                               get_uiInId()]]),
         handlerExpr = {
-          print(sData_name()) # try reset
+          # Get the reference intervention, if any:
+          ref_ <- which(sData_list[[sData_name()]]$treats %in%
+                         input[[self$iContainer[["getRef"]]$
+                                  get_uiInId()]])
+          if(length(ref_) != 1)
+            ref_ <- NULL
+          print(ref_)
+          # Pass values to the get_CEP function:
           self$iContainer[["CEP"]]$
             server(
               session = session,
@@ -282,10 +311,17 @@ ShinyPSA_R6_App <- R6::R6Class(
               output = output,
               .plot_ = rContainer[[sData_name()]]$
                 get_CEP(
+                  .ref = ref_,
+                  .zoom = input[[self$iContainer[["zomSwch"]]$
+                                   get_uiInId()]],
                   .show_ICER = input[[self$iContainer[["icrSwch"]]$
                                         get_uiInId()]],
                   .show_wtp = input[[self$iContainer[["wtpSwch"]]$
-                                       get_uiInId()]]
+                                       get_uiInId()]],
+                  .legend_pos = c(input[[self$iContainer[["lgdSldrX"]]$
+                                           get_uiInId()]],
+                                  input[[self$iContainer[["lgdSldrY"]]$
+                                           get_uiInId()]])
                 )
             )
         },
