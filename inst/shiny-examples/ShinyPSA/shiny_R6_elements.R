@@ -152,6 +152,8 @@ actionButton = R6::R6Class(
     ui_input = function(.tag_ = "UI_input",
                         .class_ = "ml-2 pt-2 d-flex align-items-center
                         text-right",
+                        .style_ = "display: flex;
+                        margin-top: 2rem !important;",
                         .width_ = NULL) {
 
       private$uiInput_Id_ <- private$ns_(.tag_)
@@ -159,7 +161,7 @@ actionButton = R6::R6Class(
       tagList(
         div(
           class = .class_, #ml-2 "d-flex align-items-center text-right"
-          style = "display: flex; margin-top: 2rem !important;",
+          style = .style_, #"display: flex; margin-top: 2rem !important;",
           actionButton(
             inputId = private$uiInput_Id_,
             label = private$label_,
@@ -262,14 +264,16 @@ inputSelection = R6::R6Class(
     #### UI input:----
     ui_input = function(.tag_ = "UI_input", .choices_, .selected_ = NULL,
                         .multiple_ = FALSE, .width_ = "100%",
-                        .class_ = "d-flex align-items-center") {
+                        .class_ = "d-flex align-items-center",
+                        .style_ = "display: flex; margin-top:
+                        2rem !important;") {
 
       private$uiInput_Id_ <- private$ns_(.tag_)
 
       tagList(
         div(
-          style = "display: flex; margin-top: 2rem !important;",
-        class = .class_, #d-flex align-items-center text-right #px-5 py-4
+          style = .style_, #"display: flex; margin-top: 2rem !important;"
+          class = .class_, #d-flex align-items-center text-right #px-5 py-4
           selectizeInput(
             inputId = private$uiInput_Id_,
             label = private$label_,
@@ -402,10 +406,10 @@ ggplot2Plot = R6::R6Class(
 
       output[[private$uiOutput_Id_]] <- renderPlot(
         expr = {
-        .plot_
-      },
-      res = 148, # 96 120 are good values for resolution in shiny
-      bg = "transparent")
+          .plot_
+        },
+        res = 148, # 96 120 are good values for resolution in shiny
+        bg = "transparent")
 
     },
     ### Getters:----

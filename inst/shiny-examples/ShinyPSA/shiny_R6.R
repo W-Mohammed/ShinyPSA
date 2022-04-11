@@ -27,10 +27,13 @@ ShinyPSA_R6_App <- R6::R6Class(
         .label_ = "light_mode"
       )
       self$iContainer[["addBtn"]] <- actionButton$new(
-        .label_ = "Add"
+        .label_ = "Summarise selected PSA dataset"
+      )
+      self$iContainer[["uplBtn"]] <- actionButton$new(
+        .label_ = "Summarise uploaded PSA dataset"
       )
       self$iContainer[["getData"]] <- inputSelection$new(
-        .label_ = "Choose a dataset:"
+        .label_ = NULL
       )
       self$iContainer[["sumTbl"]] <-  dataTableDT$new(
         .label_ = "PSA summary table"
@@ -83,7 +86,9 @@ ShinyPSA_R6_App <- R6::R6Class(
       self$iContainer[["lblSldrY"]] <- sliderInput$new(
         .label_ = "ICER label Y nudge:"
       )
-
+      self$iContainer[["intrNme"]] <- textInput$new(
+        .label_ = "Enter interventions' names (comma delimited):"
+      )
 
     },
     ### UI:----
@@ -103,25 +108,6 @@ ShinyPSA_R6_App <- R6::R6Class(
               class = "pr-2 mb-1"),
             ##### Title:----
             span("ShinyPSA demo app!"),
-            div(
-              class = "pt-3 pb-0 mb-0 pl-3",
-              fluidRow(
-                tagList(
-                  ##### Data drop-list:----
-                  self$iContainer[["getData"]]$
-                    ui_input(
-                      .choices_ = NULL,
-                      .class_ = "d-flex align-items-center"
-                    ),
-                  ##### Selection confirmation button:----
-                  self$iContainer[["addBtn"]]$
-                    ui_input(
-                      .class_ = "ml-2 pt-3 d-flex
-                      align-items-center text-right"
-                    )
-                )
-              )
-            ),
             ##### Theme switcher:----
             self$iContainer[["themeSwch"]]$
               ui_input()
@@ -135,6 +121,121 @@ ShinyPSA_R6_App <- R6::R6Class(
             class = "pl-5 pr-5",
             tabsetPanel(
               id = "dataName",
+              tabPanel(
+                title = "Settings",
+                icon = icon("cog"),
+                fluidRow(
+                  column(
+                    width = 5,
+                    style = "border-right: 1px solid",
+                    div(
+                      class = "pt-10 pb-0 mb-0 pl-5",
+                      h4(
+                        class = "pt-2",
+                        "Option 1: Choose from existing datasets:"
+                      ),
+                      fluidRow(
+                        tagList(
+                          ##### Data drop-list:----
+                          self$iContainer[["getData"]]$
+                            ui_input(
+                              .choices_ = NULL,
+                              .style_ = "display: flex;
+                          margin-top: 2rem !important;",
+                              .class_ = "pl-4 d-flex align-items-start",
+                              #.width_ = "200%"
+                            )
+                        )
+                      ),
+                      div(
+                        style = "display: flex;
+                          margin-top: 9rem !important;",
+                        class = "d-flex flex-row-reverse",
+                        ##### Selection confirmation button:----
+                        self$iContainer[["addBtn"]]$
+                          ui_input(
+                            .style_ = "display: flex;
+                          margin-top: 2rem !important;",
+                            .class_ = "ml-2 d-flex align-items-end
+                          text-right"
+                          )
+                      )
+                    )
+                  ),
+                  column(
+                    width = 5,
+                    div(
+                      class = "pt-10 pb-0 mb-0 pl-5",
+                      h4(
+                        class = "pt-2",
+                        "Option 2: Upload your own data:"
+                      ),
+                      fluidRow(
+                        tagList(
+                          ##### Data uploading:----
+                          # Input: upload costs file:
+                          div(
+                            style = "display: flex;
+                          margin-top: 2rem !important;",
+                            class = "pl-4 d-flex align-items-start",
+                            fileInput(
+                              buttonLabel = "Browse costs file...",
+                              inputId = "c",
+                              label = NULL,
+                              multiple = FALSE,
+                              accept = c(".csv")
+                            )
+                          )
+                        )
+                      ),
+                      fluidRow(
+                        tagList(
+                          # Input: upload effects file:
+                          div(
+                            style = "display: flex;
+                          margin-top: 0rem !important;",
+                            class = "pl-4 d-flex align-items-start",
+                            fileInput(
+                              buttonLabel = "Browse effects file...",
+                              inputId = "e",
+                              label = NULL,
+                              multiple = FALSE,
+                              accept = c(".csv")
+                            )
+                          ),
+                        )
+                      ),
+                      fluidRow(
+                        tagList(
+                          div(
+                            style = "display: flex;
+                          margin-top: 0rem !important;",
+                            class = "pl-4 d-flex align-items-start",
+                            # Input: add interventions' names:
+                            self$iContainer[["intrNme"]]$
+                              ui_input(
+                                .value_ = NULL
+                              )
+                          )
+                        )
+                      )
+                    ),
+                    div(
+                      style = "display: flex;
+                          margin-top: 0rem !important;",
+                      class = "d-flex flex-row-reverse",
+                      # upload effects button:
+                      self$iContainer[["uplBtn"]]$
+                        ui_input(
+                          .style_ = "display: flex;
+                          margin-top: 0rem !important;",
+                          .class_ = "ml-2 d-flex align-items-start
+                          text-right"
+                        )
+                    )
+                  )
+                )
+              ),
               tabPanel(
                 title = uiOutput(
                   outputId = "selectedData",
@@ -160,7 +261,7 @@ ShinyPSA_R6_App <- R6::R6Class(
                           ),
                         self$iContainer[["getRef"]]$
                           ui_input(
-                            .choices_ = NULL
+                            .choices_ = NULL,
                           ),
                         self$iContainer[["wtpSwch"]]$
                           ui_input(
@@ -239,20 +340,71 @@ ShinyPSA_R6_App <- R6::R6Class(
           output = output,
           .choices_ = c("Vaccine_PSA", "Smoking_PSA")
         )
-
-      ##### Reactive data set object:----
-      data_list <- reactive(
-        get(
-          x = input[[self$iContainer[["getData"]]$
-                       get_uiInId()]],
-          pos = "package:ShinyPSA"
+      ##### Uploaded data:----
+      incoming <- reactive({
+        req(
+          input$c,
+          input$e,
+          input[[self$iContainer[["intrNme"]]$
+                   get_uiInId()]]
         )
-      )
-      ##### Reactive data name object:----
-      data_name <- reactive(
-        input[[self$iContainer[["getData"]]$
-                 get_uiInId()]]
-      )
+        list(
+          "c" = read_csv(
+            file = input$c$datapath,
+            show_col_types = FALSE
+          ),
+          "e" = read_csv(
+            file = input$e$datapath,
+            show_col_types = FALSE
+          ),
+          "treats" = strsplit(input[[self$iContainer[["intrNme"]]$
+                                       get_uiInId()]],
+                              ",") %>%
+            unlist() %>%
+            gsub(pattern = " ", replacement = "")
+        )
+      })
+      uData_list <- reactive({
+        validate(
+          need(!is.null(incoming()$c),
+               "Costs file is empty or could not be processed"),
+          need(!is.null(incoming()$e),
+               "Effects file is empty or could not be processed"),
+          need(dim(incoming()$c) == dim(incoming()$e),
+               "Costs/effects don't have equal rows and/or columns"),
+          need(length(incoming()$treats) == ncol(incoming()$c),
+               "Provided names are not equal to data columns")
+        )
+        incoming()
+      })
+
+      # observeEvent(
+      #   eventExpr = input[[self$iContainer[["addBtn"]]$
+      #                        get_uiInId()]],
+      #   handlerExpr = ({
+      #     ##### Reactive data set object:----
+      #     data_list <- reactive(
+      #       get(
+      #         x = input[[self$iContainer[["getData"]]$
+      #                      get_uiInId()]],
+      #         pos = "package:ShinyPSA"
+      #       )
+      #     )
+      #     ##### Reactive data name object:----
+      #     data_name <- reactive(
+      #       input[[self$iContainer[["getData"]]$
+      #                get_uiInId()]]
+      #     )
+      #   }),
+      #   ignoreInit = TRUE,
+      #   ignoreNULL = TRUE
+      # )
+
+      # ##### Reactive data name object:----
+      # data_name <- reactive(
+      #   input[[self$iContainer[["getData"]]$
+      #            get_uiInId()]]
+      # )
 
       ##### Reactive/static data set and data name object:----
       sData_list <- reactiveValues()
@@ -269,18 +421,23 @@ ShinyPSA_R6_App <- R6::R6Class(
         handlerExpr = {
           ###### Store name and data set for later:----
           sData_name(
-            data_name()
+            input[[self$iContainer[["getData"]]$
+                     get_uiInId()]]
+            )
+          sData_list[[sData_name()]] <- get(
+            x = input[[self$iContainer[["getData"]]$
+                         get_uiInId()]],
+            pos = "package:ShinyPSA"
           )
-          sData_list[[sData_name()]] <- data_list()
           ###### Render the name of the summarised data:----
           output$selectedData <- renderText({
             sData_name()
           })
           ###### Create an instance of class ShinyPSA using the data:----
           rContainer[[sData_name()]] <- ShinyPSA$new(
-            .effs = data_list()$e,
-            .costs = data_list()$c,
-            .interventions = data_list()$treats
+            .effs = sData_list[[sData_name()]]$e,
+            .costs = sData_list[[sData_name()]]$c,
+            .interventions = sData_list[[sData_name()]]$treats
           )
           ###### Retrieve the CEP from the ShinyPSA object:----
           self$iContainer[["CEP"]]$
@@ -288,7 +445,7 @@ ShinyPSA_R6_App <- R6::R6Class(
               session = session,
               input = input,
               output = output,
-              .plot_ = rContainer[[data_name()]]$
+              .plot_ = rContainer[[sData_name()]]$
                 get_CEP()
             )
           # self$iContainer[["zmSldrX"]]$
@@ -304,7 +461,8 @@ ShinyPSA_R6_App <- R6::R6Class(
               session = session,
               input = input,
               output = output,
-              .choices_ = c("Do not set a reference", data_list()$treats)
+              .choices_ = c("Do not set a reference",
+                            sData_list[[sData_name()]]$treats)
             )
           ###### Retrieve the Summary table from the ShinyPSA object:----
           self$iContainer[["sumTbl"]]$
@@ -312,7 +470,67 @@ ShinyPSA_R6_App <- R6::R6Class(
               session = session,
               input = input,
               output = output,
-              .table_ = rContainer[[data_name()]]$
+              .table_ = rContainer[[sData_name()]]$
+                get_Summary_table()
+            )
+        },
+        ignoreNULL = TRUE,
+        ignoreInit = TRUE
+      )
+
+      ##### Actions on upload button:----
+      observeEvent(
+        eventExpr = input[[self$iContainer[["uplBtn"]]$
+                             get_uiInId()]],
+        handlerExpr = {
+          ###### Store name and data set for later:----
+          sData_name(
+            "uploaded data"
+          )
+          req(uData_list())
+          sData_list[[sData_name()]] <- uData_list()
+          ###### Render the name of the summarised data:----
+          output$selectedData <- renderText({
+            sData_name()
+          })
+          ###### Create an instance of class ShinyPSA using the data:----
+          rContainer[[sData_name()]] <- ShinyPSA$new(
+            .effs = sData_list[[sData_name()]]$e,
+            .costs = sData_list[[sData_name()]]$c,
+            .interventions = sData_list[[sData_name()]]$treats
+          )
+          ###### Retrieve the CEP from the ShinyPSA object:----
+          self$iContainer[["CEP"]]$
+            server(
+              session = session,
+              input = input,
+              output = output,
+              .plot_ = rContainer[[sData_name()]]$
+                get_CEP()
+            )
+          # self$iContainer[["zmSldrX"]]$
+          #   server(
+          #     session = session,
+          #     input = input,
+          #     output = output,
+          #     .min_ = min(data_list()$e),
+          #     .max_ = max(data_list()$c)
+          #   )
+          self$iContainer[["getRef"]]$
+            server(
+              session = session,
+              input = input,
+              output = output,
+              .choices_ = c("Do not set a reference",
+                            sData_list[[sData_name()]]$treats)
+            )
+          ###### Retrieve the Summary table from the ShinyPSA object:----
+          self$iContainer[["sumTbl"]]$
+            server(
+              session = session,
+              input = input,
+              output = output,
+              .table_ = rContainer[[sData_name()]]$
                 get_Summary_table()
             )
         },
