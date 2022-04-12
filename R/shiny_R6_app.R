@@ -7,7 +7,17 @@
 #
 ################################################################################
 
-# Define a shiny R6 class:----
+# Shiny_R6_app class:----
+#' R6 Class representing a Shiny app.
+#'
+#' @description
+#' An instance of this class is a fully fledged shiny app.
+#' @format An [R6::R6Class] object.
+#' @name ShinyPSA_R6_App
+NULL
+#'
+#' @rdname ShinyPSA_R6_App
+#' @export
 ShinyPSA_R6_App <- R6::R6Class(
   classname = 'ShinyPSA_R6_App',
   public = list(

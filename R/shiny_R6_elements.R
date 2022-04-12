@@ -1,38 +1,23 @@
 ################################################################################
 #
-# Script Name:        shiny_R6_elements.R
+# Script Name:        shiny_R6_app.R
 # Module Name:        Economic/PSA/demo app
 # Script Description: Defines a set of classes used in the shiny app
 # Author:             WM-University of Sheffield (wmamohammed1@sheffield.ac.uk)
 #
 ################################################################################
-
-# Objects container:----
-R6_container = R6::R6Class(
-  classname = "R6_container",
-
-  public = list(
-    ## Fields:----
-    store = list(),
-
-    ## Methods:----
-    ### Add R6 objects to container:----
-    add = function(.objectName_, .object_) {
-      self$store[[.objectName_]] <- .object_
-
-      invisible(self)
-    }
-  ),
-
-  private = list(
-    ## Fields:----
-
-    ## Methods:----
-
-  )
-)
-
-# Pretty Switch:----
+# prettySwitch:----
+#' R6 Class employing shinyWidgets::prettySwitch.
+#'
+#' @description
+#' An instance of this class is used in similar way to
+#' shinyWidgets::prettySwitch
+#' @format An [R6::R6Class] object.
+#' @name prettySwitch
+NULL
+#'
+#' @rdname prettySwitch
+#' @export
 prettySwitch = R6::R6Class(
   classname = 'prettySwitch',
 
@@ -132,6 +117,16 @@ prettySwitch = R6::R6Class(
 )
 
 # Action buttons:----
+#' R6 Class employing shiny::actionButton
+#'
+#' @description
+#' An instance of this class is used in similar way to shiny::actionButton
+#' @format An [R6::R6Class] object.
+#' @name actionButton
+NULL
+#'
+#' @rdname actionButton
+#' @export
 actionButton = R6::R6Class(
   classname = 'actionButton',
 
@@ -246,6 +241,17 @@ actionButton = R6::R6Class(
 )
 
 # Input selection:----
+#' R6 Class employing shiny::inputSelection
+#'
+#' @description
+#' An instance of this class is used in similar way to
+#' shiny::inputSelection
+#' @format An [R6::R6Class] object.
+#' @name inputSelection
+NULL
+#'
+#' @rdname inputSelection
+#' @export
 inputSelection = R6::R6Class(
   classname = 'inputSelection',
   public = list(
@@ -358,6 +364,17 @@ inputSelection = R6::R6Class(
 )
 
 # Plot - ggplot2:----
+#' R6 Class employing shiny::renderPlot & shiny::plotOutput
+#'
+#' @description
+#' An instance of this class is used in similar way to shiny::renderPlot &
+#' shiny::plotOutput
+#' @format An [R6::R6Class] object.
+#' @name ggplot2Plot
+NULL
+#'
+#' @rdname ggplot2Plot
+#' @export
 ggplot2Plot = R6::R6Class(
   classname = 'ggplot2Plot',
   public = list(
@@ -446,6 +463,17 @@ ggplot2Plot = R6::R6Class(
 )
 
 # Table - DT:----
+#' R6 Class employing DT::renderDataTable & DT::dataTableOutput
+#'
+#' @description
+#' An instance of this class is used in similar way to DT::renderDataTable
+#' & DT::dataTableOutput
+#' @format An [R6::R6Class] object.
+#' @name dataTableDT
+NULL
+#'
+#' @rdname dataTableDT
+#' @export
 dataTableDT = R6::R6Class(
   classname = 'dataTableDT',
   public = list(
@@ -544,6 +572,16 @@ dataTableDT = R6::R6Class(
 )
 
 # sliderInput:----
+#' R6 Class employing shiny::sliderInput
+#'
+#' @description
+#' An instance of this class is used in similar way to shiny::sliderInput
+#' @format An [R6::R6Class] object.
+#' @name sliderInput
+NULL
+#'
+#' @rdname sliderInput
+#' @export
 sliderInput = R6::R6Class(
   classname = 'sliderInput',
   public = list(
@@ -652,6 +690,16 @@ sliderInput = R6::R6Class(
 )
 
 # textInput:----
+#' R6 Class employing shiny::textInput
+#'
+#' @description
+#' An instance of this class is used in similar way to shiny::textInput
+#' @format An [R6::R6Class] object.
+#' @name textInput
+NULL
+#'
+#' @rdname textInput
+#' @export
 textInput = R6::R6Class(
   classname = 'textInput',
   public = list(
@@ -761,6 +809,16 @@ textInput = R6::R6Class(
 
 
 # numericInput:----
+#' R6 Class employing shiny::numericInput
+#'
+#' @description
+#' An instance of this class is used in similar way to shiny::numericInput
+#' @format An [R6::R6Class] object.
+#' @name numericInput
+NULL
+#'
+#' @rdname numericInput
+#' @export
 numericInput = R6::R6Class(
   classname = 'numericInput',
   public = list(
