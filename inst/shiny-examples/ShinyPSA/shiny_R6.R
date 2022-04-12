@@ -378,34 +378,6 @@ ShinyPSA_R6_App <- R6::R6Class(
         incoming()
       })
 
-      # observeEvent(
-      #   eventExpr = input[[self$iContainer[["addBtn"]]$
-      #                        get_uiInId()]],
-      #   handlerExpr = ({
-      #     ##### Reactive data set object:----
-      #     data_list <- reactive(
-      #       get(
-      #         x = input[[self$iContainer[["getData"]]$
-      #                      get_uiInId()]],
-      #         pos = "package:ShinyPSA"
-      #       )
-      #     )
-      #     ##### Reactive data name object:----
-      #     data_name <- reactive(
-      #       input[[self$iContainer[["getData"]]$
-      #                get_uiInId()]]
-      #     )
-      #   }),
-      #   ignoreInit = TRUE,
-      #   ignoreNULL = TRUE
-      # )
-
-      # ##### Reactive data name object:----
-      # data_name <- reactive(
-      #   input[[self$iContainer[["getData"]]$
-      #            get_uiInId()]]
-      # )
-
       ##### Reactive/static data set and data name object:----
       sData_list <- reactiveValues()
       sData_name <- reactiveVal()
@@ -639,9 +611,9 @@ ShinyPSA_R6_App <- R6::R6Class(
   )
 )
 
-# Instantiate a copy of class ShinyPSA_R6_App:
+# Instantiate a copy of class ShinyPSA_R6_App:----
 app = ShinyPSA_R6_App$new()
 
-# Run the app:
+# Run the app:----
 #thematic::thematic_shiny(font = "auto") # allows themes on ggplot2 plots
 shiny::shinyApp(app$ui(), app$server)
