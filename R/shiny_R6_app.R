@@ -1303,10 +1303,3 @@ ShinyPSA_R6_App <- R6::R6Class(
 
   )
 )
-
-# Instantiate a copy of class ShinyPSA_R6_App:----
-app = ShinyPSA_R6_App$new()
-
-# Run the app:----
-#thematic::thematic_shiny(font = "auto") # allows themes on ggplot2 plots
-shiny::shinyApp(app$ui(), app$server)
