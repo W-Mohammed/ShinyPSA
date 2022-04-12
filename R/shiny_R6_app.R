@@ -208,7 +208,7 @@ ShinyPSA_R6_App <- R6::R6Class(
         .label_ = "Enter WTP vector (comma delimited):"
       )
       self$iContainer[["popEVPI"]] <- prettySwitch$new(
-        .label_ = "Estimate population EVPI"
+        .label_ = "Estimate individual EVPI"
       )
       self$iContainer[["timEVPI"]] <- numericInput$new(
         .label_ = "Population EVPI time horizon:"
@@ -749,6 +749,27 @@ ShinyPSA_R6_App <- R6::R6Class(
         eventExpr = input[[self$iContainer[["addBtn"]]$
                              get_uiInId()]],
         handlerExpr = {
+          ###### Waiter:----
+          waiter <- waiter::Waiter$new(
+            # id = c("add", "remove"),
+            html = div(
+              style = "
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content:center;
+            color: white;
+            opacity: 1 !important;
+          ",
+              h4("Summarising selected PSA data..."),
+              h4("Please wait."),
+              br(),br(),
+              waiter::spin_wandering_cubes()
+            ),
+            hide_on_render  = FALSE
+          )
+          waiter$show()
+          on.exit(waiter$hide())
           ###### Store name and data set for later:----
           sData_name(
             input[[self$iContainer[["getData"]]$
@@ -854,6 +875,27 @@ ShinyPSA_R6_App <- R6::R6Class(
         eventExpr = input[[self$iContainer[["uplBtn"]]$
                              get_uiInId()]],
         handlerExpr = {
+          ###### Waiter:----
+          waiter <- waiter::Waiter$new(
+            # id = c("add", "remove"),
+            html = div(
+              style = "
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content:center;
+            color: white;
+            opacity: 1 !important;
+          ",
+              h4("Summarising uploaded PSA data..."),
+              h4("Please wait."),
+              br(),br(),
+              waiter::spin_wandering_cubes()
+            ),
+            hide_on_render  = FALSE
+          )
+          waiter$show()
+          on.exit(waiter$hide())
           ###### Store name and data set for later:----
           sData_name(
             "uploaded data"
@@ -956,6 +998,28 @@ ShinyPSA_R6_App <- R6::R6Class(
         eventExpr = (input[[self$iContainer[["updBtn1"]]$
                               get_uiInId()]]),
         handlerExpr = {
+          ###### Waiter:----
+          waiter <- waiter::Waiter$new(
+            # id = c("add", "remove"),
+            html = div(
+              style = "
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content:center;
+            color: white;
+            opacity: 1 !important;
+          ",
+              h4("Updating Cost-effectiveness plane..."),
+              h4("Please wait."),
+              br(),br(),
+              waiter::spin_wandering_cubes()
+            ),
+            hide_on_render  = FALSE
+          )
+          waiter$show()
+          on.exit(waiter$hide())
+          ###### Update CEP:----
           # Get the reference intervention, if any:
           ref_ <- which(sData_list[[sData_name()]]$treats %in%
                           input[[self$iContainer[["getRef1"]]$
@@ -1009,7 +1073,28 @@ ShinyPSA_R6_App <- R6::R6Class(
         eventExpr = (input[[self$iContainer[["RstBtn1"]]$
                               get_uiInId()]]),
         handlerExpr = {
-          print(sData_name())
+          ###### Waiter:----
+          waiter <- waiter::Waiter$new(
+            # id = c("add", "remove"),
+            html = div(
+              style = "
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content:center;
+            color: white;
+            opacity: 1 !important;
+          ",
+              h4("Resetting Cost-effectiveness plane..."),
+              h4("Please wait."),
+              br(),br(),
+              waiter::spin_wandering_cubes()
+            ),
+            hide_on_render  = FALSE
+          )
+          waiter$show()
+          on.exit(waiter$hide())
+          ###### Reset CEP:----
           self$iContainer[["CEP"]]$
             server(
               session = session,
@@ -1028,6 +1113,28 @@ ShinyPSA_R6_App <- R6::R6Class(
         eventExpr = (input[[self$iContainer[["updBtn2"]]$
                               get_uiInId()]]),
         handlerExpr = {
+          ###### Waiter:----
+          waiter <- waiter::Waiter$new(
+            # id = c("add", "remove"),
+            html = div(
+              style = "
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content:center;
+            color: white;
+            opacity: 1 !important;
+          ",
+              h4("Updating Cost-effectiveness acceptability curve..."),
+              h4("Please wait."),
+              br(),br(),
+              waiter::spin_wandering_cubes()
+            ),
+            hide_on_render  = FALSE
+          )
+          waiter$show()
+          on.exit(waiter$hide())
+          ###### Update CEAC:----
           # Get the reference intervention, if any:
           ref_ <- which(sData_list[[sData_name()]]$treats %in%
                           input[[self$iContainer[["getRef2"]]$
@@ -1081,6 +1188,28 @@ ShinyPSA_R6_App <- R6::R6Class(
         eventExpr = (input[[self$iContainer[["RstBtn2"]]$
                               get_uiInId()]]),
         handlerExpr = {
+          ###### Waiter:----
+          waiter <- waiter::Waiter$new(
+            # id = c("add", "remove"),
+            html = div(
+              style = "
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content:center;
+            color: white;
+            opacity: 1 !important;
+          ",
+              h4("Resetting Cost-effectiveness acceptability curve..."),
+              h4("Please wait."),
+              br(),br(),
+              waiter::spin_wandering_cubes()
+            ),
+            hide_on_render  = FALSE
+          )
+          waiter$show()
+          on.exit(waiter$hide())
+          ###### Reset CEAC:----
           self$iContainer[["CEAC"]]$
             server(
               session = session,
@@ -1099,6 +1228,28 @@ ShinyPSA_R6_App <- R6::R6Class(
         eventExpr = (input[[self$iContainer[["updBtn3"]]$
                               get_uiInId()]]),
         handlerExpr = {
+          ###### Waiter:----
+          waiter <- waiter::Waiter$new(
+            # id = c("add", "remove"),
+            html = div(
+              style = "
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content:center;
+            color: white;
+            opacity: 1 !important;
+          ",
+              h4("Updating Cost-effectiveness acceptability frontier..."),
+              h4("Please wait."),
+              br(),br(),
+              waiter::spin_wandering_cubes()
+            ),
+            hide_on_render  = FALSE
+          )
+          waiter$show()
+          on.exit(waiter$hide())
+          ###### Updating CEAF:----
           # Get user defined WTP values:
           wtp_ <- input[[self$iContainer[["wtpTxt3"]]$
                            get_uiInId()]]
@@ -1143,6 +1294,28 @@ ShinyPSA_R6_App <- R6::R6Class(
         eventExpr = (input[[self$iContainer[["RstBtn3"]]$
                               get_uiInId()]]),
         handlerExpr = {
+          ###### Waiter:----
+          waiter <- waiter::Waiter$new(
+            # id = c("add", "remove"),
+            html = div(
+              style = "
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content:center;
+            color: white;
+            opacity: 1 !important;
+          ",
+              h4("Reseting Cost-effectiveness acceptability frontier..."),
+              h4("Please wait."),
+              br(),br(),
+              waiter::spin_wandering_cubes()
+            ),
+            hide_on_render  = FALSE
+          )
+          waiter$show()
+          on.exit(waiter$hide())
+          ###### Resetting CEAF:----
           self$iContainer[["CEAF"]]$
             server(
               session = session,
@@ -1161,6 +1334,28 @@ ShinyPSA_R6_App <- R6::R6Class(
         eventExpr = (input[[self$iContainer[["updBtn4"]]$
                               get_uiInId()]]),
         handlerExpr = {
+          ###### Waiter:----
+          waiter <- waiter::Waiter$new(
+            # id = c("add", "remove"),
+            html = div(
+              style = "
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content:center;
+            color: white;
+            opacity: 1 !important;
+          ",
+              h4("Updating Net Monitory Benefit plot..."),
+              h4("Please wait."),
+              br(),br(),
+              waiter::spin_wandering_cubes()
+            ),
+            hide_on_render  = FALSE
+          )
+          waiter$show()
+          on.exit(waiter$hide())
+          ###### Updating NMB:----
           # Get user defined WTP values:
           wtp_ <- input[[self$iContainer[["wtpTxt4"]]$
                            get_uiInId()]]
@@ -1203,6 +1398,28 @@ ShinyPSA_R6_App <- R6::R6Class(
         eventExpr = (input[[self$iContainer[["RstBtn4"]]$
                               get_uiInId()]]),
         handlerExpr = {
+          ###### Waiter:----
+          waiter <- waiter::Waiter$new(
+            # id = c("add", "remove"),
+            html = div(
+              style = "
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content:center;
+            color: white;
+            opacity: 1 !important;
+          ",
+              h4("Resetting Net Monitory Benefit plot..."),
+              h4("Please wait."),
+              br(),br(),
+              waiter::spin_wandering_cubes()
+            ),
+            hide_on_render  = FALSE
+          )
+          waiter$show()
+          on.exit(waiter$hide())
+          ###### Resetting NMB:----
           self$iContainer[["NMB"]]$
             server(
               session = session,
@@ -1221,6 +1438,28 @@ ShinyPSA_R6_App <- R6::R6Class(
         eventExpr = (input[[self$iContainer[["updBtn5"]]$
                               get_uiInId()]]),
         handlerExpr = {
+          ###### Waiter:----
+          waiter <- waiter::Waiter$new(
+            # id = c("add", "remove"),
+            html = div(
+              style = "
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content:center;
+            color: white;
+            opacity: 1 !important;
+          ",
+              h4("Updating Expected value of perfect information plot..."),
+              h4("Please wait."),
+              br(),br(),
+              waiter::spin_wandering_cubes()
+            ),
+            hide_on_render  = FALSE
+          )
+          waiter$show()
+          on.exit(waiter$hide())
+          ###### Updating EVPI:----
           # Get user defined WTP values:
           wtp_ <- input[[self$iContainer[["wtpTxt5"]]$
                            get_uiInId()]]
@@ -1272,6 +1511,28 @@ ShinyPSA_R6_App <- R6::R6Class(
         eventExpr = (input[[self$iContainer[["RstBtn5"]]$
                               get_uiInId()]]),
         handlerExpr = {
+          ###### Waiter:----
+          waiter <- waiter::Waiter$new(
+            # id = c("add", "remove"),
+            html = div(
+              style = "
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content:center;
+            color: white;
+            opacity: 1 !important;
+          ",
+              h4("Resetting Expected value of perfect information plot..."),
+              h4("Please wait."),
+              br(),br(),
+              waiter::spin_wandering_cubes()
+            ),
+            hide_on_render  = FALSE
+          )
+          waiter$show()
+          on.exit(waiter$hide())
+          ###### Resetting EVPI:----
           self$iContainer[["EVPI"]]$
             server(
               session = session,
