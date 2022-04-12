@@ -18,13 +18,18 @@ Depends:
     R (>= 2.10),
     tidyverse
 Imports: 
+    bslib,
     dplyr,
+    DT,
     ggplot2,
     ggrepel,
     magrittr,
     plyr,
     purrr,
+    R6,
     scales,
+    shinyWidgets,
     tidyr,
-    tidyselect
+    tidyselect,
+    waiter
 LazyData: true
