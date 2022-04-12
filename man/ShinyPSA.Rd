@@ -131,6 +131,8 @@ PSA_outputs$get_EVPI()
 \item{\code{EVPI_plot}}{the Expected Value of Perfect Information.}
 
 \item{\code{eNMB_plot}}{the expected Net Monitory Benefit.}
+
+\item{\code{app}}{a list to store shiny app elements}
 }
 \if{html}{\out{</div>}}
 }
