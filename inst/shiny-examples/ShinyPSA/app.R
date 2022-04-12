@@ -11,8 +11,6 @@
 # install it locally and rsconnect will take care of the reset
 library("devtools")
 library("ShinyPSA")
-source("shiny_R6_elements.R")
-source("shiny_R6.R")
 
 # Instantiate a copy of class ShinyPSA_R6_App:----
 app = ShinyPSA_R6_App$new()
