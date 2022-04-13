@@ -126,7 +126,8 @@ ShinyPSA <- R6::R6Class(
     #' PSA_outputs$get_Summary_table()
     #' }
     get_Summary_table = function(.wtp_ = c(20000, 30000), .units_ = "£",
-                                 .effects_label = "QALYs") {
+                                 .effects_label = "QALYs",
+                                 .shiny_ = FALSE, .long_ = TRUE) {
       if(is.null(private$Summary_table)){
         if(is.null(.units_) | length(.units_) != 1) .units_ = "£"
         # ICER:
@@ -135,8 +136,11 @@ ShinyPSA <- R6::R6Class(
         eNMB <- private$PSA_summary[["e.NMB"]] %>%
           dplyr::mutate('WTP' = private$PSA_summary[["WTPs"]]) %>%
           dplyr::filter(WTP %in% .wtp_) %>%
-          dplyr::mutate(WTP = paste0("NMB @ ", .units_,
-                             format(WTP, digits = 1, big.mark = ","))) %>%
+          dplyr::mutate(WTP = paste0("NMB @ ",
+                                     scales::dollar(
+                                       x = WTP,
+                                       accuracy = 1,
+                                       prefix = .units_))) %>%
           tidyr::pivot_longer(
             cols = -WTP,
             names_to = 'intervention',
@@ -151,9 +155,11 @@ ShinyPSA <- R6::R6Class(
           'CEAF - WTP' = private$PSA_summary[["WTPs"]],
           'intervention' = private$PSA_summary[["best_name"]]) %>%
           dplyr::filter(`CEAF - WTP` %in% .wtp_) %>%
-          dplyr::mutate(`CEAF - WTP` = paste0("Prob. CE @ ", .units_,
-                                      format(`CEAF - WTP`, digits = 1,
-                                             big.mark = ",")))
+          dplyr::mutate(`CEAF - WTP` = paste0("Prob. CE @ ",
+                                              scales::dollar(
+                                                x = `CEAF - WTP`,
+                                                accuracy = 1,
+                                                prefix = .units_)))
 
         # EVPI:
         EVPI <- dplyr::tibble(
@@ -161,13 +167,15 @@ ShinyPSA <- R6::R6Class(
           'EVPI - WTP' = private$PSA_summary[["WTPs"]],
           'intervention' = private$PSA_summary[["best_name"]]) %>%
           dplyr::filter(`EVPI - WTP` %in% .wtp_) %>%
-          dplyr::mutate(`EVPI - WTP` = paste0("EVPI @ ", .units_,
-                                      format(`EVPI - WTP`, digits = 1,
-                                             big.mark = ",")))
+          dplyr::mutate(`EVPI - WTP` = paste0("EVPI @ ",
+                                              scales::dollar(
+                                                x = `EVPI - WTP`,
+                                                accuracy = 1,
+                                                prefix = .units_)))
 
         # Summary table:
-        differential_col <- paste("Differential", .effects_label)
-        ICER_tbl <- ICER_tbl %>%
+        differential_col <- paste("Incremental", .effects_label)
+        Summary_tbl <- ICER_tbl %>%
           # join the expected NMB to the ICER results:
           dplyr::left_join(x = ., y = eNMB, by = 'intervention') %>%
           # join the probability of being cost-effective:
@@ -187,21 +195,111 @@ ShinyPSA <- R6::R6Class(
           dplyr::select(tidyselect::vars_select_helpers$where(
             fn = function(.x) !all(is.na(.x)))) %>%
           # do some formatting:
-          dplyr::mutate(dplyr::across(tidyselect::vars_select_helpers$where(
-            is.numeric) & !c(qalys, delta.e, dplyr::starts_with("Prob.")),
-            ~ round(.x, digits = 0))) %>%
-          dplyr::mutate(dplyr::across(c(qalys, delta.e, dplyr::starts_with("Prob.")),
-                        ~ round(.x, digits = 4))) %>%
+          dplyr::mutate(
+            dplyr::across(
+              tidyselect::vars_select_helpers$where(
+                is.numeric) & !c(qalys, delta.e,
+                                 dplyr::starts_with("Prob.")),
+              ~ scales::dollar(
+                x = .x,
+                accuracy = 0.1,
+                prefix = .units_))) %>%
+          dplyr::mutate(
+            dplyr::across(c(qalys, delta.e, dplyr::starts_with("Prob.")),
+                          ~ as.character(round(.x, digits = 4)))) %>%
           dplyr::select(-dplyr::any_of('dominance')) %>%
           dplyr::rename({{.effects_label}} := qalys,
                         Comparators = intervention,
                         {{differential_col}} := delta.e,
-                        "Differential Costs" = delta.c,
+                        "Incremental Costs" = delta.c,
                         "ICER information" = icer_label) %>%
           dplyr::rename_with(stringr::str_to_title, costs) %>%
-          dplyr::rename_with(toupper, icer)
+          dplyr::rename_with(toupper, icer) %>%
+          dplyr::mutate(
+            ICER = case_when(
+              is.na(ICER) ~
+                `ICER information`,
+              TRUE ~ ICER)) %>%
+          dplyr::select(-`ICER information`)
+        # Display the table in a long table:
+        if(.long_) {
+          Summary_tbl <- Summary_tbl %>%
+            tidyr::pivot_longer(
+              cols = -Comparators,
+              names_to = " ",
+              values_to = "Values") %>%
+            tidyr::pivot_wider(
+              names_from = Comparators,
+              values_from = Values)
+        }
+        # To get a nice looking table:
+        if(.shiny_) {
+          # Prepare DT-table row groups:
+          Summary_tbl <- Summary_tbl %>%
+            dplyr::mutate(
+              RowGroup_ = c(rep(glue::glue("Costs ({.units_})"), 2),
+                            rep("QALYs", 2),
+                            "Incremental Cost-Effectiveness Ratio",
+                            rep(glue::glue("Net Benefit ({.units_})"),
+                                length(.wtp_)),
+                            rep("Probability cost-effective",
+                                length(.wtp_)),
+                            rep(glue::glue("Expected value of perfect
+                                      information ({.units_})"),
+                                length(.wtp_))
+              )
+            )
+          # Prepare border info:
+          bottom_border_ <- c(0, 1, 0, 1, 1,
+                              rep(0, length(.wtp_) - 1), 1,
+                              rep(0, length(.wtp_) - 1), 1,
+                              rep(0, length(.wtp_) - 1), 1)
+          Summary_tbl <- Summary_tbl %>%
+            dplyr::mutate(
+              RowBorder_ = bottom_border_
+            )
+          # Number of columns to show:
+          ColShow_ <- nrow(ICER_tbl)
+          # Build the table:
+          Summary_tbl <- Summary_tbl %>%
+            DT::datatable(
+              class = 'compact row-border',
+              options = list(
+                paging = FALSE,  ## paginate the output
+                pageLength = 15, ## rows number to output for each page
+                scrollX = FALSE, ## enable scrolling on X axis
+                scrollY = FALSE, ## enable scrolling on Y axis
+                autoWidth = TRUE,## use smart column width handling
+                server = FALSE,  ## use client-side processing
+                dom = 'tB',      ## Bfrtip
+                buttons = c('csv', 'excel', 'copy', 'pdf', "print"),
+                rowGroup = list(
+                  dataSrc = ColShow_ + 1
+                ), # Column names at the end of the table
+                columnDefs = list(
+                  # list(
+                  #   targets = '_all',
+                  #   className = 'dt-center'
+                  # ),
+                  list(
+                    visible = FALSE,
+                    targets = c(ColShow_ + 1, ColShow_ + 2)
+                  )
+                ) # Hide the column names
+              ),
+              extensions = c('RowGroup', 'Buttons'),
+              selection = 'none', ## enable selection of a single row
+              filter = 'none', ## include column filters at the bottom
+              rownames = FALSE  ## don't show row numbers/names
+            ) %>%
+            DT::formatStyle(
+              columns = 0:(ColShow_ + 1),
+              valueColumns = "RowBorder_",
+              `border-bottom` = DT::styleEqual(1, "solid 1px")
+            )
+        }
 
-        private$Summary_table <- ICER_tbl
+        private$Summary_table <- Summary_tbl
       }
 
       return(private$Summary_table)
@@ -586,8 +684,7 @@ ShinyPSA <- R6::R6Class(
         dplyr::mutate(
           icer_label = dplyr::case_when(
             is.na(dominance) ~ dplyr::case_when(
-              dplyr::lead({{.costs}}) < {{.costs}} ~ paste0("[dominated by ",
-                                                     dplyr::lead(.id), "]")),
+              dplyr::lead({{.costs}}) < {{.costs}} ~ "dominated"),
             TRUE ~ icer_label),
           dominance = dplyr::case_when(
             is.na(dominance) ~ dplyr::case_when(
@@ -622,8 +719,10 @@ ShinyPSA <- R6::R6Class(
         dplyr::mutate(
           icer_label = dplyr::case_when(
             is.na(dominance) ~ dplyr::case_when(
-              dplyr::lead(icer) < icer ~ paste0("[extendedly dominated by ",
-                                         dplyr::lead(.id), "]")),
+              dplyr::lead(icer) < icer ~ "extendedly dominated"),
+
+            # dplyr::lead(icer) < icer ~ paste0("extendedly dominated by ",
+            #                                   dplyr::lead(.id))),
             TRUE ~ icer_label),
           dominance = dplyr::case_when(
             is.na(dominance) ~ dplyr::case_when(
@@ -667,14 +766,15 @@ ShinyPSA <- R6::R6Class(
           icer = dplyr::case_when(
             is.na(dominance) ~ delta.c / delta.e),
           icer_label = dplyr::case_when(
-            is.na(dominance) & !is.na(icer) ~ paste0("[ICER = £",
-                                                     format(icer,
-                                                            digits = 1,
-                                                            big.mark = ","),
-                                                     ", vs ",
-                                                     dplyr::lag(.id), "]"),
+            is.na(dominance) & !is.na(icer) ~ paste0("ICER = ",
+                                                     scales::dollar(
+                                                       x = icer,
+                                                       accuracy = 0.1,
+                                                       prefix = "£"),
+                                                     "; vs ",
+                                                     dplyr::lag(.id)),
             is.na(dominance) & is.na(icer) ~ dplyr::case_when(
-              dplyr::n() > 1 ~ paste0("[ICER reference]"),
+              dplyr::n() > 1 ~ paste0("reference"),
               TRUE ~ icer_label),
             TRUE ~ icer_label)) %>%
         dplyr::ungroup()
@@ -907,11 +1007,11 @@ ShinyPSA <- R6::R6Class(
 
       # Compute monetary net benefit (NMB) (default):
       nmb <- purrr::map2(.x = .effs,
-                  .y = .costs,
-                  .f = function(.eff = .x, .cost = .y) {
-                    purrr::map_dfc(as.list(v.k),
-                            .f = function(.k = .x) {
-                              .eff * .k - .cost})}) %>%
+                         .y = .costs,
+                         .f = function(.eff = .x, .cost = .y) {
+                           purrr::map_dfc(as.list(v.k),
+                                          .f = function(.k = .x) {
+                                            .eff * .k - .cost})}) %>%
         purrr::transpose()
 
       # Compute expected net benefit (e.NMB):
@@ -1018,7 +1118,7 @@ ShinyPSA <- R6::R6Class(
       # Compute CEAF:
       ceaf <- .ceac %>%
         dplyr::mutate('ceaf' = if(any(rowSums(.) != 1)) NA_real_
-               else do.call(pmax, .))
+                      else do.call(pmax, .))
 
       return(ceaf)
     },
@@ -1098,10 +1198,10 @@ ShinyPSA <- R6::R6Class(
 
       # Compute monetary net benefit (NMB) (default):
       nmb <- purrr::map2(.x = .effs, .y = .costs,
-                  .f = function(.eff = .x, .cost = .y) {
-                    purrr::map_dfc(as.list(v.k),
-                            .f = function(.k = .x) {
-                              .eff * .k - .cost})}) %>%
+                         .f = function(.eff = .x, .cost = .y) {
+                           purrr::map_dfc(as.list(v.k),
+                                          .f = function(.k = .x) {
+                                            .eff * .k - .cost})}) %>%
         purrr::transpose()
 
       # Compute expected net benefit (e.NMB):
@@ -1122,15 +1222,15 @@ ShinyPSA <- R6::R6Class(
 
       # Compute opportunity loss (OL):
       ol <- purrr::pmap_dfc(.l = list(nmb, best_interv, max_nmb_iter),
-                     .f = function(.x, .y, .z) {
-                       .z - .x[[.y]]
-                     })
+                            .f = function(.x, .y, .z) {
+                              .z - .x[[.y]]
+                            })
 
       # Compute value-of-information (VI):
       vi <- purrr::map2_dfc(.x = max_nmb_iter, .y = nmb,
-                     .f = function(.x, .y) {
-                       .x - max(colMeans(dplyr::as_tibble(.y, .name_repair = "unique")))
-                     })
+                            .f = function(.x, .y) {
+                              .x - max(colMeans(dplyr::as_tibble(.y, .name_repair = "unique")))
+                            })
 
       # Compute expected value-of-information (EVPI):
       evi <- colMeans(ol)
@@ -1214,8 +1314,8 @@ ShinyPSA <- R6::R6Class(
         drop_intervention(.data_ = ., .ref = .ref) %>%
         dplyr::mutate('WTP threshold' = .PSA_data$WTPs) %>%
         tidyr::pivot_longer(cols = -`WTP threshold`,
-                     names_to = 'Option',
-                     values_to = 'Probability cost-effective')
+                            names_to = 'Option',
+                            values_to = 'Probability cost-effective')
 
       # Zoom:
       if(.zoom | (!is.null(.zoom_cords) & is.numeric(.zoom_cords))) {
@@ -1239,8 +1339,8 @@ ShinyPSA <- R6::R6Class(
         ggplot2::geom_line(
           data = ceac_df,
           ggplot2::aes(x = `WTP threshold`,
-              y = `Probability cost-effective`,
-              color = Option),
+                       y = `Probability cost-effective`,
+                       color = Option),
           size = 0.4) +
         ggplot2::scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
         ggplot2::scale_y_continuous(labels = scales::percent_format()) +
@@ -1260,7 +1360,7 @@ ShinyPSA <- R6::R6Class(
           # Add a border and space around the plot:
           panel.border = ggplot2::element_rect(colour = 'black', fill = NA),
           plot.margin = ggplot2::unit(c(5.5, 1, 5.5, 5.5), # more space LHS
-                             c("points", "cm", "points", "points"))) +
+                                      c("points", "cm", "points", "points"))) +
         ggplot2::labs(
           title = "Cost Effectiveness Acceptability Curve (CEAC)",
           x = "Willingness-to-pay (£)",
@@ -1282,8 +1382,10 @@ ShinyPSA <- R6::R6Class(
             x_cord = .wtp_threshold,
             y_cord = 1,
             angle_cord = 0,
-            label_cord = paste0("£", format(.wtp_threshold,
-                                            big.mark = ",")),
+            label_cord = scales::dollar(
+              x = .wtp_threshold,
+              accuracy = 1,
+              prefix = "£"),
             lty_ = "Willingness-to-pay (£)")
 
         ## Plot:
@@ -1291,7 +1393,7 @@ ShinyPSA <- R6::R6Class(
           ggplot2::geom_vline(
             data = .wtp,
             ggplot2::aes(xintercept = x_cord,
-                linetype = lty_),
+                         linetype = lty_),
             colour = "dark gray") +
           ggplot2::scale_linetype_manual(
             breaks = .wtp$lty_[1], # keep one for the legend
@@ -1310,9 +1412,9 @@ ShinyPSA <- R6::R6Class(
           ggrepel::geom_text_repel(
             data = .wtp,
             ggplot2::aes(x = x_cord,
-                y = y_cord,
-                angle = angle_cord,
-                label = label_cord),
+                         y = y_cord,
+                         angle = angle_cord,
+                         label = label_cord),
             size = 1.5,
             show.legend = FALSE)
       }
@@ -1337,8 +1439,8 @@ ShinyPSA <- R6::R6Class(
             data = ceac_df %>%
               dplyr::filter(`WTP threshold` %in% n_points),
             ggplot2::aes(x = `WTP threshold`,
-                y = `Probability cost-effective`,
-                shape = Option, color = Option),
+                         y = `Probability cost-effective`,
+                         shape = Option, color = Option),
             size = 1,
             show.legend = TRUE)
       }
@@ -1361,7 +1463,7 @@ ShinyPSA <- R6::R6Class(
         ### CEAF:
         ceaf_df = .PSA_data$CEAF %>%
           dplyr::mutate('Best option' = .PSA_data$best_name,
-                 'WTP threshold' = .PSA_data$WTPs)
+                        'WTP threshold' = .PSA_data$WTPs)
 
         ## Plot:
         p <- p +
@@ -1369,7 +1471,7 @@ ShinyPSA <- R6::R6Class(
             data = ceaf_df %>%
               dplyr::filter(`WTP threshold` %in% n_points),
             ggplot2::aes(x = `WTP threshold`,
-                y = ceaf),
+                         y = ceaf),
             size = 2,
             stroke = 1,
             alpha = 0.8,
@@ -1447,7 +1549,7 @@ ShinyPSA <- R6::R6Class(
       # Plot data:
       ceaf_df = .PSA_data$CEAF %>%
         dplyr::mutate('Best option' = .PSA_data$best_name,
-               'WTP threshold' = .PSA_data$WTPs)
+                      'WTP threshold' = .PSA_data$WTPs)
 
       # Zoom:
       if(.zoom | (!is.null(.zoom_cords) & is.numeric(.zoom_cords))) {
@@ -1471,9 +1573,9 @@ ShinyPSA <- R6::R6Class(
         ggplot2::geom_line(
           data = ceaf_df,
           ggplot2::aes(x = `WTP threshold`,
-              y = ceaf,
-              group = 1,
-              color = `Best option`),
+                       y = ceaf,
+                       group = 1,
+                       color = `Best option`),
           size = 0.4) +
         ggplot2::scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
         ggplot2::scale_y_continuous(labels = scales::percent_format()) +
@@ -1493,7 +1595,7 @@ ShinyPSA <- R6::R6Class(
           # Add a border and space around the plot:
           panel.border = ggplot2::element_rect(colour = 'black', fill = NA),
           plot.margin = ggplot2::unit(c(5.5, 1, 5.5, 5.5), # more space LHS
-                             c("points", "cm", "points", "points"))) +
+                                      c("points", "cm", "points", "points"))) +
         ggplot2::labs(
           title = "Cost Effectiveness Acceptability Frontier (CEAF)",
           x = "Willingness-to-pay (£)",
@@ -1515,8 +1617,10 @@ ShinyPSA <- R6::R6Class(
             x_cord = .wtp_threshold,
             y_cord = 1,
             angle_cord = 0,
-            label_cord = paste0("£", format(.wtp_threshold,
-                                            big.mark = ",")),
+            label_cord = scales::dollar(
+              x = .wtp_threshold,
+              accuracy = 0.1,
+              prefix = "£"),
             lty_ = "Willingness-to-pay (£)")
 
         ## Plot:
@@ -1524,7 +1628,7 @@ ShinyPSA <- R6::R6Class(
           ggplot2::geom_vline(
             data = .wtp,
             ggplot2::aes(xintercept = x_cord,
-                linetype = lty_),
+                         linetype = lty_),
             colour = "dark gray") +
           ggplot2::scale_linetype_manual(
             breaks = .wtp$lty_[1], # keep one for the legend
@@ -1543,9 +1647,9 @@ ShinyPSA <- R6::R6Class(
           ggrepel::geom_text_repel(
             data = .wtp,
             ggplot2::aes(x = x_cord,
-                y = y_cord,
-                angle = angle_cord,
-                label = label_cord),
+                         y = y_cord,
+                         angle = angle_cord,
+                         label = label_cord),
             size = 1.5,
             show.legend = FALSE)
       }
@@ -1571,9 +1675,9 @@ ShinyPSA <- R6::R6Class(
             data = ceaf_df %>%
               dplyr::filter(`WTP threshold` %in% n_points),
             ggplot2::aes(x = `WTP threshold`,
-                y = ceaf,
-                color = `Best option`,
-                shape = `Best option`),
+                         y = ceaf,
+                         color = `Best option`,
+                         shape = `Best option`),
             size = 1.5,
             alpha = 0.8,
             show.legend = TRUE)
@@ -1646,15 +1750,15 @@ ShinyPSA <- R6::R6Class(
         ce_plane_dt <- .PSA_data$e %>%
           dplyr::mutate(sims = dplyr::row_number()) %>%
           tidyr::pivot_longer(cols = -sims,
-                       names_to = "interventions",
-                       values_to = "Effects") %>%
+                              names_to = "interventions",
+                              values_to = "Effects") %>%
           dplyr::left_join(x = .,
-                    y = .PSA_data$c %>%
-                      dplyr::mutate(sims = dplyr::row_number()) %>%
-                      tidyr::pivot_longer(cols = -sims,
-                                   names_to = "interventions",
-                                   values_to = "Costs"),
-                    by = c("sims", "interventions"))
+                           y = .PSA_data$c %>%
+                             dplyr::mutate(sims = dplyr::row_number()) %>%
+                             tidyr::pivot_longer(cols = -sims,
+                                                 names_to = "interventions",
+                                                 values_to = "Costs"),
+                           by = c("sims", "interventions"))
         # Labels:
         .title_lab = "Cost Effectiveness Plane"
         .x_lab = "Effects"
@@ -1664,16 +1768,16 @@ ShinyPSA <- R6::R6Class(
           private$calculate_differentials_(.ref = .ref) %>%
           dplyr::mutate(sims = dplyr::row_number()) %>%
           tidyr::pivot_longer(cols = -sims,
-                       names_to = "interventions",
-                       values_to = "Effects") %>%
+                              names_to = "interventions",
+                              values_to = "Effects") %>%
           dplyr::left_join(x = .,
-                    y = .PSA_data$c %>%
-                      private$calculate_differentials_(.ref = .ref) %>%
-                      dplyr::mutate(sims = dplyr::row_number()) %>%
-                      tidyr::pivot_longer(cols = -sims,
-                                   names_to = "interventions",
-                                   values_to = "Costs"),
-                    by = c("sims", "interventions"))
+                           y = .PSA_data$c %>%
+                             private$calculate_differentials_(.ref = .ref) %>%
+                             dplyr::mutate(sims = dplyr::row_number()) %>%
+                             tidyr::pivot_longer(cols = -sims,
+                                                 names_to = "interventions",
+                                                 values_to = "Costs"),
+                           by = c("sims", "interventions"))
         # Labels:
         .title_lab = "Cost Effectiveness Plane"
         .x_lab = "Effectiveness differential"
@@ -1696,8 +1800,8 @@ ShinyPSA <- R6::R6Class(
         ggplot2::geom_point(
           data = ce_plane_dt,
           ggplot2::aes(x = Effects,
-              y = Costs,
-              color = interventions),
+                       y = Costs,
+                       color = interventions),
           size = 1, alpha = 0.5) +
         ggplot2::scale_y_continuous(
           labels = scales::dollar_format(prefix = "£",
@@ -1705,8 +1809,8 @@ ShinyPSA <- R6::R6Class(
         ggplot2::geom_point(
           data = ce_plane_mean_dt,
           ggplot2::aes(x = Effects,
-              y = Costs,
-              fill = interventions),
+                       y = Costs,
+                       fill = interventions),
           shape = 21, colour = "black", show.legend = TRUE,
           size = 2, alpha = 1, stroke = 0.6) +
         ## Keep one value in the legend:
@@ -1729,7 +1833,7 @@ ShinyPSA <- R6::R6Class(
           # Add a border around the plot:
           panel.border = ggplot2::element_rect(colour = 'black', fill = NA),
           plot.margin = ggplot2::unit(c(5.5, 1, 5.5, 5.5), # more space LHS
-                             c("points", "cm", "points", "points"))) +
+                                      c("points", "cm", "points", "points"))) +
         ggplot2::labs(
           title = .title_lab,
           x = .x_lab,
@@ -1764,8 +1868,8 @@ ShinyPSA <- R6::R6Class(
           ggrepel::geom_text_repel(
             data = ce_plane_mean_dt,
             ggplot2::aes(x = Effects,
-                y = Costs,
-                label = .PSA_data$ICER$icer_label),
+                         y = Costs,
+                         label = .PSA_data$ICER$icer_label),
             force_pull = 8,
             size = 2.5,
             point.padding = 0,
@@ -1827,8 +1931,10 @@ ShinyPSA <- R6::R6Class(
             x_cord = x_cord,
             y_cord = y_cord,
             angle_cord = angle_cord,
-            label_cord = paste0("£", format(.wtp_threshold,
-                                            big.mark = ",")),
+            label_cord = scales::dollar(
+              x = .wtp_threshold,
+              accuracy = 1,
+              prefix = "£"),
             lty_ = "Willingness-to-pay (£)")
 
         ## Plot:
@@ -1836,8 +1942,8 @@ ShinyPSA <- R6::R6Class(
           ggplot2::geom_abline(
             data = .wtp,
             ggplot2::aes(intercept = 0,
-                slope = value,
-                linetype = lty_),
+                         slope = value,
+                         linetype = lty_),
             show.legend = TRUE) +
           ggplot2::scale_linetype_manual(
             breaks = .wtp$lty_[1], # keep one for the legend
@@ -1845,9 +1951,9 @@ ShinyPSA <- R6::R6Class(
           ggrepel::geom_text_repel(
             data = .wtp,
             ggplot2::aes(x = x_cord,
-                y = y_cord,
-                #angle = angle_cord,
-                label = label_cord),
+                         y = y_cord,
+                         #angle = angle_cord,
+                         label = label_cord),
             size = 1.5,
             show.legend = FALSE) +
           ggplot2::guides(
@@ -1870,7 +1976,7 @@ ShinyPSA <- R6::R6Class(
         # Plot:
         p <- p +
           ggplot2::coord_cartesian(xlim = x_lim, ylim = y_lim, expand = !.zoom,
-                          default = .zoom)
+                                   default = .zoom)
       }
 
       if(.zoom & !is.null(.zoom_cords) &
@@ -1882,7 +1988,7 @@ ShinyPSA <- R6::R6Class(
         # Plot:
         p <- p +
           ggplot2::coord_cartesian(xlim = x_lim, ylim = y_lim, expand = !.zoom,
-                          default = .zoom)
+                                   default = .zoom)
       }
 
       return(p)
@@ -1969,8 +2075,8 @@ ShinyPSA <- R6::R6Class(
       }
       ## EVPI data:
       evpi_df <- dplyr::tibble('EVPI' = .PSA_data$EVPI * discounted_population,
-                        'WTP threshold' = .PSA_data$WTPs,
-                        'Best option' = .PSA_data$best_name)
+                               'WTP threshold' = .PSA_data$WTPs,
+                               'Best option' = .PSA_data$best_name)
 
       # Zoom:
       y_cords <- NULL
@@ -1995,7 +2101,7 @@ ShinyPSA <- R6::R6Class(
         ggplot2::geom_line(
           data = evpi_df,
           ggplot2::aes(x = `WTP threshold`,
-              y = EVPI),
+                       y = EVPI),
           size = 0.4) +
         ggplot2::scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
         ggplot2::scale_y_continuous(labels = scales::dollar_format(prefix = "£")) +
@@ -2018,7 +2124,7 @@ ShinyPSA <- R6::R6Class(
           # Add a border and space around the plot:
           panel.border = ggplot2::element_rect(colour = 'black', fill = NA),
           plot.margin = ggplot2::unit(c(5.5, 1, 5.5, 5.5), # more space LHS
-                             c("points", "cm", "points", "points"))) +
+                                      c("points", "cm", "points", "points"))) +
         ggplot2::labs(
           title = "Expected Value of Perfect Information (EVPI)",
           x = "Willingness-to-pay (£)",
@@ -2034,8 +2140,10 @@ ShinyPSA <- R6::R6Class(
             x_cord = .wtp_threshold,
             y_cord = max(evpi_df$EVPI),
             angle_cord = 0,
-            label_cord = paste0("£", format(.wtp_threshold,
-                                            big.mark = ",")),
+            label_cord = scales::dollar(
+              x = .wtp_threshold,
+              accuracy = 1,
+              prefix = "£"),
             lty_ = "Willingness-to-pay (£)")
 
         ## Plot:
@@ -2043,7 +2151,7 @@ ShinyPSA <- R6::R6Class(
           ggplot2::geom_vline(
             data = .wtp,
             ggplot2::aes(xintercept = x_cord,
-                linetype = lty_),
+                         linetype = lty_),
             colour = "dark gray") +
           ggplot2::scale_linetype_manual(
             breaks = .wtp$lty_[1], # keep one for the legend
@@ -2062,9 +2170,9 @@ ShinyPSA <- R6::R6Class(
           ggrepel::geom_text_repel(
             data = .wtp,
             ggplot2::aes(x = x_cord,
-                y = y_cord,
-                angle = angle_cord,
-                label = label_cord),
+                         y = y_cord,
+                         angle = angle_cord,
+                         label = label_cord),
             size = 1.5,
             show.legend = FALSE)
       }
@@ -2128,10 +2236,10 @@ ShinyPSA <- R6::R6Class(
       enmb_df <- .PSA_data$e.NMB %>%
         dplyr::as_tibble() %>%
         dplyr::mutate('WTP threshold' = .PSA_data$WTPs,
-               'Best option' = .PSA_data$best_name) %>%
+                      'Best option' = .PSA_data$best_name) %>%
         tidyr::pivot_longer(cols = colnames(.PSA_data$e.NMB),
-                     names_to = 'Option',
-                     values_to = 'eNMB')
+                            names_to = 'Option',
+                            values_to = 'eNMB')
 
       # Zoom:
       y_cords <- NULL
@@ -2156,10 +2264,10 @@ ShinyPSA <- R6::R6Class(
         ggplot2::geom_line(
           data = enmb_df,
           ggplot2::aes(x = `WTP threshold`,
-              y = eNMB,
-              group = Option,
-              linetype = Option,
-              color = Option),
+                       y = eNMB,
+                       group = Option,
+                       linetype = Option,
+                       color = Option),
           size = 0.4) +
         ggplot2::scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
         ggplot2::scale_y_continuous(labels = scales::dollar_format(prefix = "£")) +
@@ -2180,7 +2288,7 @@ ShinyPSA <- R6::R6Class(
           # Add a border and space around the plot:
           panel.border = ggplot2::element_rect(colour = 'black', fill = NA),
           plot.margin = ggplot2::unit(c(5.5, 1, 5.5, 5.5), # more space LHS
-                             c("points", "cm", "points", "points"))) +
+                                      c("points", "cm", "points", "points"))) +
         ggplot2::labs(
           title = "Expected Net Monetary Benefit (eNMB)",
           x = "Willingness-to-pay (£)",
@@ -2196,8 +2304,10 @@ ShinyPSA <- R6::R6Class(
             x_cord = .wtp_threshold,
             y_cord = max(enmb_df$eNMB),
             angle_cord = 0,
-            label_cord = paste0("£", format(.wtp_threshold,
-                                            big.mark = ",")),
+            label_cord = scales::dollar(
+              x = .wtp_threshold,
+              accuracy = 1,
+              prefix = "£"),
             lty_ = "Willingness-to-pay (£)")
 
         ## Plot:
@@ -2205,7 +2315,7 @@ ShinyPSA <- R6::R6Class(
           ggplot2::geom_vline(
             data = .wtp,
             ggplot2::aes(xintercept = x_cord,
-                alpha = lty_),
+                         alpha = lty_),
             color = 'dark gray',
             linetype = 3) +
           ggplot2::scale_alpha_manual(
@@ -2228,9 +2338,9 @@ ShinyPSA <- R6::R6Class(
           ggrepel::geom_text_repel(
             data = .wtp,
             ggplot2::aes(x = x_cord,
-                y = y_cord,
-                angle = angle_cord,
-                label = label_cord),
+                         y = y_cord,
+                         angle = angle_cord,
+                         label = label_cord),
             size = 1.5,
             show.legend = FALSE)
       }

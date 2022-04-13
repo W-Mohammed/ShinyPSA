@@ -850,7 +850,9 @@ ShinyPSA_R6_App <- R6::R6Class(
               input = input,
               output = output,
               .table_ = rContainer[[sData_name()]]$
-                get_Summary_table()
+                get_Summary_table(
+                  .shiny_ = TRUE,
+                  .long_ = TRUE)
             )
           ###### Retrieve the CEP from the ShinyPSA object:----
           self$iContainer[["CEP"]]$
@@ -972,7 +974,10 @@ ShinyPSA_R6_App <- R6::R6Class(
               input = input,
               output = output,
               .table_ = rContainer[[sData_name()]]$
-                get_Summary_table()
+                get_Summary_table(
+                  .shiny_ = TRUE,
+                  .long_ = TRUE
+                )
             )
           ###### Retrieve the CEP from the ShinyPSA object:----
           self$iContainer[["CEP"]]$
