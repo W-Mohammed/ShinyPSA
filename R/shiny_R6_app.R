@@ -26,13 +26,28 @@ ShinyPSA_R6_App <- R6::R6Class(
     iContainer = list(), # inputs container
     ### Page elements:----
     theme = NULL,
+    ### Securing app:----
+    credentials = NULL,
+    make_secure = TRUE,
 
     ## Methods:----
     ### Initialise:----
     initialize = function() {
-      self$theme <- bslib::bs_theme(bg = "black",
-                                    fg = "white",
-                                    primary = "purple")
+      self$credentials  <- data.frame(
+        user = c("Harry.Heyburn@dhsc.gov.uk",
+                 "Stephen.Ashton@dhsc.gov.uk",
+                 "c.thomas@sheffield.ac.uk",
+                 "admin"), # mandatory
+        password = c("Harry.Heyburn@dhsc.gov.uk",
+                     "Stephen.Ashton@dhsc.gov.uk",
+                     "c.thomas@sheffield.ac.uk",
+                     "WaelMohammed"), # mandatory
+        start = c("2019-04-15"), # optional (all others)
+        expire = c(NA, NA, NA, NA),
+        admin = c(FALSE, FALSE, FALSE, TRUE),
+        stringsAsFactors = FALSE
+      )
+      self$theme <- bslib::bs_theme()
       self$iContainer[["themeSwch"]] <- prettySwitch$new(
         .label_ = "light_mode"
       )
@@ -223,24 +238,26 @@ ShinyPSA_R6_App <- R6::R6Class(
     },
     ### UI:----
     ui = function() {
-      fluidPage(
+      ui <- fluidPage(
         theme = self$theme,
         waiter::use_waiter(),
         #### Title panel:----
         titlePanel(
           windowTitle = "ShinyPSA demo",
           div(
-            class = "d-flex p-2 bd-highlight",
+            class = "d-flex p-4 bd-highlight",
             ##### App logo:----
             img(
               src = "https://pbs.twimg.com/profile_images/959365885537456128/tC4OVmkX_400x400.jpg",
-              height = "35px",
-              class = "pr-2 mb-1"),
+              height = "45px",
+              class = "pr-2 pb-0"),
             ##### Title:----
             span("ShinyPSA demo app!"),
             ##### Theme switcher:----
             self$iContainer[["themeSwch"]]$
-              ui_input()
+              ui_input(
+                .value_ = FALSE
+              )
           )
         ),
         #### Main body:----
@@ -258,6 +275,7 @@ ShinyPSA_R6_App <- R6::R6Class(
                 fluidRow(
                   column(
                     width = 5,
+                    offset = 1,
                     style = "border-right: 1px solid",
                     div(
                       class = "pt-10 pb-0 mb-0 pl-5",
@@ -277,19 +295,6 @@ ShinyPSA_R6_App <- R6::R6Class(
                               #.width_ = "200%"
                             )
                         )
-                      ),
-                      div(
-                        style = "display: flex;
-                          margin-top: 9rem !important;",
-                        class = "d-flex flex-row-reverse",
-                        ###### Selection confirmation button:----
-                        self$iContainer[["addBtn"]]$
-                          ui_input(
-                            .style_ = "display: flex;
-                          margin-top: 2rem !important;",
-                            .class_ = "ml-2 d-flex align-items-end
-                          text-right"
-                          )
                       )
                     )
                   ),
@@ -350,7 +355,30 @@ ShinyPSA_R6_App <- R6::R6Class(
                           )
                         )
                       )
-                    ),
+                    )
+                  )
+                ),
+                fluidRow(
+                  column(
+                    width = 5,
+                    offset = 1,
+                    style = "border-right: 1px solid",
+                    div(
+                      style = "display: flex;
+                          margin-top: 0rem !important;",
+                      class = "d-flex flex-row-reverse",
+                      ###### Selection confirmation button:----
+                      self$iContainer[["addBtn"]]$
+                        ui_input(
+                          .style_ = "display: flex;
+                          margin-top: 0rem !important;",
+                          .class_ = "ml-2 d-flex align-items-end
+                          text-right"
+                        )
+                    )
+                  ),
+                  column(
+                    width = 5,
                     div(
                       style = "display: flex;
                           margin-top: 0rem !important;",
@@ -360,7 +388,7 @@ ShinyPSA_R6_App <- R6::R6Class(
                         ui_input(
                           .style_ = "display: flex;
                           margin-top: 0rem !important;",
-                          .class_ = "ml-2 d-flex align-items-start
+                          .class_ = "ml-2 d-flex align-items-end
                           text-right"
                         )
                     )
@@ -686,9 +714,30 @@ ShinyPSA_R6_App <- R6::R6Class(
           )
         )
       )
+      ### Secure UI:----
+      if(self$make_secure) {
+        ui <- shinymanager::secure_app(
+          ui = ui,
+          theme = bslib::bs_theme(
+            bg = "white",
+            fg = "black"
+          )
+        )
+      }
     },
     ### Server:----
     server = function(input, output, session) {
+      #### Secure server:----
+      if(self$make_secure) {
+        res_auth <- shinymanager::secure_server(
+          check_credentials = shinymanager::check_credentials(
+            self$credentials
+          ),
+          timeout = 30
+        )
+      } else {
+        res_auth <- reactiveValues(user = "No Credentials")
+      }
       #### Data handlers:----
       ##### Data drop-down list:----
       self$iContainer[["getData"]]$

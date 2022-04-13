@@ -109,3 +109,27 @@ assign_extraArgs_ <- function(.default_args_, .env_, .args_) {
              }, envir = .env_)
     })
 }
+
+#' Run the demo Shiny app.
+#'
+#' @param example_app The example shiny app to run.
+#'
+#' @return Runs the example shiny app
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' run_shiny_R6_App()
+#' }
+run_shiny_R6_App <- function(example_app = "ShinyPSA") {
+  appFolder <- switch(example_app,
+                      ShinyPSA = "ShinyPSA")
+  appDir <- system.file("shiny-examples", appFolder,
+                        package = "ShinyPSA")
+  if (appDir == "") {
+    stop("Could not find example directory. Try re-installing `ShinyPSA`.",
+         call. = FALSE)
+  }
+
+  shiny::runApp(appDir, display.mode = "normal")
+}

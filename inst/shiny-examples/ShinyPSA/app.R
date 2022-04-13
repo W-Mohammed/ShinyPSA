@@ -7,7 +7,7 @@
 #
 ################################################################################
 
-# Load ShinyPSA library and load it:----
+# Load ShinyPSA library:----
 # install it locally and rsconnect will take care of the reset
 library("devtools")
 library("ShinyPSA")

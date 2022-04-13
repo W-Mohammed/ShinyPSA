@@ -2,9 +2,9 @@ Package: ShinyPSA
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+    person("Wael", "Mohammed", , "wmamohammed1@sheffield.ac.uk", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0003-0370-4903"))
+Description: A tool to summarise cost-effectiveness probabilistic sensitivity analysis (PSA) data.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -28,6 +28,7 @@ Imports:
     purrr,
     R6,
     scales,
+    shinymanager,
     shinyWidgets,
     tidyr,
     tidyselect,
