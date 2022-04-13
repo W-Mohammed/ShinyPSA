@@ -401,7 +401,7 @@ ggplot2Plot = R6::R6Class(
 
     },
     #### UI output:----
-    ui_output = function(.tag_ = "UI_output", .height_ = "700px") {
+    ui_output = function(.tag_ = "UI_output", .height_ = "800px") {
 
       private$uiOutput_Id_ <- private$ns_(.tag_)
 
