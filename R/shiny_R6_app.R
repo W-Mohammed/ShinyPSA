@@ -47,7 +47,11 @@ ShinyPSA_R6_App <- R6::R6Class(
         admin = c(FALSE, FALSE, FALSE, TRUE),
         stringsAsFactors = FALSE
       )
-      self$theme <- bslib::bs_theme()
+      self$theme <- bslib::bs_theme(
+        bg = "black",
+        fg = "white",
+        primary = "purple"
+      )
       self$iContainer[["themeSwch"]] <- prettySwitch$new(
         .label_ = "light_mode"
       )
