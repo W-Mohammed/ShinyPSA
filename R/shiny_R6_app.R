@@ -47,11 +47,7 @@ ShinyPSA_R6_App <- R6::R6Class(
         admin = c(FALSE, FALSE, FALSE, TRUE),
         stringsAsFactors = FALSE
       )
-      self$theme <- bslib::bs_theme(
-        bg = "black",
-        fg = "white",
-        primary = "purple"
-      )
+      self$theme <- bslib::bs_theme()
       self$iContainer[["themeSwch"]] <- prettySwitch$new(
         .label_ = "light_mode"
       )
@@ -66,6 +62,12 @@ ShinyPSA_R6_App <- R6::R6Class(
       )
       self$iContainer[["getData"]] <- inputSelection$new(
         .label_ = NULL
+      )
+      self$iContainer[["maxWTP1"]] <- numericInput$new(
+        .label_ = "Set maximum Willingness-to-pay"
+      )
+      self$iContainer[["maxWTP2"]] <- numericInput$new(
+        .label_ = "Set maximum Willingness-to-pay"
       )
       self$iContainer[["sumTbl"]] <-  dataTableDT$new(
         .label_ = "PSA summary table"
@@ -84,6 +86,18 @@ ShinyPSA_R6_App <- R6::R6Class(
       )
       self$iContainer[["EVPI"]] <- ggplot2Plot$new(
         .label_ = "EVPI"
+      )
+      self$iContainer[["updBtn0"]] <- actionButton$new(
+        .label_ = "Update summary table"
+      )
+      self$iContainer[["RstBtn0"]] <- actionButton$new(
+        .label_ = "Reset summary table"
+      )
+      self$iContainer[["orinSch"]] <- prettySwitch$new(
+        .label_ = "Wide table format"
+      )
+      self$iContainer[["wtpTxt0"]] <- textInput$new(
+        .label_ = "Enter WTP vector (comma delimited):"
       )
       self$iContainer[["getRef1"]] <- inputSelection$new(
         .label_ = "Select the reference intervention:"
@@ -260,7 +274,7 @@ ShinyPSA_R6_App <- R6::R6Class(
             ##### Theme switcher:----
             self$iContainer[["themeSwch"]]$
               ui_input(
-                .value_ = FALSE
+                .value_ = TRUE
               )
           )
         ),
@@ -299,7 +313,16 @@ ShinyPSA_R6_App <- R6::R6Class(
                               #.width_ = "200%"
                             )
                         )
-                      )
+                      ),
+                      fluidRow(
+                        self$iContainer[["maxWTP1"]]$
+                          ui_input(
+                            .value_ = 1e+5,
+                            .min_ = 0,
+                            .max_ = 1e+6,
+                            .class_ = "pl-4 d-flex align-items-start"
+                          )
+                      ),
                     )
                   ),
                   column(
@@ -358,6 +381,15 @@ ShinyPSA_R6_App <- R6::R6Class(
                               )
                           )
                         )
+                      ),
+                      fluidRow(
+                        self$iContainer[["maxWTP2"]]$
+                          ui_input(
+                            .value_ = 1e+5,
+                            .min_ = 0,
+                            .max_ = 1e+6,
+                            .class_ = "pl-4 d-flex align-items-start"
+                          )
                       )
                     )
                   )
@@ -408,10 +440,40 @@ ShinyPSA_R6_App <- R6::R6Class(
                 tabsetPanel(
                   id = "outputs",
                   ###### Summary table:----
-                  tabPanel(
+                  bslib::nav(
+                    width = 9,
                     title = "Summary table",
-                    self$iContainer[["sumTbl"]]$
-                      ui_output()
+                    fluidRow(
+                      column(
+                        width = 2,
+                        self$iContainer[["updBtn0"]]$
+                          ui_input(
+                            .width_ = "100%"
+                          ),
+                        hr(),
+                        self$iContainer[["orinSch"]]$
+                          ui_input(
+                            .class_ = "pl-2 flex-fill text-left",
+                            .value_ = FALSE
+                          ),
+                        self$iContainer[["wtpTxt0"]]$
+                          ui_input(),
+                        self$iContainer[["RstBtn0"]]$
+                          ui_input(
+                            .width_ = "100%"
+                          )
+                      ),
+                      column(
+                        width = 10,
+                        div(
+                          class = "pb-5 pt-2 pr-1
+                          d-flex d-flex align-items-center",
+                          #style = ,
+                          self$iContainer[["sumTbl"]]$
+                            ui_output()
+                        )
+                      )
+                    ),
                   ),
                   ###### Cost-Effectiveness Plane:----
                   bslib::nav(
@@ -424,6 +486,7 @@ ShinyPSA_R6_App <- R6::R6Class(
                           ui_input(
                             .width_ = "100%"
                           ),
+                        hr(),
                         self$iContainer[["getRef1"]]$
                           ui_input(
                             .choices_ = NULL
@@ -469,7 +532,7 @@ ShinyPSA_R6_App <- R6::R6Class(
                         self$iContainer[["RstBtn1"]]$
                           ui_input(
                             .width_ = "100%"
-                          ),
+                          )
                       ),
                       column(
                         width = 10,
@@ -489,6 +552,7 @@ ShinyPSA_R6_App <- R6::R6Class(
                           ui_input(
                             .width_ = "100%"
                           ),
+                        hr(),
                         self$iContainer[["getRef2"]]$
                           ui_input(
                             .choices_ = NULL
@@ -550,6 +614,7 @@ ShinyPSA_R6_App <- R6::R6Class(
                           ui_input(
                             .width_ = "100%"
                           ),
+                        hr(),
                         self$iContainer[["wtpSch3"]]$
                           ui_input(
                             .class_ = "pl-2 flex-fill text-left"
@@ -603,6 +668,7 @@ ShinyPSA_R6_App <- R6::R6Class(
                           ui_input(
                             .width_ = "100%"
                           ),
+                        hr(),
                         self$iContainer[["wtpSch4"]]$
                           ui_input(
                             .class_ = "pl-2 flex-fill text-left"
@@ -652,6 +718,7 @@ ShinyPSA_R6_App <- R6::R6Class(
                           ui_input(
                             .width_ = "100%"
                           ),
+                        hr(),
                         self$iContainer[["popEVPI"]]$
                           ui_input(
                             .class_ = "pl-2 flex-fill text-left"
@@ -727,6 +794,8 @@ ShinyPSA_R6_App <- R6::R6Class(
             fg = "black"
           )
         )
+      } else {
+        ui
       }
     },
     ### Server:----
@@ -841,7 +910,9 @@ ShinyPSA_R6_App <- R6::R6Class(
           rContainer[[sData_name()]] <- ShinyPSA$new(
             .effs = sData_list[[sData_name()]]$e,
             .costs = sData_list[[sData_name()]]$c,
-            .interventions = sData_list[[sData_name()]]$treats
+            .interventions = sData_list[[sData_name()]]$treats,
+            .Kmax = input[[self$iContainer[["maxWTP1"]]$
+                             get_uiInId()]]
           )
           ###### Retrieve the Summary table from the ShinyPSA object:----
           self$iContainer[["sumTbl"]]$
@@ -851,8 +922,10 @@ ShinyPSA_R6_App <- R6::R6Class(
               output = output,
               .table_ = rContainer[[sData_name()]]$
                 get_Summary_table(
-                  .shiny_ = TRUE,
-                  .long_ = TRUE)
+                  .beautify_ = TRUE,
+                  .long_ = TRUE
+                ),
+              .readyDT_ = TRUE
             )
           ###### Retrieve the CEP from the ShinyPSA object:----
           self$iContainer[["CEP"]]$
@@ -965,7 +1038,9 @@ ShinyPSA_R6_App <- R6::R6Class(
           rContainer[[sData_name()]] <- ShinyPSA$new(
             .effs = sData_list[[sData_name()]]$e,
             .costs = sData_list[[sData_name()]]$c,
-            .interventions = sData_list[[sData_name()]]$treats
+            .interventions = sData_list[[sData_name()]]$treats,
+            .Kmax = input[[self$iContainer[["maxWTP2"]]$
+                             get_uiInId()]]
           )
           ###### Retrieve the Summary table from the ShinyPSA object:----
           self$iContainer[["sumTbl"]]$
@@ -975,9 +1050,10 @@ ShinyPSA_R6_App <- R6::R6Class(
               output = output,
               .table_ = rContainer[[sData_name()]]$
                 get_Summary_table(
-                  .shiny_ = TRUE,
+                  .beautify_ = TRUE,
                   .long_ = TRUE
-                )
+                ),
+              .readyDT_ = TRUE
             )
           ###### Retrieve the CEP from the ShinyPSA object:----
           self$iContainer[["CEP"]]$
@@ -1046,6 +1122,130 @@ ShinyPSA_R6_App <- R6::R6Class(
                 get_EVPI()
             )
 
+        },
+        ignoreNULL = TRUE,
+        ignoreInit = TRUE
+      )
+
+      ##### Actions on Summary table update button:----
+      observeEvent(
+        eventExpr = (input[[self$iContainer[["updBtn0"]]$
+                              get_uiInId()]]),
+        handlerExpr = {
+          ###### Waiter:----
+          waiter <- waiter::Waiter$new(
+            # id = c("add", "remove"),
+            html = div(
+              style = "
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content:center;
+            color: white;
+            opacity: 1 !important;
+          ",
+              h4("Updating Summary table..."),
+              h4("Please wait."),
+              br(),br(),
+              waiter::spin_wandering_cubes()
+            ),
+            hide_on_render  = FALSE
+          )
+          waiter$show()
+          on.exit(waiter$hide())
+          ###### Update Summary Table:----
+          # Get user defined WTP values:
+          wtp_ <- input[[self$iContainer[["wtpTxt0"]]$
+                           get_uiInId()]]
+          wtp_ <- strsplit(wtp_, ",") %>%
+            unlist() %>%
+            as.numeric()
+          # Remove wtp values greater than max WTP set by user:
+          if(!is.null(wtp_))
+            if(length(wtp_) < 1)
+              wtp_ <- NULL
+          if(!is.null(wtp_))
+            wtp_ <- wtp_[!is.na(wtp_)]
+          if(any(wtp_ > max(rContainer[[sData_name()]]$
+                            get_WTP())))
+            wtp_ <- c(wtp_[wtp_ < max(rContainer[[sData_name()]]$
+                                        get_WTP())],
+                      max(rContainer[[sData_name()]]$
+                            get_WTP()))
+          # replace unevaluated wtp with nearest replacements:
+          wtp_index_ <- purrr::map_dbl(
+            .x = wtp_,
+            .f = function(.wtp_ = .x) {
+              which.min(
+                abs(
+                  .wtp_ - rContainer[[sData_name()]]$
+                    get_WTP()
+                )
+              )
+            }
+          )
+          wtp_ <- unique(rContainer[[sData_name()]]$
+                           get_WTP()[wtp_index_])
+          # Pass values to the get_Summary_table function:
+          self$iContainer[["sumTbl"]]$
+            server(
+              session = session,
+              input = input,
+              output = output,
+              .table_ = rContainer[[sData_name()]]$
+                get_Summary_table(
+                  .beautify_ = TRUE,
+                  .long_ = !input[[self$iContainer[["orinSch"]]$
+                                     get_uiInId()]],
+                  .wtp_ = wtp_
+                ),
+              .readyDT_ = TRUE
+            )
+        },
+        ignoreNULL = TRUE,
+        ignoreInit = TRUE
+      )
+
+      ##### Actions on Summary table reset button:----
+      observeEvent(
+        eventExpr = (input[[self$iContainer[["RstBtn0"]]$
+                              get_uiInId()]]),
+        handlerExpr = {
+          ###### Waiter:----
+          waiter <- waiter::Waiter$new(
+            # id = c("add", "remove"),
+            html = div(
+              style = "
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content:center;
+            color: white;
+            opacity: 1 !important;
+          ",
+              h4("Resetting Summary table..."),
+              h4("Please wait."),
+              br(),br(),
+              waiter::spin_wandering_cubes()
+            ),
+            hide_on_render  = FALSE
+          )
+          waiter$show()
+          on.exit(waiter$hide())
+          ###### Reset Summary Table:----
+          # Pass values to the get_Summary_table function:
+          self$iContainer[["sumTbl"]]$
+            server(
+              session = session,
+              input = input,
+              output = output,
+              .table_ = rContainer[[sData_name()]]$
+                get_Summary_table(
+                  .beautify_ = TRUE,
+                  .long_ = TRUE
+                ),
+              .readyDT_ = TRUE
+            )
         },
         ignoreNULL = TRUE,
         ignoreInit = TRUE
@@ -1205,11 +1405,19 @@ ShinyPSA_R6_App <- R6::R6Class(
           wtp_ <- strsplit(wtp_, ",") %>%
             unlist() %>%
             as.numeric()
-          if(!is.null(wtp_))
-            wtp_ <- wtp_[!is.na(wtp_)]
+          # Remove wtp values greater than max WTP set by user:
           if(!is.null(wtp_))
             if(length(wtp_) < 1)
               wtp_ <- NULL
+          if(!is.null(wtp_))
+            wtp_ <- wtp_[!is.na(wtp_)]
+          if(any(wtp_ > max(rContainer[[sData_name()]]$
+                            get_WTP())))
+            wtp_ = c(wtp_[wtp_ < max(rContainer[[sData_name()]]$
+                                       get_WTP())],
+                     max(rContainer[[sData_name()]]$
+                           get_WTP()))
+          wtp_ = unique(wtp_)
           # Pass values to the get_CEAC function:
           self$iContainer[["CEAC"]]$
             server(
@@ -1314,11 +1522,19 @@ ShinyPSA_R6_App <- R6::R6Class(
           wtp_ <- strsplit(wtp_, ",") %>%
             unlist() %>%
             as.numeric()
-          if(!is.null(wtp_))
-            wtp_ <- wtp_[!is.na(wtp_)]
+          # Remove wtp values greater than max WTP set by user:
           if(!is.null(wtp_))
             if(length(wtp_) < 1)
               wtp_ <- NULL
+          if(!is.null(wtp_))
+            wtp_ <- wtp_[!is.na(wtp_)]
+          if(any(wtp_ > max(rContainer[[sData_name()]]$
+                            get_WTP())))
+            wtp_ = c(wtp_[wtp_ < max(rContainer[[sData_name()]]$
+                                       get_WTP())],
+                     max(rContainer[[sData_name()]]$
+                           get_WTP()))
+          wtp_ = unique(wtp_)
           # Pass values to the get_CEAF function:
           self$iContainer[["CEAF"]]$
             server(
@@ -1420,11 +1636,19 @@ ShinyPSA_R6_App <- R6::R6Class(
           wtp_ <- strsplit(wtp_, ",") %>%
             unlist() %>%
             as.numeric()
-          if(!is.null(wtp_))
-            wtp_ <- wtp_[!is.na(wtp_)]
+          # Remove wtp values greater than max WTP set by user:
           if(!is.null(wtp_))
             if(length(wtp_) < 1)
               wtp_ <- NULL
+          if(!is.null(wtp_))
+            wtp_ <- wtp_[!is.na(wtp_)]
+          if(any(wtp_ > max(rContainer[[sData_name()]]$
+                            get_WTP())))
+            wtp_ = c(wtp_[wtp_ < max(rContainer[[sData_name()]]$
+                                       get_WTP())],
+                     max(rContainer[[sData_name()]]$
+                           get_WTP()))
+          wtp_ = unique(wtp_)
           # Pass values to the get_NMB function:
           self$iContainer[["NMB"]]$
             server(
@@ -1524,11 +1748,19 @@ ShinyPSA_R6_App <- R6::R6Class(
           wtp_ <- strsplit(wtp_, ",") %>%
             unlist() %>%
             as.numeric()
-          if(!is.null(wtp_))
-            wtp_ <- wtp_[!is.na(wtp_)]
+          # Remove wtp values greater than max WTP set by user:
           if(!is.null(wtp_))
             if(length(wtp_) < 1)
               wtp_ <- NULL
+          if(!is.null(wtp_))
+            wtp_ <- wtp_[!is.na(wtp_)]
+          if(any(wtp_ > max(rContainer[[sData_name()]]$
+                            get_WTP())))
+            wtp_ = c(wtp_[wtp_ < max(rContainer[[sData_name()]]$
+                                       get_WTP())],
+                     max(rContainer[[sData_name()]]$
+                           get_WTP()))
+          wtp_ = unique(wtp_)
           # Pass values to the get_EVPI function:
           self$iContainer[["EVPI"]]$
             server(
@@ -1618,7 +1850,7 @@ ShinyPSA_R6_App <- R6::R6Class(
               bslib::bs_theme(
                 bg = "black",
                 fg = "white",
-                primary = "purple"
+                primary = "orange"
               )
             }
           )

@@ -127,180 +127,277 @@ ShinyPSA <- R6::R6Class(
     #' }
     get_Summary_table = function(.wtp_ = c(20000, 30000), .units_ = "£",
                                  .effects_label = "QALYs",
-                                 .shiny_ = FALSE, .long_ = TRUE) {
-      if(is.null(private$Summary_table)){
-        if(is.null(.units_) | length(.units_) != 1) .units_ = "£"
-        # ICER:
-        ICER_tbl <- private$PSA_summary[["ICER"]]
-        # eNMB:
-        eNMB <- private$PSA_summary[["e.NMB"]] %>%
-          dplyr::mutate('WTP' = private$PSA_summary[["WTPs"]]) %>%
-          dplyr::filter(WTP %in% .wtp_) %>%
-          dplyr::mutate(WTP = paste0("NMB @ ",
-                                     scales::dollar(
-                                       x = WTP,
-                                       accuracy = 1,
-                                       prefix = .units_))) %>%
+                                 .beautify_ = TRUE, .long_ = TRUE) {
+      # Set currency label if none were provided:
+      if(is.null(.units_) | length(.units_) != 1) .units_ = "£"
+      # ICER:
+      ICER_tbl <- private$PSA_summary[["ICER"]]
+      # eNMB:
+      eNMB <- private$PSA_summary[["e.NMB"]] %>%
+        dplyr::mutate('WTP' = private$PSA_summary[["WTPs"]]) %>%
+        dplyr::filter(WTP %in% .wtp_) %>%
+        dplyr::mutate(WTP = paste0("NMB @ ",
+                                   scales::dollar(
+                                     x = WTP,
+                                     accuracy = 1,
+                                     prefix = .units_))) %>%
+        tidyr::pivot_longer(
+          cols = -WTP,
+          names_to = 'intervention',
+          values_to = 'NMB') %>%
+        tidyr::pivot_wider(
+          id_cols = 'intervention',
+          names_from = 'WTP',
+          values_from = 'NMB')
+      # CEAF:
+      CEAF <- dplyr::tibble(
+        'CEAF - values' = private$PSA_summary[["CEAF"]]$ceaf,
+        'CEAF - WTP' = private$PSA_summary[["WTPs"]],
+        'intervention' = private$PSA_summary[["best_name"]]) %>%
+        dplyr::filter(`CEAF - WTP` %in% .wtp_) %>%
+        dplyr::mutate(`CEAF - WTP` = paste0("Prob. CE @ ",
+                                            scales::dollar(
+                                              x = `CEAF - WTP`,
+                                              accuracy = 1,
+                                              prefix = .units_)))
+
+      # EVPI:
+      EVPI <- dplyr::tibble(
+        'EVPI - values' = private$PSA_summary[["EVPI"]],
+        'EVPI - WTP' = private$PSA_summary[["WTPs"]],
+        'intervention' = private$PSA_summary[["best_name"]]) %>%
+        dplyr::filter(`EVPI - WTP` %in% .wtp_) %>%
+        dplyr::mutate(`EVPI - WTP` = paste0("EVPI @ ",
+                                            scales::dollar(
+                                              x = `EVPI - WTP`,
+                                              accuracy = 1,
+                                              prefix = .units_)))
+
+      # Summary table:
+      differential_col <- paste("Incremental", .effects_label)
+      Summary_tbl <- ICER_tbl %>%
+        # join the expected NMB to the ICER results:
+        dplyr::left_join(x = ., y = eNMB, by = 'intervention') %>%
+        # join the probability of being cost-effective:
+        dplyr::left_join(x = ., y = CEAF, by = 'intervention') %>%
+        tidyr::pivot_wider(
+          names_from = `CEAF - WTP`,
+          values_from = `CEAF - values`) %>%
+        # drop any NAs resulting from pivot_wider:
+        dplyr::select(tidyselect::vars_select_helpers$where(
+          fn = function(.x) !all(is.na(.x)))) %>%
+        # join the EVPI:
+        dplyr::left_join(x = ., y = EVPI, by = 'intervention') %>%
+        tidyr::pivot_wider(
+          names_from = `EVPI - WTP`,
+          values_from = `EVPI - values`) %>%
+        # drop any NAs resulting from pivot_wider:
+        dplyr::select(tidyselect::vars_select_helpers$where(
+          fn = function(.x) !all(is.na(.x)))) %>%
+        # do some formatting:
+        dplyr::mutate(
+          dplyr::across(
+            tidyselect::vars_select_helpers$where(
+              is.numeric) & !c(qalys, delta.e,
+                               dplyr::starts_with("Prob.")),
+            ~ scales::dollar(
+              x = .x,
+              accuracy = 0.1,
+              prefix = .units_))) %>%
+        dplyr::mutate(
+          dplyr::across(c(qalys, delta.e, dplyr::starts_with("Prob.")),
+                        ~ as.character(round(.x, digits = 4)))) %>%
+        dplyr::select(-dplyr::any_of('dominance')) %>%
+        dplyr::rename({{.effects_label}} := qalys,
+                      Comparators = intervention,
+                      {{differential_col}} := delta.e,
+                      "Incremental Costs" = delta.c,
+                      "ICER information" = icer_label) %>%
+        dplyr::rename_with(stringr::str_to_title, costs) %>%
+        dplyr::rename_with(toupper, icer) %>%
+        dplyr::mutate(
+          ICER = case_when(
+            is.na(ICER) ~
+              `ICER information`,
+            TRUE ~ ICER)) %>%
+        dplyr::select(-`ICER information`)
+      # Display the table in a long format:
+      if(.long_) {
+        # Reorder some columns for DT::RowGroup option:
+        Summary_tbl <- Summary_tbl %>%
+          dplyr::select(
+            Costs, `Incremental Costs`, QALYs, `Incremental QALYs`,
+            dplyr::everything()) %>%
+          # Flip the dataset to have everything in long format:
           tidyr::pivot_longer(
-            cols = -WTP,
-            names_to = 'intervention',
-            values_to = 'NMB') %>%
+            cols = -Comparators,
+            names_to = " ",
+            values_to = "Values") %>%
+          # Flip the dataset to have the interventions in wide format:
           tidyr::pivot_wider(
-            id_cols = 'intervention',
-            names_from = 'WTP',
-            values_from = 'NMB')
-        # CEAF:
-        CEAF <- dplyr::tibble(
-          'CEAF - values' = private$PSA_summary[["CEAF"]]$ceaf,
-          'CEAF - WTP' = private$PSA_summary[["WTPs"]],
-          'intervention' = private$PSA_summary[["best_name"]]) %>%
-          dplyr::filter(`CEAF - WTP` %in% .wtp_) %>%
-          dplyr::mutate(`CEAF - WTP` = paste0("Prob. CE @ ",
-                                              scales::dollar(
-                                                x = `CEAF - WTP`,
-                                                accuracy = 1,
-                                                prefix = .units_)))
-
-        # EVPI:
-        EVPI <- dplyr::tibble(
-          'EVPI - values' = private$PSA_summary[["EVPI"]],
-          'EVPI - WTP' = private$PSA_summary[["WTPs"]],
-          'intervention' = private$PSA_summary[["best_name"]]) %>%
-          dplyr::filter(`EVPI - WTP` %in% .wtp_) %>%
-          dplyr::mutate(`EVPI - WTP` = paste0("EVPI @ ",
-                                              scales::dollar(
-                                                x = `EVPI - WTP`,
-                                                accuracy = 1,
-                                                prefix = .units_)))
-
-        # Summary table:
-        differential_col <- paste("Incremental", .effects_label)
-        Summary_tbl <- ICER_tbl %>%
-          # join the expected NMB to the ICER results:
-          dplyr::left_join(x = ., y = eNMB, by = 'intervention') %>%
-          # join the probability of being cost-effective:
-          dplyr::left_join(x = ., y = CEAF, by = 'intervention') %>%
-          tidyr::pivot_wider(
-            names_from = `CEAF - WTP`,
-            values_from = `CEAF - values`) %>%
-          # drop any NAs resulting from pivot_wider:
-          dplyr::select(tidyselect::vars_select_helpers$where(
-            fn = function(.x) !all(is.na(.x)))) %>%
-          # join the EVPI:
-          dplyr::left_join(x = ., y = EVPI, by = 'intervention') %>%
-          tidyr::pivot_wider(
-            names_from = `EVPI - WTP`,
-            values_from = `EVPI - values`) %>%
-          # drop any NAs resulting from pivot_wider:
-          dplyr::select(tidyselect::vars_select_helpers$where(
-            fn = function(.x) !all(is.na(.x)))) %>%
-          # do some formatting:
-          dplyr::mutate(
-            dplyr::across(
-              tidyselect::vars_select_helpers$where(
-                is.numeric) & !c(qalys, delta.e,
-                                 dplyr::starts_with("Prob.")),
-              ~ scales::dollar(
-                x = .x,
-                accuracy = 0.1,
-                prefix = .units_))) %>%
-          dplyr::mutate(
-            dplyr::across(c(qalys, delta.e, dplyr::starts_with("Prob.")),
-                          ~ as.character(round(.x, digits = 4)))) %>%
-          dplyr::select(-dplyr::any_of('dominance')) %>%
-          dplyr::rename({{.effects_label}} := qalys,
-                        Comparators = intervention,
-                        {{differential_col}} := delta.e,
-                        "Incremental Costs" = delta.c,
-                        "ICER information" = icer_label) %>%
-          dplyr::rename_with(stringr::str_to_title, costs) %>%
-          dplyr::rename_with(toupper, icer) %>%
-          dplyr::mutate(
-            ICER = case_when(
-              is.na(ICER) ~
-                `ICER information`,
-              TRUE ~ ICER)) %>%
-          dplyr::select(-`ICER information`)
-        # Display the table in a long table:
-        if(.long_) {
-          Summary_tbl <- Summary_tbl %>%
-            tidyr::pivot_longer(
-              cols = -Comparators,
-              names_to = " ",
-              values_to = "Values") %>%
-            tidyr::pivot_wider(
-              names_from = Comparators,
-              values_from = Values)
-        }
-        # To get a nice looking table:
-        if(.shiny_) {
-          # Prepare DT-table row groups:
-          Summary_tbl <- Summary_tbl %>%
-            dplyr::mutate(
-              RowGroup_ = c(rep(glue::glue("Costs ({.units_})"), 2),
-                            rep("QALYs", 2),
-                            "Incremental Cost-Effectiveness Ratio",
-                            rep(glue::glue("Net Benefit ({.units_})"),
-                                length(.wtp_)),
-                            rep("Probability cost-effective",
-                                length(.wtp_)),
-                            rep(glue::glue("Expected value of perfect
-                                      information ({.units_})"),
-                                length(.wtp_))
-              )
-            )
-          # Prepare border info:
-          bottom_border_ <- c(0, 1, 0, 1, 1,
-                              rep(0, length(.wtp_) - 1), 1,
-                              rep(0, length(.wtp_) - 1), 1,
-                              rep(0, length(.wtp_) - 1), 1)
-          Summary_tbl <- Summary_tbl %>%
-            dplyr::mutate(
-              RowBorder_ = bottom_border_
-            )
-          # Number of columns to show:
-          ColShow_ <- nrow(ICER_tbl)
-          # Build the table:
-          Summary_tbl <- Summary_tbl %>%
-            DT::datatable(
-              class = 'compact row-border',
-              options = list(
-                paging = FALSE,  ## paginate the output
-                pageLength = 15, ## rows number to output for each page
-                scrollX = FALSE, ## enable scrolling on X axis
-                scrollY = FALSE, ## enable scrolling on Y axis
-                autoWidth = TRUE,## use smart column width handling
-                server = FALSE,  ## use client-side processing
-                dom = 'tB',      ## Bfrtip
-                buttons = c('csv', 'excel', 'copy', 'pdf', "print"),
-                rowGroup = list(
-                  dataSrc = ColShow_ + 1
-                ), # Column names at the end of the table
-                columnDefs = list(
-                  # list(
-                  #   targets = '_all',
-                  #   className = 'dt-center'
-                  # ),
-                  list(
-                    visible = FALSE,
-                    targets = c(ColShow_ + 1, ColShow_ + 2)
-                  )
-                ) # Hide the column names
-              ),
-              extensions = c('RowGroup', 'Buttons'),
-              selection = 'none', ## enable selection of a single row
-              filter = 'none', ## include column filters at the bottom
-              rownames = FALSE  ## don't show row numbers/names
-            ) %>%
-            DT::formatStyle(
-              columns = 0:(ColShow_ + 1),
-              valueColumns = "RowBorder_",
-              `border-bottom` = DT::styleEqual(1, "solid 1px")
-            )
-        }
-
-        private$Summary_table <- Summary_tbl
+            names_from = Comparators,
+            values_from = Values)
       }
+      # To get a nice looking table:
+      ## Long format beautified table:
+      if(.beautify_ & .long_) {
+        # Remove unnecessary strings:
+        Summary_tbl <- Summary_tbl %>%
+          dplyr::mutate(dplyr::across(
+            .cols = " ",
+            .fns = function(.x) {
+              stringr::str_replace_all(
+                string = .x,
+                pattern = c("NMB @ "),
+                replacement = c("")
+              )
+            }
+          )) %>%
+          dplyr::mutate(dplyr::across(
+            .cols = " ",
+            .fns = function(.x) {
+              stringr::str_replace_all(
+                string = .x,
+                pattern = c("Prob. CE @ "),
+                replacement = c("")
+              )
+            }
+          )) %>%
+          dplyr::mutate(dplyr::across(
+            .cols = " ",
+            .fns = function(.x) {
+              stringr::str_replace_all(
+                string = .x,
+                pattern = c("EVPI @ "),
+                replacement = c("")
+              )
+            }
+          ))
+        # Prepare DT-table row groups:
+        Summary_tbl <- Summary_tbl %>%
+          dplyr::mutate(
+            RowGroup_ = c(rep(glue::glue("Costs ({.units_})"), 2),
+                          rep("QALYs", 2),
+                          "Incremental Cost-Effectiveness Ratio",
+                          rep(glue::glue("Net Benefit ({.units_})"),
+                              length(.wtp_)),
+                          rep("Probability Cost-Effective",
+                              length(.wtp_)),
+                          rep(glue::glue("Expected Value of Perfect
+                                      Information ({.units_})"),
+                              length(.wtp_))
+            )
+          )
+        # Prepare border info:
+        bottom_border_ <- c(0, 1, 0, 1, 1,
+                            rep(0, length(.wtp_) - 1), 1,
+                            rep(0, length(.wtp_) - 1), 1,
+                            rep(0, length(.wtp_) - 1), 1)
+        Summary_tbl <- Summary_tbl %>%
+          dplyr::mutate(
+            RowBorder_ = bottom_border_
+          )
+        # Number of columns to show:
+        ColShow_ <- nrow(ICER_tbl)
+        # Build the table:
+        Summary_tbl <- Summary_tbl %>%
+          DT::datatable(
+            class = 'compact row-border',
+            options = list(
+              ordering = FALSE, ## sorting table based on column's values
+              paging = FALSE,  ## paginate the output
+              pageLength = 15, ## rows number to output for each page
+              scrollX = TRUE, ## enable scrolling on X axis
+              scrollY = TRUE, ## enable scrolling on Y axis
+              autoWidth = FALSE,## use smart column width handling
+              server = FALSE,  ## use client-side processing
+              dom = 'tB',      ## Bfrtip
+              buttons = c('csv', 'excel', 'copy', 'pdf', "print"),
+              rowGroup = list(
+                dataSrc = ColShow_ + 1
+              ), # Column names at the end of the table
+              columnDefs = list(
+                # list(
+                #   targets = '_all',
+                #   className = 'dt-center'
+                # ),
+                list(
+                  visible = FALSE,
+                  targets = c(ColShow_ + 1, ColShow_ + 2)
+                )
+              ) # Hide the column names
+            ),
+            extensions = c('RowGroup', 'Buttons'),
+            selection = 'none', ## enable selection of a single row
+            filter = 'none', ## include column filters at the bottom
+            rownames = FALSE  ## don't show row numbers/names
+          ) %>%
+          DT::formatStyle(
+            columns = 0:(ColShow_ + 1),
+            valueColumns = 'RowBorder_',
+            `border-bottom` = DT::styleEqual(1, 'solid 1px')
+          )
+      }
+      ## Wide format beautified table:
+      if(.beautify_ & !.long_) {
+        # custom table container to create column groups:
+        sketch_ <- htmltools::withTags(table(
+          class = 'display',
+          thead(
+            tr(
+              th(rowspan = 2, 'Comparators'), # 1 column (name 2 rows)
+              th(rowspan = 2, 'QALYs'), # 1 column (name 2 rows)
+              th(rowspan = 2, 'Costs'), # 1 column (name 2 rows)
+              th(colspan = 2, 'Incremental'),
+              th(rowspan = 2, 'ICER'), # 1 column (name 2 rows)
+              th(colspan = length(.wtp_), 'Net Benefit'),
+              th(colspan = length(.wtp_), 'Probability cost-effective'),
+              th(colspan = length(.wtp_), 'EVPI'),
+            ),
+            tr(
+              purrr::map(.x = c(
+                "QALYs", "Costs", # Incremental
+                rep(
+                  scales::dollar(# Net Benefit, CEAF, EVPI
+                    x = .wtp_,
+                    accuracy = 1,
+                    prefix = .units_), 3)),
+                .f = th)
+            )
+          )
+        ))
+        # Build the table:
+        Summary_tbl <- Summary_tbl %>%
+          DT::datatable(
+            class = 'compact row-border',
+            options = list(
+              ordering = FALSE, ## sorting table based on column's values
+              paging = FALSE,  ## paginate the output
+              pageLength = 15, ## rows number to output for each page
+              scrollX = TRUE, ## enable scrolling on X axis
+              scrollY = TRUE, ## enable scrolling on Y axis
+              autoWidth = FALSE,## use smart column width handling
+              server = FALSE,  ## use client-side processing
+              dom = 'tB',      ## Bfrtip
+              buttons = c('csv', 'excel', 'copy', 'pdf', "print"),
+              columnDefs = list(
+                # list(
+                #   targets = '_all',
+                #   className = 'dt-center'
+                # ),
+              )
+            ),
+            container = sketch_, ## object to use to draw table
+            extensions = 'Buttons',
+            selection = 'none', ## enable selection of a single row
+            filter = 'none', ## include column filters at the bottom
+            rownames = FALSE  ## don't show row numbers/names
+          )
+
+      }
+
+      ## Save a copy:
+      private$Summary_table <- Summary_tbl
 
       return(private$Summary_table)
     },
@@ -469,6 +566,27 @@ ShinyPSA <- R6::R6Class(
 
       # if any arguments exist, then return the new plot:
       return(self$EVPI_plot)
+    },
+
+    #' @description
+    #' Get the willingness-to-pay values used in the analysis
+    #'
+    #' @return An integer
+    #' @export
+    #'
+    #' @examples
+    #' \dontrun{
+    #' # Instantiate a copy of class ShinyPSA:
+    #' PSA_outputs <- ShinyPSA$new(
+    #'                   .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
+    #'                   .interventions = ShinyPSA::Smoking_PSA$treats)
+    #'
+    #' PSA_outputs$get_WTP()
+    #' }
+    get_WTP = function() {
+
+      return(private$PSA_summary[["WTPs"]])
     }
 
   ),

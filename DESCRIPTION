@@ -30,6 +30,7 @@ Imports:
     scales,
     shinymanager,
     shinyWidgets,
+    stringr,
     tidyr,
     tidyselect,
     waiter

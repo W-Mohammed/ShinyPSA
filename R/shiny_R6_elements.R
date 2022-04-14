@@ -518,24 +518,33 @@ dataTableDT = R6::R6Class(
     },
 
     ### server:----
-    server = function(input, output, session, .table_) {
+    server = function(input, output, session, .table_, .readyDT_) {
 
-      output[[private$uiOutput_Id_]] <- DT::renderDataTable(
-        server = FALSE,
-        expr = {
-          DT::datatable(
-            extensions = 'Buttons',
-            options = list(
-              dom = 'Bfrtip',
-              scrollX = FALSE,
-              pageLength = 10,
-              buttons = c('csv', 'excel'),
-              filter = c("none")
-            ),
+      output[[private$uiOutput_Id_]] <- if(!.readyDT_) {
+        DT::renderDataTable(
+          server = FALSE,
+          expr = {
+            DT::datatable(
+              extensions = 'Buttons',
+              options = list(
+                dom = 'Bfrtip',
+                scrollX = FALSE,
+                pageLength = 10,
+                buttons = c('csv', 'excel'),
+                filter = c("none")
+              ),
+              .table_
+            )
+          }
+        )
+      } else {
+        DT::renderDataTable(
+          server = FALSE,
+          expr = {
             .table_
-          )
-        }
-      )
+          }
+        )
+      }
 
     },
     ### Getters:----
