@@ -1,5 +1,5 @@
 
-name: PR
+name: Run on pull request
 
 # Run on all pull requests
 on:
