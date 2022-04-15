@@ -790,10 +790,11 @@ ShinyPSA <- R6::R6Class(
                                    .costs = costs) {
       # Check if missing key columns and create them if so:
       .icer_data <- .icer_data %>%
-        private$add_missing_columns_(.x = .,
-                                     .characters = c("dominance", "icer_label"),
-                                     .numerics = c(".id", "delta.e", "delta.c",
-                                                   "icer"))
+        private$add_missing_columns_(
+          .x = .,
+          .characters = c("dominance", "icer_label"),
+          .numerics = c(".id", "delta.e", "delta.c",
+                        "icer"))
 
       # Identify dominated interventions:
       .icer_data <- .icer_data %>%
@@ -802,11 +803,11 @@ ShinyPSA <- R6::R6Class(
         dplyr::mutate(
           icer_label = dplyr::case_when(
             is.na(dominance) ~ dplyr::case_when(
-              dplyr::lead({{.costs}}) < {{.costs}} ~ "dominated"),
+              dplyr::lead({{.costs}}) < {{.costs}} ~ "SD"),
             TRUE ~ icer_label),
           dominance = dplyr::case_when(
             is.na(dominance) ~ dplyr::case_when(
-              dplyr::lead({{.costs}}) < {{.costs}} ~ "dominated"),
+              dplyr::lead({{.costs}}) < {{.costs}} ~ "SD"),
             TRUE ~ dominance)) %>%
         dplyr::ungroup()
 
@@ -826,9 +827,10 @@ ShinyPSA <- R6::R6Class(
     identify_e.dominance_ = function(.icer_data, .qalys = qalys) {
       # Check if missing key columns and create them if so:
       .icer_data <- .icer_data %>%
-        private$add_missing_columns_(.x = .,
-                                     .characters = c("dominance", "icer_label"),
-                                     .numerics = c(".id", "delta.e", "delta.c", "icer"))
+        private$add_missing_columns_(
+          .x = .,
+          .characters = c("dominance", "icer_label"),
+          .numerics = c(".id", "delta.e", "delta.c", "icer"))
 
       # Identify extendedly dominated interventions:
       .icer_data <- .icer_data %>%
@@ -837,14 +839,11 @@ ShinyPSA <- R6::R6Class(
         dplyr::mutate(
           icer_label = dplyr::case_when(
             is.na(dominance) ~ dplyr::case_when(
-              dplyr::lead(icer) < icer ~ "extendedly dominated"),
-
-            # dplyr::lead(icer) < icer ~ paste0("extendedly dominated by ",
-            #                                   dplyr::lead(.id))),
+              dplyr::lead(icer) < icer ~ "ED"),
             TRUE ~ icer_label),
           dominance = dplyr::case_when(
             is.na(dominance) ~ dplyr::case_when(
-              dplyr::lead(icer) < icer ~ "e.dominated"),
+              dplyr::lead(icer) < icer ~ "ED"),
             TRUE ~ dominance)) %>%
         dplyr::ungroup()
 
@@ -867,10 +866,11 @@ ShinyPSA <- R6::R6Class(
                                 .costs = costs) {
       # Check if missing key columns and create them if so:
       .icer_data <- .icer_data %>%
-        private$add_missing_columns_(.x = .,
-                                     .characters = c("dominance", "icer_label"),
-                                     .numerics = c(".id", "delta.e", "delta.c",
-                                                   "icer"))
+        private$add_missing_columns_(
+          .x = .,
+          .characters = c("dominance", "icer_label"),
+          .numerics = c(".id", "delta.e", "delta.c",
+                        "icer"))
 
       # Compute Incremental Cost-Effectiveness Ratio (ICER):
       .icer_data <- .icer_data %>%
@@ -911,13 +911,14 @@ ShinyPSA <- R6::R6Class(
     dominance_wraper_ = function(.x) {
       # Check if missing key columns and create them if so:
       .x <- .x %>%
-        private$add_missing_columns_(.x = .,
-                                     .characters = c("dominance", "icer_label"),
-                                     .numerics = c(".id", "delta.e", "delta.c",
-                                                   "icer"))
+        private$add_missing_columns_(
+          .x = .,
+          .characters = c("dominance", "icer_label"),
+          .numerics = c(".id", "delta.e", "delta.c",
+                        "icer"))
 
       # Check for unidentified dominance
-      while (any("dominated" %in%
+      while (any("SD" %in%
                  (.x %>%
                   dplyr::filter(dplyr::if_any(dominance, ~ is.na(.))) %>%
                   private$identify_dominance_() %>%
@@ -941,16 +942,18 @@ ShinyPSA <- R6::R6Class(
     e.dominance_wraper_ = function(.x) {
       # Check if missing key columns and create them if so:
       .x <- .x %>%
-        private$add_missing_columns_(.x = .,
-                                     .characters = c("dominance", "icer_label"),
-                                     .numerics = c(".id", "delta.e", "delta.c",
-                                                   "icer"))
+        private$add_missing_columns_(
+          .x = .,
+          .characters = c("dominance", "icer_label"),
+          .numerics = c(".id", "delta.e", "delta.c",
+                        "icer"))
 
       # Check for any remaining e.dominance
-      while (any("e.dominated" %in% (.x %>%
-                                     dplyr::filter(dplyr::if_any(dominance, ~ is.na(.))) %>%
-                                     private$identify_e.dominance_() %>%
-                                     dplyr::pull(dominance)))) {
+      while (any("ED" %in%
+                 (.x %>%
+                  dplyr::filter(dplyr::if_any(dominance, ~ is.na(.))) %>%
+                  private$identify_e.dominance_() %>%
+                  dplyr::pull(dominance)))) {
         # Do until all extendedly dominated are identified:
         .x <- .x %>%
           private$identify_e.dominance_() %>%
@@ -987,10 +990,11 @@ ShinyPSA <- R6::R6Class(
       if(!is.null(.icer_data)) {
         # Check if missing key columns and create them if so:
         icer_tmp <- .icer_data %>%
-          private$add_missing_columns_(.x = .,
-                                       .characters = c("dominance", "icer_label"),
-                                       .numerics = c(".id", "delta.e", "delta.c",
-                                                     "icer"))
+          private$add_missing_columns_(
+            .x = .,
+            .characters = c("dominance", "icer_label"),
+            .numerics = c(".id", "delta.e", "delta.c",
+                          "icer"))
       } else if(!is.null(.effs) & !is.null(.costs)) {
 
         # Stop if .effs & .costs are not of class tibble or have unequal dims:
@@ -1019,10 +1023,11 @@ ShinyPSA <- R6::R6Class(
           'intervention' = .interventions,
           'qalys' = colMeans(.effs),
           'costs' = colMeans(.costs)) %>%
-          private$add_missing_columns_(.x = .,
-                                       .characters = c("dominance", "icer_label"),
-                                       .numerics = c(".id", "delta.e", "delta.c",
-                                                     "icer"))
+          private$add_missing_columns_(
+            .x = .,
+            .characters = c("dominance", "icer_label"),
+            .numerics = c(".id", "delta.e", "delta.c",
+                          "icer"))
       } else {
         stop("Please supply costs and effects from PSA, each in a separate
          tibble/dataframe, or a summary table with interventions' names,
