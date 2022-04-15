@@ -22,7 +22,9 @@ RUN apt-get update && \
 
 # Install packages rsconnect [to allow deploying shiny apps]:
 # Install package remotes [to allow installGithub.r for github packages]:
-RUN install2.r rsconnect remotes
+RUN install2.r rsconnect remotes tidyverse devtools \
+    bslib DT ggrepel plyr R6 scales shinymanager \
+    shinyWidgets waiter
 
 # Install github packages, including one under development if app relies on it:
 RUN installGithub.r W-Mohammed/ShinyPSA
