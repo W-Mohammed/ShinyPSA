@@ -49,4 +49,3 @@ CMD Rscript deploy.R
 ## To run the image from the same terminal:
 # 1. if the imaage require environment vars and stored in ".Renviron"
 # docker run --env-file .Renviron test1
-
