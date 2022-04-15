@@ -1,0 +1,34 @@
+# Get the rocker image, latest shiny from rocker in this case:
+# Base image https://hub.docker.com/u/rocker/
+FROM rocker/shiny:latest
+
+# Install packages rsconnect [to allow deploying shiny apps]:
+# Install package remotes [to allow installGithub.r for github packages]:
+RUN install2.r rsconnect remotes
+
+# Install github packages, including one under development if app relies on it:
+RUN installGithub.r W-Mohammed/ShinyPSA
+
+# Create a working directory in the image:
+WORKDIR /home/shinyusr
+
+# Copy the app and all supporting files:
+COPY inst/shiny_examples/ShinyPSA/app.R app.R
+
+# Copy the deployment script to the same folder:
+COPY deploy.R deploy.R
+
+# Set the command to run once the container runs:
+CMD Rscript deploy.R
+
+## To build this file with the name "test1":
+# 1. make sure this file is on project root
+# 2. navigate to R's local terminal and execute:
+# docker build -t test1 .
+# 2. if the build exists, this can be overriden:
+# docker build --no-cache -t test1 .
+
+## To run the image from the same terminal:
+# 1. if the imaage require environment vars and stored in ".Renviron"
+# docker run --env-file .Renviron test1
+

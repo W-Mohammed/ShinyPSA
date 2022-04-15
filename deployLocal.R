@@ -30,9 +30,16 @@ rsconnect::setAccountInfo(
 
 # Deploy the application:----
 rsconnect::deployApp(
-  appFiles = c(
-    "app.R"#, you can specify which files to deploy,
-  ),   #or keep this NULL to deploy everything
+  appDir = file.path(
+    here::here(),
+    "inst",
+    "shiny_examples",
+    "ShinyPSA"
+  ),
+  appFiles = NULL,
+  #c("app.R" #, you can specify which files to deploy,
+  #or keep this NULL to deploy everything)
+
   appName = error_on_missing_name("MASTERNAME"),
   appTitle = "ShinyPSA",
   forceUpdate = TRUE
