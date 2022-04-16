@@ -198,9 +198,10 @@ draw_summary_table = function(.PSA_data, .wtp_ = c(20000, 30000),
           )
         }
       ))
-    # Prepare DT-table row groups:
+    # Prepare DT-table helper columns:
     Summary_tbl <- Summary_tbl %>%
       dplyr::mutate(
+        # Prepare DT-table row groups:
         RowGroup_ = c(rep(glue::glue("Costs ({.units_})"), 2),
                       rep("QALYs", 2),
                       "Incremental Cost-Effectiveness Ratio",
@@ -210,22 +211,19 @@ draw_summary_table = function(.PSA_data, .wtp_ = c(20000, 30000),
                           length(.wtp_)),
                       rep(glue::glue("Expected Value of Perfect
                                       Information ({.units_})"),
-                          length(.wtp_))
-        )
+                          length(.wtp_))),
+        # Prepare border info:
+        RowBorder_ = c(0, 1, 0, 1, 1,
+                       rep(0, length(.wtp_) - 1), 1,
+                       rep(0, length(.wtp_) - 1), 1,
+                       rep(0, length(.wtp_) - 1), 1)
       )
-    # Prepare border info:
-    bottom_border_ <- c(0, 1, 0, 1, 1,
-                        rep(0, length(.wtp_) - 1), 1,
-                        rep(0, length(.wtp_) - 1), 1,
-                        rep(0, length(.wtp_) - 1), 1)
-    Summary_tbl <- Summary_tbl %>%
-      dplyr::mutate(RowBorder_ = bottom_border_)
     # Number of columns to show:
     ColShow_ <- nrow(ICER_tbl)
     # Build the table:
     Summary_tbl <- Summary_tbl %>%
       DT::datatable(
-        class = 'compact row-border',
+        class = 'compact row-border stripe',
         options = list(
           ordering = FALSE, ## sorting table based on column's values
           paging = FALSE,  ## paginate the output
@@ -240,15 +238,15 @@ draw_summary_table = function(.PSA_data, .wtp_ = c(20000, 30000),
             dataSrc = ColShow_ + 1
           ), # Column names at the end of the table
           columnDefs = list(
-            # list(
-            #   targets = '_all',
-            #   className = 'dt-center'
-            # ),
-            list(
+            list( # Hide the column names
               visible = FALSE,
               targets = c(ColShow_ + 1, ColShow_ + 2)
+            ),
+            list(
+              className = 'dt-body-center',
+              targets = 1:ColShow_
             )
-          ) # Hide the column names
+          )
         ),
         extensions = c('RowGroup', 'Buttons'),
         selection = 'none', ## enable selection of a single row
@@ -289,6 +287,11 @@ draw_summary_table = function(.PSA_data, .wtp_ = c(20000, 30000),
         )
       )
     ))
+    # get columns where to border is to be drawn:
+    colBorder_ <- c(1:3, 5, 6,
+                    6 + length(.wtp_),
+                    6 + (length(.wtp_) * 2),
+                    6 + (length(.wtp_) * 3))
     # build the table:
     Summary_tbl <- Summary_tbl %>%
       DT::datatable(
@@ -304,10 +307,14 @@ draw_summary_table = function(.PSA_data, .wtp_ = c(20000, 30000),
           dom = 'tB',      ## Bfrtip
           buttons = c('csv', 'excel', 'copy', 'pdf', "print"),
           columnDefs = list(
-            # list(
-            #   targets = '_all',
-            #   className = 'dt-center'
-            # ),
+            list(
+              targets = 1:(ncol(Summary_tbl) - 1),
+              className = 'dt-body-center'
+            ),
+            list(
+              targets = 0,
+              className = 'dt-body-left'
+            )
           )
         ),
         container = sketch_, ## object to use to draw table
@@ -315,6 +322,10 @@ draw_summary_table = function(.PSA_data, .wtp_ = c(20000, 30000),
         selection = 'none', ## enable selection of a single row
         filter = 'none', ## include column filters at the bottom
         rownames = FALSE  ## don't show row numbers/names
+      ) %>%
+      DT::formatStyle(
+        columns = colBorder_,
+        `border-right` = 'solid 1px'
       )
 
   }
