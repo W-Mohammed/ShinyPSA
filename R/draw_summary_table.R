@@ -1,4 +1,4 @@
-#' Draw a results summary table
+#' Draw results summary table
 #'
 #' @param .PSA_data A list of class shinyPSA that contains summary PSA
 #' results.
@@ -22,8 +22,28 @@
 #'
 #' @examples
 #' \dontrun{
+#' library(ShinyPSA)
+#'
+#' PSA_summary <- summarise_PSA_(
+#'   .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
+#'   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
+#'   .interventions = ShinyPSA::Smoking_PSA$treats)
+#'
+#' t <- draw_summary_table_(.PSA_data = PSA_summary,
+#'                         .wtp_ = c(100, 20000, 30000),
+#'                         .beautify_ = TRUE,
+#'                         .long_ = TRUE)
+#'                         t
+#'
+#' t <- draw_summary_table_(.PSA_data = PSA_summary,
+#'                         .wtp_ = c(100, 20000, 30000),
+#'                         .beautify_ = TRUE,
+#'                         .long_ = F)
+#'
+#' t
 #' }
-draw_summary_table = function(.PSA_data, .wtp_ = c(20000, 30000),
+#'
+draw_summary_table_ = function(.PSA_data, .wtp_ = c(20000, 30000),
                               .units_ = "£", .effects_label_ = "QALYs",
                               .beautify_ = TRUE, .long_ = TRUE) {
   # Set currency label if none were provided:

@@ -161,15 +161,16 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
 
   class(results) <- "psa"
 
-  # If requested, develop and save plots:
+  # If requested, develop and save plots and table:
   if(.plot == TRUE) {
-    # Cost-Effectiveness plane:
+    Summary_table <- ShinyPSA::draw_summary_table_(.PSA_data = results)
     CEP_plot <- ShinyPSA::plot_CEplane_(.PSA_data = results, .ref = .ref)
     CEAC_plot <- ShinyPSA::plot_CEAC_(.PSA_data = results, .ref = .ref)
     CEAF_plot <- ShinyPSA::plot_CEAF_(.PSA_data = results)
     EVPI_plot <- ShinyPSA::plot_EVPI_(.PSA_data = results)
     eNMB_plot <- ShinyPSA::plot_eNMB_(.PSA_data = results)
     results <- c(results,
+                 'Summary_table' = list(Summary_table),
                  'CEP_plot' = list(CEP_plot),
                  'CEAC_plot' = list(CEAC_plot),
                  'CEAF_plot' = list(CEAF_plot),
