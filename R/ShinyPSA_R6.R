@@ -793,8 +793,7 @@ ShinyPSA <- R6::R6Class(
         private$add_missing_columns_(
           .x = .,
           .characters = c("dominance", "icer_label"),
-          .numerics = c(".id", "delta.e", "delta.c",
-                        "icer"))
+          .numerics = c(".id", "delta.e", "delta.c", "icer"))
 
       # Identify dominated interventions:
       .icer_data <- .icer_data %>%
@@ -869,8 +868,7 @@ ShinyPSA <- R6::R6Class(
         private$add_missing_columns_(
           .x = .,
           .characters = c("dominance", "icer_label"),
-          .numerics = c(".id", "delta.e", "delta.c",
-                        "icer"))
+          .numerics = c(".id", "delta.e", "delta.c", "icer"))
 
       # Compute Incremental Cost-Effectiveness Ratio (ICER):
       .icer_data <- .icer_data %>%
@@ -914,8 +912,7 @@ ShinyPSA <- R6::R6Class(
         private$add_missing_columns_(
           .x = .,
           .characters = c("dominance", "icer_label"),
-          .numerics = c(".id", "delta.e", "delta.c",
-                        "icer"))
+          .numerics = c(".id", "delta.e", "delta.c", "icer"))
 
       # Check for unidentified dominance
       while (any("SD" %in%
@@ -945,8 +942,7 @@ ShinyPSA <- R6::R6Class(
         private$add_missing_columns_(
           .x = .,
           .characters = c("dominance", "icer_label"),
-          .numerics = c(".id", "delta.e", "delta.c",
-                        "icer"))
+          .numerics = c(".id", "delta.e", "delta.c", "icer"))
 
       # Check for any remaining e.dominance
       while (any("ED" %in%
@@ -993,8 +989,7 @@ ShinyPSA <- R6::R6Class(
           private$add_missing_columns_(
             .x = .,
             .characters = c("dominance", "icer_label"),
-            .numerics = c(".id", "delta.e", "delta.c",
-                          "icer"))
+            .numerics = c(".id", "delta.e", "delta.c", "icer"))
       } else if(!is.null(.effs) & !is.null(.costs)) {
 
         # Stop if .effs & .costs are not of class tibble or have unequal dims:
@@ -1026,8 +1021,7 @@ ShinyPSA <- R6::R6Class(
           private$add_missing_columns_(
             .x = .,
             .characters = c("dominance", "icer_label"),
-            .numerics = c(".id", "delta.e", "delta.c",
-                          "icer"))
+            .numerics = c(".id", "delta.e", "delta.c", "icer"))
       } else {
         stop("Please supply costs and effects from PSA, each in a separate
          tibble/dataframe, or a summary table with interventions' names,

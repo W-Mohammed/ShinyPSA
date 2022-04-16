@@ -1411,6 +1411,26 @@ p = plot_eNMB_(PSA_summary2,
 
 p
 
+t = draw_summary_table(.PSA_data = PSA_summary,
+                       .wtp_ = c(20000, 30000),
+                       .beautify_ = TRUE,
+                       .long_ = TRUE)
+
+t
+
+t = draw_summary_table(.PSA_data = PSA_summary,
+                       .wtp_ = c(100, 20000, 30000),
+                       .beautify_ = TRUE,
+                       .long_ = TRUE)
+
+t
+
+t = draw_summary_table(.PSA_data = PSA_summary,
+                       .wtp_ = c(100, 20000, 30000),
+                       .beautify_ = TRUE,
+                       .long_ = F)
+
+t
 #Test R6 class###########################################################
 
 PSA_test <- ShinyPSA$new(.effs = ShinyPSA::Smoking_PSA$e,
