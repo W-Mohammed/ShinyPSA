@@ -27,7 +27,7 @@ RUN install2.r rsconnect remotes tidyverse devtools \
     shinyWidgets waiter
 
 # Install github packages, including one under development if app relies on it:
-RUN installGithub.r W-Mohammed/ShinyPSA
+RUN -e installGithub.r W-Mohammed/ShinyPSA
 
 # Create a working directory in the image:
 WORKDIR /home/shinyusr
