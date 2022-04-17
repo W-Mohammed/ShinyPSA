@@ -25,7 +25,7 @@ jobs:
 
       # build the docker image and give it the name main
       - name: Build image
-        run: docker build -t dev .
+        run: docker build -t dev -f deploy-shiny/DockerfileDev .
       # run the docker image supply the secrets from the github secrets store.
       - name: execute
         run: >
