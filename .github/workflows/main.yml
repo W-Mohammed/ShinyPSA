@@ -26,7 +26,7 @@ jobs:
 
       # Build image
       - name: Build image
-        run: docker build -t pullrequestimage .
+        run: docker build -t pullrequestimage -f deploy-shiny/DockerfileMain .
       # run the image (but supply the TESTNAME in stead of MASTERNAME, so the
       # app ends up in a different place.
       - name: execute
