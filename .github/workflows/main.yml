@@ -1,9 +1,13 @@
 
-name: Run on pull request
+name: Run on push or pull request merge to main
 
-# Run on all pull requests
+# Run on push or pull requests merge to main:
 on:
-  pull_request: {}
+  # Triggers the workflow on push or pull request events but only for the main branch.
+  push:
+    branches:
+      - master
+      - main
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -31,5 +35,5 @@ jobs:
           -e SHINY_ACC_NAME=${{secrets.SHINY_ACC_NAME}}
           -e TOKEN=${{secrets.TOKEN}}
           -e SECRET=${{secrets.SECRET}}
-          -e MASTERNAME=${{secrets.PR_NAME}}
+          -e MASTERNAME=${{secrets.MASTER_NAME}}
           pullrequestimage
