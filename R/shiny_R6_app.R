@@ -818,7 +818,7 @@ ShinyPSA_R6_App <- R6::R6Class(
           session = session,
           input = input,
           output = output,
-          .choices_ = c("Vaccine_PSA", "Smoking_PSA")
+          .choices_ = c("Hyperphosphatemia_PSA", "Vaccine_PSA", "Smoking_PSA", "Hypothetical_PSA", "Clopidogrel_PSA")
         )
       ##### Uploaded data:----
       incoming <- reactive({
