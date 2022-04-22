@@ -7,7 +7,7 @@
 #' \code{c(20,000, 30,000)}
 #' @param .units_ A character, the units to associate with the
 #' monitory values in the summary table. Default is sterling pounds
-#' (GBP) \code{£}.
+#' (GBP) \code{"\u00A3"}.
 #' @param .effects_label_ The label or name to be given to the effects
 #' column in the summary table. Default is QALYs.
 #' @param .beautify_ Return a visually improved version of the table. The
@@ -44,10 +44,12 @@
 #' }
 #'
 draw_summary_table_ = function(.PSA_data, .wtp_ = c(20000, 30000),
-                              .units_ = "£", .effects_label_ = "QALYs",
-                              .beautify_ = TRUE, .long_ = TRUE) {
+                               .units_ = "\u00A3",
+                               .effects_label_ = "QALYs",
+                               .beautify_ = TRUE,
+                               .long_ = TRUE) {
   # Set currency label if none were provided:
-  if(is.null(.units_) | length(.units_) != 1) .units_ = "£"
+  if(is.null(.units_) | length(.units_) != 1) .units_ = "\u00A3"
 
   # Get the ICER table from the result's object:
   ICER_tbl <- .PSA_data[["ICER"]]
@@ -62,7 +64,6 @@ draw_summary_table_ = function(.PSA_data, .wtp_ = c(20000, 30000),
     dplyr::mutate(WTP = paste0("NMB @ ",
                                scales::dollar(
                                  x = WTP,
-                                 accuracy = 1,
                                  prefix = .units_))) %>%
     # put everything in a long format:
     tidyr::pivot_longer(
@@ -104,7 +105,6 @@ draw_summary_table_ = function(.PSA_data, .wtp_ = c(20000, 30000),
     dplyr::mutate(`EVPI - WTP` = paste0("EVPI @ ",
                                         scales::dollar(
                                           x = `EVPI - WTP`,
-                                          accuracy = 1,
                                           prefix = .units_)))
 
   # Put summary table together:
@@ -301,7 +301,6 @@ draw_summary_table_ = function(.PSA_data, .wtp_ = c(20000, 30000),
                    rep(
                      scales::dollar(# Net Benefit, Prob. CE, EVPI
                        x = .wtp_,
-                       accuracy = 1,
                        prefix = .units_), 3)),
             .f = th)
         )

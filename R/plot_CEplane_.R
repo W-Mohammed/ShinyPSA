@@ -64,47 +64,51 @@ plot_CEplane_ <- function(.PSA_data, ...) {
   args_ <- list(...)
   # Assign additional arguments:
   ShinyPSA::assign_extraArgs_(.default_args_ = default_args,
-                    .args_ = args_,
-                    .env_ = env_)
+                              .args_ = args_,
+                              .env_ = env_)
 
   # Plot data:
   ## CE plot points:
   if(is.null(.ref)) { # No rescaling of point data
     ce_plane_dt <- .PSA_data$e %>%
       dplyr::mutate(sims = dplyr::row_number()) %>%
-      tidyr::pivot_longer(cols = -sims,
-                   names_to = "interventions",
-                   values_to = "Effects") %>%
-      dplyr::left_join(x = .,
-                y = .PSA_data$c %>%
-                  dplyr::mutate(sims = dplyr::row_number()) %>%
-                  tidyr::pivot_longer(cols = -sims,
-                               names_to = "interventions",
-                               values_to = "Costs"),
-                by = c("sims", "interventions"))
+      tidyr::pivot_longer(
+        cols = -sims,
+        names_to = "interventions",
+        values_to = "Effects") %>%
+      dplyr::left_join(
+        x = .,
+        y = .PSA_data$c %>%
+          dplyr::mutate(sims = dplyr::row_number()) %>%
+          tidyr::pivot_longer(cols = -sims,
+                              names_to = "interventions",
+                              values_to = "Costs"),
+        by = c("sims", "interventions"))
     # Labels:
     .title_lab = "Cost Effectiveness Plane"
     .x_lab = "Effects"
-    .y_lab = "Costs (£)"
+    .y_lab = "Costs (\u00A3)"
   } else { # Rescale point data
     ce_plane_dt <- .PSA_data$e %>%
       ShinyPSA::calculate_differentials_(.ref = .ref) %>%
       dplyr::mutate(sims = dplyr::row_number()) %>%
-      tidyr::pivot_longer(cols = -sims,
-                   names_to = "interventions",
-                   values_to = "Effects") %>%
-      dplyr::left_join(x = .,
-                y = .PSA_data$c %>%
-                  ShinyPSA::calculate_differentials_(.ref = .ref) %>%
-                  dplyr::mutate(sims = dplyr::row_number()) %>%
-                  tidyr::pivot_longer(cols = -sims,
-                               names_to = "interventions",
-                               values_to = "Costs"),
-                by = c("sims", "interventions"))
+      tidyr::pivot_longer(
+        cols = -sims,
+        names_to = "interventions",
+        values_to = "Effects") %>%
+      dplyr::left_join(
+        x = .,
+        y = .PSA_data$c %>%
+          ShinyPSA::calculate_differentials_(.ref = .ref) %>%
+          dplyr::mutate(sims = dplyr::row_number()) %>%
+          tidyr::pivot_longer(cols = -sims,
+                              names_to = "interventions",
+                              values_to = "Costs"),
+        by = c("sims", "interventions"))
     # Labels:
     .title_lab = "Cost Effectiveness Plane"
     .x_lab = "Effectiveness differential"
-    .y_lab = "Cost differential (£)"
+    .y_lab = "Cost differential (\u00A3)"
   }
 
   ## CE plot mean values:
@@ -112,7 +116,14 @@ plot_CEplane_ <- function(.PSA_data, ...) {
     dplyr::group_by(interventions) %>%
     dplyr::summarise(
       Effects = mean(Effects),
-      Costs = mean(Costs))
+      Costs = mean(Costs)) %>%
+    dplyr::left_join(
+      x = .,
+      y = .PSA_data$ICER %>%
+        select(intervention, icer_label) %>%
+        rename("interventions" = intervention),
+      by = "interventions") %>%
+    dplyr::rename("Label" = icer_label)
 
   # Plot:
   p <- ggplot2::ggplot() +
@@ -122,18 +133,20 @@ plot_CEplane_ <- function(.PSA_data, ...) {
       xintercept = 0, colour = "dark gray") +
     ggplot2::geom_point(
       data = ce_plane_dt,
-      ggplot2::aes(x = Effects,
-          y = Costs,
-          color = interventions),
+      ggplot2::aes(
+        x = Effects,
+        y = Costs,
+        color = interventions),
       size = 1, alpha = 0.5) +
     ggplot2::scale_y_continuous(
-      labels = scales::dollar_format(prefix = "£",
+      labels = scales::dollar_format(prefix = "\u00A3",
                                      big.mark = ",")) +
     ggplot2::geom_point(
       data = ce_plane_mean_dt,
-      ggplot2::aes(x = Effects,
-          y = Costs,
-          fill = interventions),
+      ggplot2::aes(
+        x = Effects,
+        y = Costs,
+        fill = interventions),
       shape = 21, colour = "black", show.legend = TRUE,
       size = 2, alpha = 1, stroke = 0.6) +
     ## Keep one value in the legend:
@@ -156,7 +169,7 @@ plot_CEplane_ <- function(.PSA_data, ...) {
       # Add a border around the plot:
       panel.border = ggplot2::element_rect(colour = 'black', fill = NA),
       plot.margin = ggplot2::unit(c(5.5, 1, 5.5, 5.5), # more space LHS
-                         c("points", "cm", "points", "points"))) +
+                                  c("points", "cm", "points", "points"))) +
     ggplot2::labs(
       title = .title_lab,
       x = .x_lab,
@@ -189,9 +202,10 @@ plot_CEplane_ <- function(.PSA_data, ...) {
     p <- p +
       ggrepel::geom_text_repel(
         data = ce_plane_mean_dt,
-        ggplot2::aes(x = Effects,
-            y = Costs,
-            label = .PSA_data$ICER$icer_label),
+        ggplot2::aes(
+          x = Effects,
+          y = Costs,
+          label = Label),
         force_pull = 8,
         size = 2.5,
         point.padding = 0,
@@ -253,17 +267,19 @@ plot_CEplane_ <- function(.PSA_data, ...) {
         x_cord = x_cord,
         y_cord = y_cord,
         angle_cord = angle_cord,
-        label_cord = paste0("£", format(.wtp_threshold,
-                                        big.mark = ",")),
-        lty_ = "Willingness-to-pay (£)")
+        label_cord = scales::dollar(
+          x = .wtp_threshold,
+          prefix = "\u00A3"
+        ),
+        lty_ = "Willingness-to-pay (\u00A3)")
 
     ## Plot:
     p <- p +
       ggplot2::geom_abline(
         data = .wtp,
         ggplot2::aes(intercept = 0,
-            slope = value,
-            linetype = lty_),
+                     slope = value,
+                     linetype = lty_),
         show.legend = TRUE) +
       ggplot2::scale_linetype_manual(
         breaks = .wtp$lty_[1], # keep one for the legend
@@ -271,9 +287,9 @@ plot_CEplane_ <- function(.PSA_data, ...) {
       ggrepel::geom_text_repel(
         data = .wtp,
         ggplot2::aes(x = x_cord,
-            y = y_cord,
-            #angle = angle_cord,
-            label = label_cord),
+                     y = y_cord,
+                     #angle = angle_cord,
+                     label = label_cord),
         size = 1.5,
         show.legend = FALSE) +
       ggplot2::guides(
@@ -296,7 +312,7 @@ plot_CEplane_ <- function(.PSA_data, ...) {
     # Plot:
     p <- p +
       ggplot2::coord_cartesian(xlim = x_lim, ylim = y_lim, expand = !.zoom,
-                      default = .zoom)
+                               default = .zoom)
   }
 
   if(.zoom & !is.null(.zoom_cords) &
@@ -308,7 +324,7 @@ plot_CEplane_ <- function(.PSA_data, ...) {
     # Plot:
     p <- p +
       ggplot2::coord_cartesian(xlim = x_lim, ylim = y_lim, expand = !.zoom,
-                      default = .zoom)
+                               default = .zoom)
   }
 
   return(p)

@@ -25,6 +25,8 @@
 #' @param .wtp A vector of numerical values declaring the
 #' willingness-to-pay (WTP) values to use in the analysis. If \code{NULL}
 #' (default) a range of WTP values (up to \code{.Kmax} will be used.
+#' @param .max_Kpoints Maximum number of willingness-to-pay values (default
+#' 100) to use in the analysis.
 #'
 #' @return A list containing the NMB list, eNMB tibble, WTP tibble and
 #' other objects.
@@ -33,7 +35,7 @@
 #' @examples
 #' \dontrun{}
 compute_NMBs_ <- function(.effs, .costs, .interventions = NULL,
-                          .Kmax = NULL, .wtp = NULL) {
+                          .Kmax = NULL, .wtp = NULL, .max_Kpoints = 100) {
   # Stop if .effs & .costs are not of class tibble or have unequal dims:
   stopifnot('.effs is a not tibble' = "data.frame" %in% class(.effs),
             '.costs is a not tibble' = "data.frame" %in% class(.costs),
@@ -51,10 +53,6 @@ compute_NMBs_ <- function(.effs, .costs, .interventions = NULL,
   }
   if(is.null(.interventions)) {
     .interventions <- paste("intervention", 1:n.comparators)
-    # Associate .interventions with number IDs for cleaner plots' labels:
-    .interventions <- paste0(1:length(.interventions),
-                             ": ",
-                             .interventions)
   }
 
   # Name .effs and .costs columns appropriately:
@@ -67,35 +65,36 @@ compute_NMBs_ <- function(.effs, .costs, .interventions = NULL,
   if (is.null(.Kmax)) {
     .Kmax <- 100000
   }
-  if (!is.null(.wtp)) {
-    .wtp <- sort(unique(.wtp))
-    .Kmax <- max(.wtp)
-    v.k <- .wtp
-    n.k <- length(.wtp)
-    names(v.k) <- paste0("£", format(v.k, big.mark = ","))
-  } else {
-    n.points <- .Kmax/100
-    v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
-    v.k <- c(v.k, 20000, 30000, 50000)
-    v.k <- sort(unique(v.k))
-    n.k <- length(v.k)
-    names(v.k) <- paste0("£", format(v.k, big.mark = ","))
+  if (is.null(.wtp)) {
+    .wtp <- c(20000, 30000, 50000)
   }
+  n.points <- .Kmax/.max_Kpoints
+  v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
+  v.k <- c(v.k, .wtp)
+  v.k <- sort(unique(v.k))
+  n.k <- length(v.k)
+  names(v.k) <- scales::dollar(
+    x = v.k,
+    prefix = "\u00A3"
+  )
 
   # Compute monetary net benefit (NMB) (default):
-  nmb <- purrr::map2(.x = .effs,
-              .y = .costs,
-              .f = function(.eff = .x, .cost = .y) {
-                purrr::map_dfc(as.list(v.k),
-                        .f = function(.k = .x) {
-                          .eff * .k - .cost})}) %>%
+  nmb <- purrr::map2(
+    .x = .effs,
+    .y = .costs,
+    .f = function(.eff = .x, .cost = .y) {
+      purrr::map_dfc(
+        .x = as.list(v.k),
+        .f = function(.k = .x) {
+          .eff * .k - .cost})}) %>%
     purrr::transpose()
 
   # Compute expected net benefit (e.NMB):
   e.nmb <- nmb %>%
-    purrr::map_dfr(.f = function(.x) {
-      colMeans(dplyr::as_tibble(.x, .name_repair = "unique"))
-    })
+    purrr::map_dfr(
+      .f = function(.x) {
+        colMeans(dplyr::as_tibble(.x, .name_repair = "unique"))
+      })
 
   # Select the best option for each willingness-to-pay value:
   best_interv <- e.nmb %>%
@@ -145,11 +144,12 @@ compute_CEACs_ <- function(.nmb, .effs = NULL, .costs = NULL,
                            .wtp = NULL) {
   # If .nmb was not available but raw data were:
   if(is.null(.nmb) & !is.null(.effs) & !is.null(.costs)){
-    .nmb <- ShinyPSA::compute_NMBs_(.effs = .effs,
-                          .costs = .costs,
-                          .interventions = .interventions,
-                          .Kmax = .Kmax,
-                          .wtp = .wtp)
+    .nmb <- ShinyPSA::compute_NMBs_(
+      .effs = .effs,
+      .costs = .costs,
+      .interventions = .interventions,
+      .Kmax = .Kmax,
+      .wtp = .wtp)
     .nmb <- .nmb$nmb
   }
 
@@ -158,9 +158,11 @@ compute_CEACs_ <- function(.nmb, .effs = NULL, .costs = NULL,
 
   # CEAC in incremental analysis:
   ceac <- .nmb %>%
-    purrr::map_dfr(.f = function(.x) {
-      colMeans(do.call(pmax, dplyr::as_tibble(.x, .name_repair = "unique")) ==
-                 dplyr::as_tibble(.x, .name_repair = "unique"))})
+    purrr::map_dfr(
+      .f = function(.x) {
+        colMeans(
+          do.call(pmax, dplyr::as_tibble(.x, .name_repair = "unique")) ==
+            dplyr::as_tibble(.x, .name_repair = "unique"))})
 
   return(ceac)
 }
@@ -193,8 +195,7 @@ compute_CEAFs_ <- function(.ceac, .nmb = NULL) {
 
   # Compute CEAF:
   ceaf <- .ceac %>%
-    dplyr::mutate('ceaf' = if(any(rowSums(.) != 1)) NA_real_
-           else do.call(pmax, .))
+    dplyr::mutate('ceaf' = do.call(pmax, .))
 
   return(ceaf)
 }

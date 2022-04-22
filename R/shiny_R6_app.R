@@ -288,7 +288,7 @@ ShinyPSA_R6_App <- R6::R6Class(
               id = "dataName",
               ##### Settings page:----
               tabPanel(
-                title = "Settings",
+                title = "Setup",
                 icon = icon("cog"),
                 fluidRow(
                   column(
@@ -302,17 +302,15 @@ ShinyPSA_R6_App <- R6::R6Class(
                         "Option 1: Choose from existing datasets:"
                       ),
                       fluidRow(
-                        tagList(
-                          ###### Data selection:----
-                          self$iContainer[["getData"]]$
-                            ui_input(
-                              .choices_ = NULL,
-                              .style_ = "display: flex;
+                        ###### Data selection:----
+                        self$iContainer[["getData"]]$
+                          ui_input(
+                            .choices_ = NULL,
+                            .style_ = "display: flex;
                           margin-top: 2rem !important;",
-                              .class_ = "pl-4 d-flex align-items-start",
-                              #.width_ = "200%"
-                            )
-                        )
+                            .class_ = "pl-4 d-flex align-items-start",
+                            .width_ = NULL
+                          )
                       ),
                       fluidRow(
                         self$iContainer[["maxWTP1"]]$

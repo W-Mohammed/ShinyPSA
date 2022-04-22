@@ -57,18 +57,21 @@ plot_eNMB_ <- function(.PSA_data, ...) {
   # Grab additional arguments:
   args_ <- list(...)
   # Assign additional arguments:
-  ShinyPSA::assign_extraArgs_(.default_args_ = default_args,
-                    .args_ = args_,
-                    .env_ = env_)
+  ShinyPSA::assign_extraArgs_(
+    .default_args_ = default_args,
+    .args_ = args_,
+    .env_ = env_)
 
   # Plot data:
   enmb_df <- .PSA_data$e.NMB %>%
     dplyr::as_tibble() %>%
-    dplyr::mutate('WTP threshold' = .PSA_data$WTPs,
-           'Best option' = .PSA_data$best_name) %>%
-    tidyr::pivot_longer(cols = colnames(.PSA_data$e.NMB),
-                 names_to = 'Option',
-                 values_to = 'eNMB')
+    dplyr::mutate(
+      'WTP threshold' = .PSA_data$WTPs,
+      'Best option' = .PSA_data$best_name) %>%
+    tidyr::pivot_longer(
+      cols = colnames(.PSA_data$e.NMB),
+      names_to = 'Option',
+      values_to = 'eNMB')
 
   # Zoom:
   y_cords <- NULL
@@ -93,13 +96,15 @@ plot_eNMB_ <- function(.PSA_data, ...) {
     ggplot2::geom_line(
       data = enmb_df,
       ggplot2::aes(x = `WTP threshold`,
-          y = eNMB,
-          group = Option,
-          linetype = Option,
-          color = Option),
+                   y = eNMB,
+                   group = Option,
+                   linetype = Option,
+                   color = Option),
       size = 0.4) +
-    ggplot2::scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
-    ggplot2::scale_y_continuous(labels = scales::dollar_format(prefix = "£")) +
+    ggplot2::scale_x_continuous(labels = scales::dollar_format(
+      prefix = "\u00A3")) +
+    ggplot2::scale_y_continuous(labels = scales::dollar_format(
+      prefix = "\u00A3")) +
     ggplot2::theme(
       plot.title.position = "plot", # Start title from near the margin
       legend.position = .legend_pos,
@@ -117,11 +122,11 @@ plot_eNMB_ <- function(.PSA_data, ...) {
       # Add a border and space around the plot:
       panel.border = ggplot2::element_rect(colour = 'black', fill = NA),
       plot.margin = ggplot2::unit(c(5.5, 1, 5.5, 5.5), # more space LHS
-                         c("points", "cm", "points", "points"))) +
+                                  c("points", "cm", "points", "points"))) +
     ggplot2::labs(
       title = "Expected Net Monetary Benefit (eNMB)",
-      x = "Willingness-to-pay (£)",
-      y = "Expected Net Monetary Benefit (£)")
+      x = "Willingness-to-pay (\u00A3)",
+      y = "Expected Net Monetary Benefit (\u00A3)")
 
 
   # Show/hide WTP on the CEAF:
@@ -133,16 +138,18 @@ plot_eNMB_ <- function(.PSA_data, ...) {
         x_cord = .wtp_threshold,
         y_cord = max(enmb_df$eNMB),
         angle_cord = 0,
-        label_cord = paste0("£", format(.wtp_threshold,
-                                        big.mark = ",")),
-        lty_ = "Willingness-to-pay (£)")
+        label_cord = scales::dollar(
+          x = .wtp_threshold,
+          prefix = "\u00A3"
+        ),
+        lty_ = "Willingness-to-pay (\u00A3)")
 
     ## Plot:
     p <- p +
       ggplot2::geom_vline(
         data = .wtp,
         ggplot2::aes(xintercept = x_cord,
-            alpha = lty_),
+                     alpha = lty_),
         color = 'dark gray',
         linetype = 3) +
       ggplot2::scale_alpha_manual(
@@ -151,7 +158,7 @@ plot_eNMB_ <- function(.PSA_data, ...) {
       # scale_colour_manual(
       #   breaks = .wtp$lty_[1], # keep one for the legend
       #   values = rep("dark gray", nrow(.wtp)))
-    ggplot2::guides(
+      ggplot2::guides(
         # Remove the shapes from the line:
         alpha = ggplot2::guide_legend(
           override.aes = list(order = 2,
@@ -165,9 +172,9 @@ plot_eNMB_ <- function(.PSA_data, ...) {
       ggrepel::geom_text_repel(
         data = .wtp,
         ggplot2::aes(x = x_cord,
-            y = y_cord,
-            angle = angle_cord,
-            label = label_cord),
+                     y = y_cord,
+                     angle = angle_cord,
+                     label = label_cord),
         size = 1.5,
         show.legend = FALSE)
   }

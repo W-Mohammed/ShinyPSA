@@ -20,12 +20,24 @@ NULL
 #'
 #' @rdname ShinyPSA
 #' @export
+#'
+#' @examples
+#' \dontrun{
+#' library(ShinyPSA)
+#'
+#' PSA_summary <- ShinyPSA$new(
+#'   .effs = ShinyPSA::Smoking_PSA$e,
+#'   .costs = ShinyPSA::Smoking_PSA$c,
+#'   .interventions = ShinyPSA::Smoking_PSA$treats
+#'   )
+#' }
+#'
 ShinyPSA <- R6::R6Class(
   # Object name:
   classname = "ShinyPSA",
   # Public elements:
   public = list(
-    #' @field Summary_table a summary table with differentials, ICER(S),
+    #' @field Summary_table a summary table with differentials, ICER(s),
     #' net benefits and probability being cost-effective.
     Summary_table = NULL,
     #' @field CEP_plot the Cost-Effectiveness plane.
@@ -109,7 +121,7 @@ ShinyPSA <- R6::R6Class(
     #' \code{c(20,000, 30,000)}
     #' .units_ A character, the units to associate with the
     #' monitory values in the summary table. Default is sterling pounds
-    #' (GBP) \code{£}.
+    #' (GBP) \code{"\u00A3"}.
     #' .effects_label_ The label or name to be given to the effects
     #' column in the summary table. Default is QALYs.
     #' .beautify_ Return a visually improved version of the table. The
@@ -392,11 +404,6 @@ ShinyPSA <- R6::R6Class(
         .interventions <- paste("intervention", 1:n.comparators)
       }
 
-      # Associate .interventions with number IDs for cleaner plots' labels:
-      .interventions <- paste0(1:length(.interventions),
-                               ": ",
-                               .interventions)
-
       # Set missing values or remove ones to be ignored:
       if(n.comparators == 2){
         # If no reference was provided in a non-incremental analysis:
@@ -424,14 +431,14 @@ ShinyPSA <- R6::R6Class(
         .Kmax <- max(.wtp)
         v.k <- .wtp
         n.k <- length(.wtp)
-        names(v.k) <- paste0("£", format(v.k, big.mark = ","))
+        names(v.k) <- paste0("\u00A3", format(v.k, big.mark = ","))
       } else {
         n.points <- .Kmax/100
         v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
         v.k <- c(v.k, 20000, 30000, 50000)
         v.k <- sort(unique(v.k))
         n.k <- length(v.k)
-        names(v.k) <- paste0("£", format(v.k, big.mark = ","))
+        names(v.k) <- paste0("\u00A3", format(v.k, big.mark = ","))
       }
 
       # Ensure .effs and .costs are tibbles and name columns appropriately:
@@ -481,13 +488,13 @@ ShinyPSA <- R6::R6Class(
       vi <- EVPIs$vi
       EVPI <- EVPIs$evi
 
-      ## Outputs of the function
+      ## Outputs of the function:
       results <- list(
 
         interventions = .interventions, ref = .ref, comp = comp,
         ICER = ICER, NMB = NMB, e.NMB = e.NMB, CEAC = CEAC, CEAF = CEAF,
         EVPI = EVPI, best_id = best, best_name = best_name, WTPs = v.k,
-        WTPstar = kstar, U = U, Ustar = Ustar, vi = dplyr::as_tibble, ol = ol, e = .effs,
+        WTPstar = kstar, U = U, Ustar = Ustar, vi = vi, ol = ol, e = .effs,
         c = .costs, delta.e = delta.effs, delta.c = delta.costs, n.sim = n.sim,
         n.comparators = n.comparators, step = n.k, Kmax = .Kmax
       )
@@ -622,13 +629,12 @@ ShinyPSA <- R6::R6Class(
           icer = dplyr::case_when(
             is.na(dominance) ~ delta.c / delta.e),
           icer_label = dplyr::case_when(
-            is.na(dominance) & !is.na(icer) ~ paste0("ICER = ",
-                                                     scales::dollar(
-                                                       x = icer,
-                                                       accuracy = 0.1,
-                                                       prefix = "£"),
-                                                     "; vs ",
-                                                     dplyr::lag(.id)),
+            is.na(dominance) & !is.na(icer) ~ paste0(
+              "ICER = ", scales::dollar(
+                x = icer,
+                prefix = "\u00A3"
+              )
+            ),
             is.na(dominance) & is.na(icer) ~ dplyr::case_when(
               dplyr::n() > 1 ~ paste0("reference"),
               TRUE ~ icer_label),
@@ -747,10 +753,6 @@ ShinyPSA <- R6::R6Class(
         }
         if(is.null(.interventions)) {
           .interventions <- paste("intervention", 1:n.comparators)
-          # Associate .interventions with number IDs for cleaner plots' labels:
-          .interventions <- paste0(1:length(.interventions),
-                                   ": ",
-                                   .interventions)
         }
 
         # Define ICER table:
@@ -831,10 +833,6 @@ ShinyPSA <- R6::R6Class(
       }
       if(is.null(.interventions)) {
         .interventions <- paste("intervention", 1:n.comparators)
-        # Associate .interventions with number IDs for cleaner plots' labels:
-        .interventions <- paste0(1:length(.interventions),
-                                 ": ",
-                                 .interventions)
       }
 
       # Name .effs and .costs columns appropriately:
@@ -852,30 +850,33 @@ ShinyPSA <- R6::R6Class(
         .Kmax <- max(.wtp)
         v.k <- .wtp
         n.k <- length(.wtp)
-        names(v.k) <- paste0("£", format(v.k, big.mark = ","))
+        names(v.k) <- paste0("\u00A3", format(v.k, big.mark = ","))
       } else {
         n.points <- .Kmax/100
         v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
         v.k <- c(v.k, 20000, 30000, 50000)
         v.k <- sort(unique(v.k))
         n.k <- length(v.k)
-        names(v.k) <- paste0("£", format(v.k, big.mark = ","))
+        names(v.k) <- paste0("\u00A3", format(v.k, big.mark = ","))
       }
 
       # Compute monetary net benefit (NMB) (default):
-      nmb <- purrr::map2(.x = .effs,
-                         .y = .costs,
-                         .f = function(.eff = .x, .cost = .y) {
-                           purrr::map_dfc(as.list(v.k),
-                                          .f = function(.k = .x) {
-                                            .eff * .k - .cost})}) %>%
+      nmb <- purrr::map2(
+        .x = .effs,
+        .y = .costs,
+        .f = function(.eff = .x, .cost = .y) {
+          purrr::map_dfc(
+            .x = as.list(v.k),
+            .f = function(.k = .x) {
+              .eff * .k - .cost})}) %>%
         purrr::transpose()
 
       # Compute expected net benefit (e.NMB):
       e.nmb <- nmb %>%
-        purrr::map_dfr(.f = function(.x) {
-          colMeans(dplyr::as_tibble(.x, .name_repair = "unique"))
-        })
+        purrr::map_dfr(
+          .f = function(.x) {
+            colMeans(dplyr::as_tibble(.x, .name_repair = "unique"))
+          })
 
       # Select the best option for each willingness-to-pay value:
       best_interv <- e.nmb %>%
@@ -941,9 +942,12 @@ ShinyPSA <- R6::R6Class(
 
       # CEAC in incremental analysis:
       ceac <- .nmb %>%
-        purrr::map_dfr(.f = function(.x) {
-          colMeans(do.call(pmax, dplyr::as_tibble(.x, .name_repair = "unique")) ==
-                     dplyr::as_tibble(.x, .name_repair = "unique"))})
+        purrr::map_dfr(
+          .f = function(.x) {
+            colMeans(
+              do.call(
+                pmax, dplyr::as_tibble(.x, .name_repair = "unique")) ==
+                dplyr::as_tibble(.x, .name_repair = "unique"))})
 
       return(ceac)
     },
@@ -974,8 +978,7 @@ ShinyPSA <- R6::R6Class(
 
       # Compute CEAF:
       ceaf <- .ceac %>%
-        dplyr::mutate('ceaf' = if(any(rowSums(.) != 1)) NA_real_
-                      else do.call(pmax, .))
+        dplyr::mutate('ceaf' = do.call(pmax, .))
 
       return(ceaf)
     },
@@ -1022,10 +1025,6 @@ ShinyPSA <- R6::R6Class(
       }
       if(is.null(.interventions)) {
         .interventions <- paste("intervention", 1:n.comparators)
-        # Associate .interventions with number IDs for cleaner plots' labels:
-        .interventions <- paste0(1:length(.interventions),
-                                 ": ",
-                                 .interventions)
       }
 
       # Name .effs and .costs columns appropriately:
@@ -1043,29 +1042,33 @@ ShinyPSA <- R6::R6Class(
         .Kmax <- max(.wtp)
         v.k <- .wtp
         n.k <- length(.wtp)
-        names(v.k) <- paste0("£", format(v.k, big.mark = ","))
+        names(v.k) <- paste0("\u00A3", format(v.k, big.mark = ","))
       } else {
         n.points <- .Kmax/100
         v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
         v.k <- c(v.k, 20000, 30000, 50000)
         v.k <- sort(unique(v.k))
         n.k <- length(v.k)
-        names(v.k) <- paste0("£", format(v.k, big.mark = ","))
+        names(v.k) <- paste0("\u00A3", format(v.k, big.mark = ","))
       }
 
       # Compute monetary net benefit (NMB) (default):
-      nmb <- purrr::map2(.x = .effs, .y = .costs,
-                         .f = function(.eff = .x, .cost = .y) {
-                           purrr::map_dfc(as.list(v.k),
-                                          .f = function(.k = .x) {
-                                            .eff * .k - .cost})}) %>%
+      nmb <- purrr::map2(
+        .x = .effs,
+        .y = .costs,
+        .f = function(.eff = .x, .cost = .y) {
+          purrr::map_dfc(
+            .x = as.list(v.k),
+            .f = function(.k = .x) {
+              .eff * .k - .cost})}) %>%
         purrr::transpose()
 
       # Compute expected net benefit (e.NMB):
       e.nmb <- nmb %>%
-        purrr::map_dfr(.f = function(.x) {
-          colMeans(dplyr::as_tibble(.x, .name_repair = "unique"))
-        })
+        purrr::map_dfr(
+          .f = function(.x) {
+            colMeans(dplyr::as_tibble(.x, .name_repair = "unique"))
+          })
 
       # Identify the best option for each willingness-to-pay value:
       best_interv <- e.nmb %>%
@@ -1073,21 +1076,24 @@ ShinyPSA <- R6::R6Class(
 
       # Extract maximum nmb value at each iteration for each wtp/threshold:
       max_nmb_iter <- nmb %>%
-        purrr::map_dfr(.f = function(.x) {
-          do.call(pmax, dplyr::as_tibble(.x, .name_repair = "unique"))
-        })
+        purrr::map_dfr(
+          .f = function(.x) {
+            do.call(pmax, dplyr::as_tibble(.x, .name_repair = "unique"))
+          })
 
       # Compute opportunity loss (OL):
-      ol <- purrr::pmap_dfc(.l = list(nmb, best_interv, max_nmb_iter),
-                            .f = function(.x, .y, .z) {
-                              .z - .x[[.y]]
-                            })
+      ol <- purrr::pmap_dfc(
+        .l = list(nmb, best_interv, max_nmb_iter),
+        .f = function(.x, .y, .z) {
+          .z - .x[[.y]]
+        })
 
       # Compute value-of-information (VI):
-      vi <- purrr::map2_dfc(.x = max_nmb_iter, .y = nmb,
-                            .f = function(.x, .y) {
-                              .x - max(colMeans(dplyr::as_tibble(.y, .name_repair = "unique")))
-                            })
+      vi <- purrr::map2_dfc(
+        .x = max_nmb_iter, .y = nmb,
+        .f = function(.x, .y) {
+          .x - max(colMeans(dplyr::as_tibble(.y, .name_repair = "unique")))
+        })
 
       # Compute expected value-of-information (EVPI):
       evi <- colMeans(ol)
@@ -1104,7 +1110,7 @@ ShinyPSA <- R6::R6Class(
     # \code{c(20,000, 30,000)}
     # @param .units_ A character, the units to associate with the
     # monitory values in the summary table. Default is sterling pounds
-    # (GBP) \code{£}.
+    # (GBP) \code{"\u00A3"}.
     # @param .effects_label_ The label or name to be given to the effects
     # column in the summary table. Default is QALYs.
     # @param .beautify_ Return a visually improved version of the table. The
@@ -1140,11 +1146,13 @@ ShinyPSA <- R6::R6Class(
     # t
     # }
     draw_summary_table_ = function(.PSA_data = private$PSA_summary,
-                                   .wtp_ = c(20000, 30000), .units_ = "£",
-                                   .effects_label_ = "QALYs", .beautify_ = TRUE,
+                                   .wtp_ = c(20000, 30000),
+                                   .units_ = "\u00A3",
+                                   .effects_label_ = "QALYs",
+                                   .beautify_ = TRUE,
                                    .long_ = TRUE) {
       # Set currency label if none were provided:
-      if(is.null(.units_) | length(.units_) != 1) .units_ = "£"
+      if(is.null(.units_) | length(.units_) != 1) .units_ = "\u00A3"
 
       # Get the ICER table from the result's object:
       ICER_tbl <- .PSA_data[["ICER"]]
@@ -1159,7 +1167,6 @@ ShinyPSA <- R6::R6Class(
         dplyr::mutate(WTP = paste0("NMB @ ",
                                    scales::dollar(
                                      x = WTP,
-                                     accuracy = 1,
                                      prefix = .units_))) %>%
         # put everything in a long format:
         tidyr::pivot_longer(
@@ -1201,7 +1208,6 @@ ShinyPSA <- R6::R6Class(
         dplyr::mutate(`EVPI - WTP` = paste0("EVPI @ ",
                                             scales::dollar(
                                               x = `EVPI - WTP`,
-                                              accuracy = 1,
                                               prefix = .units_)))
 
       # Put summary table together:
@@ -1398,7 +1404,6 @@ ShinyPSA <- R6::R6Class(
                        rep(
                          scales::dollar(# Net Benefit, Prob. CE, EVPI
                            x = .wtp_,
-                           accuracy = 1,
                            prefix = .units_), 3)),
                 .f = th)
             )
@@ -1554,7 +1559,8 @@ ShinyPSA <- R6::R6Class(
                        y = `Probability cost-effective`,
                        color = Option),
           size = 0.4) +
-        ggplot2::scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
+        ggplot2::scale_x_continuous(
+          labels = scales::dollar_format(prefix = "\u00A3")) +
         ggplot2::scale_y_continuous(labels = scales::percent_format()) +
         ggplot2::theme(
           plot.title.position = "plot", # Start title from near the margin
@@ -1575,7 +1581,7 @@ ShinyPSA <- R6::R6Class(
                                       c("points", "cm", "points", "points"))) +
         ggplot2::labs(
           title = "Cost Effectiveness Acceptability Curve (CEAC)",
-          x = "Willingness-to-pay (£)",
+          x = "Willingness-to-pay (\u00A3)",
           y = "Probability cost-effective") +
         ggplot2::guides(
           # Increase the size of the points in the legend:
@@ -1596,9 +1602,8 @@ ShinyPSA <- R6::R6Class(
             angle_cord = 0,
             label_cord = scales::dollar(
               x = .wtp_threshold,
-              accuracy = 1,
-              prefix = "£"),
-            lty_ = "Willingness-to-pay (£)")
+              prefix = "\u00A3"),
+            lty_ = "Willingness-to-pay (\u00A3)")
 
         ## Plot:
         p <- p +
@@ -1789,7 +1794,8 @@ ShinyPSA <- R6::R6Class(
                        group = 1,
                        color = `Best option`),
           size = 0.4) +
-        ggplot2::scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
+        ggplot2::scale_x_continuous(labels = scales::dollar_format(
+          prefix = "\u00A3")) +
         ggplot2::scale_y_continuous(labels = scales::percent_format()) +
         ggplot2::theme(
           plot.title.position = "plot", # Start title from near the margin
@@ -1810,7 +1816,7 @@ ShinyPSA <- R6::R6Class(
                                       c("points", "cm", "points", "points"))) +
         ggplot2::labs(
           title = "Cost Effectiveness Acceptability Frontier (CEAF)",
-          x = "Willingness-to-pay (£)",
+          x = "Willingness-to-pay (\u00A3)",
           y = "Probability cost-effective") +
         ggplot2::guides(
           # Increase the size of the points in the legend:
@@ -1831,9 +1837,8 @@ ShinyPSA <- R6::R6Class(
             angle_cord = 0,
             label_cord = scales::dollar(
               x = .wtp_threshold,
-              accuracy = 0.1,
-              prefix = "£"),
-            lty_ = "Willingness-to-pay (£)")
+              prefix = "\u00A3"),
+            lty_ = "Willingness-to-pay (\u00A3)")
 
         ## Plot:
         p <- p +
@@ -1937,7 +1942,7 @@ ShinyPSA <- R6::R6Class(
     # }
     #
     plot_CEplane_ = function(.PSA_data = private$PSA_summary, ...) {
-      # Get the function's environment for correct assignment in assign():
+      # Grab the function's environment for correct assignment in assign():
       env_ = environment()
       # Define defaults:
       default_args <- list(
@@ -1952,48 +1957,52 @@ ShinyPSA <- R6::R6Class(
       # Grab additional arguments:
       args_ <- list(...)
       # Assign additional arguments:
-      private$assign_extraArgs_(.default_args_ = default_args,
-                                .args_ = args_,
-                                .env_ = env_)
+      ShinyPSA::assign_extraArgs_(.default_args_ = default_args,
+                                  .args_ = args_,
+                                  .env_ = env_)
 
       # Plot data:
       ## CE plot points:
       if(is.null(.ref)) { # No rescaling of point data
         ce_plane_dt <- .PSA_data$e %>%
           dplyr::mutate(sims = dplyr::row_number()) %>%
-          tidyr::pivot_longer(cols = -sims,
-                              names_to = "interventions",
-                              values_to = "Effects") %>%
-          dplyr::left_join(x = .,
-                           y = .PSA_data$c %>%
-                             dplyr::mutate(sims = dplyr::row_number()) %>%
-                             tidyr::pivot_longer(cols = -sims,
-                                                 names_to = "interventions",
-                                                 values_to = "Costs"),
-                           by = c("sims", "interventions"))
+          tidyr::pivot_longer(
+            cols = -sims,
+            names_to = "interventions",
+            values_to = "Effects") %>%
+          dplyr::left_join(
+            x = .,
+            y = .PSA_data$c %>%
+              dplyr::mutate(sims = dplyr::row_number()) %>%
+              tidyr::pivot_longer(cols = -sims,
+                                  names_to = "interventions",
+                                  values_to = "Costs"),
+            by = c("sims", "interventions"))
         # Labels:
         .title_lab = "Cost Effectiveness Plane"
         .x_lab = "Effects"
-        .y_lab = "Costs (£)"
+        .y_lab = "Costs (\u00A3)"
       } else { # Rescale point data
         ce_plane_dt <- .PSA_data$e %>%
-          private$calculate_differentials_(.ref = .ref) %>%
+          ShinyPSA::calculate_differentials_(.ref = .ref) %>%
           dplyr::mutate(sims = dplyr::row_number()) %>%
-          tidyr::pivot_longer(cols = -sims,
-                              names_to = "interventions",
-                              values_to = "Effects") %>%
-          dplyr::left_join(x = .,
-                           y = .PSA_data$c %>%
-                             private$calculate_differentials_(.ref = .ref) %>%
-                             dplyr::mutate(sims = dplyr::row_number()) %>%
-                             tidyr::pivot_longer(cols = -sims,
-                                                 names_to = "interventions",
-                                                 values_to = "Costs"),
-                           by = c("sims", "interventions"))
+          tidyr::pivot_longer(
+            cols = -sims,
+            names_to = "interventions",
+            values_to = "Effects") %>%
+          dplyr::left_join(
+            x = .,
+            y = .PSA_data$c %>%
+              ShinyPSA::calculate_differentials_(.ref = .ref) %>%
+              dplyr::mutate(sims = dplyr::row_number()) %>%
+              tidyr::pivot_longer(cols = -sims,
+                                  names_to = "interventions",
+                                  values_to = "Costs"),
+            by = c("sims", "interventions"))
         # Labels:
         .title_lab = "Cost Effectiveness Plane"
         .x_lab = "Effectiveness differential"
-        .y_lab = "Cost differential (£)"
+        .y_lab = "Cost differential (\u00A3)"
       }
 
       ## CE plot mean values:
@@ -2001,7 +2010,14 @@ ShinyPSA <- R6::R6Class(
         dplyr::group_by(interventions) %>%
         dplyr::summarise(
           Effects = mean(Effects),
-          Costs = mean(Costs))
+          Costs = mean(Costs)) %>%
+        dplyr::left_join(
+          x = .,
+          y = .PSA_data$ICER %>%
+            select(intervention, icer_label) %>%
+            rename("interventions" = intervention),
+          by = "interventions") %>%
+        dplyr::rename("Label" = icer_label)
 
       # Plot:
       p <- ggplot2::ggplot() +
@@ -2011,18 +2027,20 @@ ShinyPSA <- R6::R6Class(
           xintercept = 0, colour = "dark gray") +
         ggplot2::geom_point(
           data = ce_plane_dt,
-          ggplot2::aes(x = Effects,
-                       y = Costs,
-                       color = interventions),
+          ggplot2::aes(
+            x = Effects,
+            y = Costs,
+            color = interventions),
           size = 1, alpha = 0.5) +
         ggplot2::scale_y_continuous(
-          labels = scales::dollar_format(prefix = "£",
+          labels = scales::dollar_format(prefix = "\u00A3",
                                          big.mark = ",")) +
         ggplot2::geom_point(
           data = ce_plane_mean_dt,
-          ggplot2::aes(x = Effects,
-                       y = Costs,
-                       fill = interventions),
+          ggplot2::aes(
+            x = Effects,
+            y = Costs,
+            fill = interventions),
           shape = 21, colour = "black", show.legend = TRUE,
           size = 2, alpha = 1, stroke = 0.6) +
         ## Keep one value in the legend:
@@ -2058,8 +2076,7 @@ ShinyPSA <- R6::R6Class(
                                 alpha = 1,
                                 stroke = NA, # remove stroke
                                 linetype = 0)), # remove line
-          # Remove the fill colour in shape 21, generalising it to all
-          # options:
+          # Remove the fill colour in shape 21, generalising it to all options:
           fill = ggplot2::guide_legend(
             override.aes = list(order = 2,
                                 size = 2.5,
@@ -2079,9 +2096,10 @@ ShinyPSA <- R6::R6Class(
         p <- p +
           ggrepel::geom_text_repel(
             data = ce_plane_mean_dt,
-            ggplot2::aes(x = Effects,
-                         y = Costs,
-                         label = .PSA_data$ICER$icer_label),
+            ggplot2::aes(
+              x = Effects,
+              y = Costs,
+              label = Label),
             force_pull = 8,
             size = 2.5,
             point.padding = 0,
@@ -2145,9 +2163,9 @@ ShinyPSA <- R6::R6Class(
             angle_cord = angle_cord,
             label_cord = scales::dollar(
               x = .wtp_threshold,
-              accuracy = 1,
-              prefix = "£"),
-            lty_ = "Willingness-to-pay (£)")
+              prefix = "\u00A3"
+            ),
+            lty_ = "Willingness-to-pay (\u00A3)")
 
         ## Plot:
         p <- p +
@@ -2315,8 +2333,10 @@ ShinyPSA <- R6::R6Class(
           ggplot2::aes(x = `WTP threshold`,
                        y = EVPI),
           size = 0.4) +
-        ggplot2::scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
-        ggplot2::scale_y_continuous(labels = scales::dollar_format(prefix = "£")) +
+        ggplot2::scale_x_continuous(labels = scales::dollar_format(
+          prefix = "\u00A3")) +
+        ggplot2::scale_y_continuous(labels = scales::dollar_format(
+          prefix = "\u00A3")) +
         ggplot2::theme(
           # Adjust title size and position:
           plot.title.position = "plot", # Start title from near the margin
@@ -2339,7 +2359,7 @@ ShinyPSA <- R6::R6Class(
                                       c("points", "cm", "points", "points"))) +
         ggplot2::labs(
           title = "Expected Value of Perfect Information (EVPI)",
-          x = "Willingness-to-pay (£)",
+          x = "Willingness-to-pay (\u00A3)",
           y = "Expected value of perfect information",
           subtitle = subtitle_lab)
 
@@ -2354,9 +2374,8 @@ ShinyPSA <- R6::R6Class(
             angle_cord = 0,
             label_cord = scales::dollar(
               x = .wtp_threshold,
-              accuracy = 1,
-              prefix = "£"),
-            lty_ = "Willingness-to-pay (£)")
+              prefix = "\u00A3"),
+            lty_ = "Willingness-to-pay (\u00A3)")
 
         ## Plot:
         p <- p +
@@ -2481,8 +2500,10 @@ ShinyPSA <- R6::R6Class(
                        linetype = Option,
                        color = Option),
           size = 0.4) +
-        ggplot2::scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
-        ggplot2::scale_y_continuous(labels = scales::dollar_format(prefix = "£")) +
+        ggplot2::scale_x_continuous(labels = scales::dollar_format(
+          prefix = "\u00A3")) +
+        ggplot2::scale_y_continuous(labels = scales::dollar_format(
+          prefix = "\u00A3")) +
         ggplot2::theme(
           plot.title.position = "plot", # Start title from near the margin
           legend.position = .legend_pos,
@@ -2503,8 +2524,8 @@ ShinyPSA <- R6::R6Class(
                                       c("points", "cm", "points", "points"))) +
         ggplot2::labs(
           title = "Expected Net Monetary Benefit (eNMB)",
-          x = "Willingness-to-pay (£)",
-          y = "Expected Net Monetary Benefit (£)")
+          x = "Willingness-to-pay (\u00A3)",
+          y = "Expected Net Monetary Benefit (\u00A3)")
 
 
       # Show/hide WTP on the CEAF:
@@ -2518,9 +2539,8 @@ ShinyPSA <- R6::R6Class(
             angle_cord = 0,
             label_cord = scales::dollar(
               x = .wtp_threshold,
-              accuracy = 1,
-              prefix = "£"),
-            lty_ = "Willingness-to-pay (£)")
+              prefix = "\u00A3"),
+            lty_ = "Willingness-to-pay (\u00A3)")
 
         ## Plot:
         p <- p +
@@ -2583,9 +2603,10 @@ ShinyPSA <- R6::R6Class(
         .x <- .x %>%
           cbind(missing_nms %>%
                   `names<-`(missing_nms) %>%
-                  purrr::map_dfc(.f = function(.x) {
-                    .x = ifelse(.x %in% .numerics, NA_real_, NA_character_)
-                  }))
+                  purrr::map_dfc(
+                    .f = function(.x) {
+                      .x = ifelse(.x %in% .numerics, NA_real_, NA_character_)
+                    }))
       }
       .x <- .x %>%
         dplyr::select(".id", dplyr::everything()) %>%
