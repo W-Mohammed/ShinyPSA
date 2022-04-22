@@ -26,6 +26,8 @@ ShinyPSA_R6_App <- R6::R6Class(
     iContainer = list(), # inputs container
     ### Page elements:----
     theme = NULL,
+    tags = NULL,
+    icon = NULL,
     ### Securing app:----
     credentials = NULL,
     make_secure = TRUE,
@@ -48,6 +50,34 @@ ShinyPSA_R6_App <- R6::R6Class(
         stringsAsFactors = FALSE
       )
       self$theme <- bslib::bs_theme()
+      self$tags <-   tags$head(
+        tags$link(
+          rel = "icon",
+          type = "image/png",
+          sizes = "32x32",
+          href = self$icon
+        ),
+        tags$style(HTML("
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+    #dataName .nav-item {
+      text-transform: uppercase;
+      font-weight: bold;
+      font-size: 1.1em
+    }
+    .waiter-overlay  {
+      position: fixed;
+      height: 919px;
+      width: 1375px;
+      top: 0px;
+      left: 0px;
+      background-color: rgba(51, 62, 72, 0.5) !important;
+
+                    "))
+      )
+      self$icon <- "https://pbs.twimg.com/profile_images/959365885537456128/tC4OVmkX_400x400.jpg"
       self$iContainer[["themeSwch"]] <- prettySwitch$new(
         .label_ = "light_mode"
       )
@@ -257,6 +287,7 @@ ShinyPSA_R6_App <- R6::R6Class(
     ### UI:----
     ui = function() {
       ui <- fluidPage(
+        self$tags,
         theme = self$theme,
         waiter::use_waiter(),
         #### Title panel:----
@@ -266,7 +297,7 @@ ShinyPSA_R6_App <- R6::R6Class(
             class = "d-flex p-4 bd-highlight",
             ##### App logo:----
             img(
-              src = "https://pbs.twimg.com/profile_images/959365885537456128/tC4OVmkX_400x400.jpg",
+              src = self$icon,
               height = "45px",
               class = "pr-2 pb-0"),
             ##### Title:----
