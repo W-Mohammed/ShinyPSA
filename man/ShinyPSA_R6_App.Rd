@@ -14,6 +14,7 @@ An instance of this class is a fully fledged shiny app.
 \itemize{
 \item \href{#method-new}{\code{ShinyPSA_R6_App$new()}}
 \item \href{#method-ui}{\code{ShinyPSA_R6_App$ui()}}
+\item \href{#method-waiter_dev}{\code{ShinyPSA_R6_App$waiter_dev()}}
 \item \href{#method-server}{\code{ShinyPSA_R6_App$server()}}
 \item \href{#method-clone}{\code{ShinyPSA_R6_App$clone()}}
 }
@@ -33,6 +34,15 @@ An instance of this class is a fully fledged shiny app.
 \subsection{Method \code{ui()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ShinyPSA_R6_App$ui()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-waiter_dev"></a>}}
+\if{latex}{\out{\hypertarget{method-waiter_dev}{}}}
+\subsection{Method \code{waiter_dev()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ShinyPSA_R6_App$waiter_dev(.info_)}\if{html}{\out{</div>}}
 }
 
 }

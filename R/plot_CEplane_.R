@@ -92,7 +92,7 @@ plot_CEplane_ <- function(.PSA_data, ...) {
     .y_lab = "Costs (\u00A3)"
   } else { # Rescale point data
     ce_plane_dt <- .PSA_data$e %>%
-      ShinyPSA::calculate_differentials_(.ref = .ref) %>%
+      calculate_differentials_(.ref = .ref) %>%
       dplyr::mutate(sims = dplyr::row_number()) %>%
       tidyr::pivot_longer(
         cols = -sims,
@@ -101,7 +101,7 @@ plot_CEplane_ <- function(.PSA_data, ...) {
       dplyr::left_join(
         x = .,
         y = .PSA_data$c %>%
-          ShinyPSA::calculate_differentials_(.ref = .ref) %>%
+          calculate_differentials_(.ref = .ref) %>%
           dplyr::mutate(sims = dplyr::row_number()) %>%
           tidyr::pivot_longer(
             cols = -sims,
