@@ -73,13 +73,14 @@ ShinyPSA_R6_App <- R6::R6Class(
       width: 1375px;
       top: 0px;
       left: 0px;
-      background-color: rgba(51, 62, 72, 0.5) !important;
-
-                    "))
+      background-color: rgba(51, 62, 72, 0.5) !important;"))
       )
       self$icon <- "https://pbs.twimg.com/profile_images/959365885537456128/tC4OVmkX_400x400.jpg"
       self$iContainer[["themeSwch"]] <- prettySwitch$new(
         .label_ = "light_mode"
+      )
+      self$iContainer[["startBtn"]] <- actionButton$new(
+        .label_ = "Start"
       )
       self$iContainer[["addBtn"]] <- actionButton$new(
         .label_ = "Summarise selected PSA dataset"
@@ -290,6 +291,7 @@ ShinyPSA_R6_App <- R6::R6Class(
         self$tags,
         theme = self$theme,
         waiter::use_waiter(),
+        shinyjs::useShinyjs(), # to remove landing page
         #### Title panel:----
         titlePanel(
           windowTitle = "ShinyPSA demo",
@@ -308,6 +310,33 @@ ShinyPSA_R6_App <- R6::R6Class(
                 .value_ = TRUE
               )
           )
+        ),
+        #### Landing page:----
+        div(
+          id = "landing-page",
+          style = "
+    position: absolute;
+    right:0;left:0;top:0;bottom:0;
+    background-color: white;
+    background: radial-gradient(circle, white, #cecece);
+    background-image: url('https://pbs.twimg.com/profile_images/959365885537456128/tC4OVmkX_400x400.jpg'), radial-gradient(circle, white, #cecece);
+    background-size: auto;
+    background-position: 30% 30%;
+    background-repeat: no-repeat;
+    z-index: 9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content:center;
+    color: black;
+    text-shadow: 2px 2px 8px white;",
+          h1("OHID project"),
+          h3("ShinyPSA demo app!"),
+          self$iContainer[["startBtn"]]$
+            ui_input(
+              .style_ = NULL,
+              .class_ = "btn-primary btn-lg mt-5"
+            )
         ),
         #### Main body:----
         fluidRow(
@@ -857,6 +886,23 @@ ShinyPSA_R6_App <- R6::R6Class(
       } else {
         res_auth <- reactiveValues(user = "No Credentials")
       }
+      #### Exit landing page:----
+      observeEvent(
+        eventExpr = input[[self$iContainer[["startBtn"]]$
+                             get_uiInId()]],
+        handlerExpr = {
+          shinyjs::runjs("
+    function removeFadeOut( el) {
+      el.style.transition = 'opacity 1s ease';
+      el.style.opacity = 0;
+      setTimeout(function() {
+        el.parentNode.removeChild(el);
+      }, 1000);
+    }
+    const landingPage = document.getElementById('landing-page');
+    removeFadeOut(landingPage);"
+          )
+        })
       #### Data handlers:----
       ##### Data drop-down list:----
       self$iContainer[["getData"]]$
@@ -864,7 +910,9 @@ ShinyPSA_R6_App <- R6::R6Class(
           session = session,
           input = input,
           output = output,
-          .choices_ = c("Hyperphosphatemia_PSA", "Vaccine_PSA", "Smoking_PSA", "Hypothetical_PSA", "Clopidogrel_PSA")
+          .choices_ = c("Hyperphosphatemia_PSA", "Vaccine_PSA",
+                        "Smoking_PSA", "Hypothetical_PSA",
+                        "Clopidogrel_PSA")
         )
       ##### Uploaded data:----
       incoming <- reactive({
@@ -921,7 +969,7 @@ ShinyPSA_R6_App <- R6::R6Class(
           waiter <- waiter::Waiter$new(
             html = self$waiter_dev(
               .info_ = "Summarising selected PSA data..."
-              ),
+            ),
             hide_on_render  = FALSE
           )
           waiter$show()
