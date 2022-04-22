@@ -60,7 +60,8 @@ plot_CEAF_ <- function(.PSA_data, ...) {
   # Grab additional arguments:
   args_ <- list(...)
   # Assign additional arguments:
-  ShinyPSA::assign_extraArgs_(.default_args_ = default_args,
+  ShinyPSA::assign_extraArgs_(
+    .default_args_ = default_args,
                     .args_ = args_,
                     .env_ = env_)
 
@@ -95,7 +96,8 @@ plot_CEAF_ <- function(.PSA_data, ...) {
           group = 1,
           color = `Best option`),
       size = 0.4) +
-    ggplot2::scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
+    ggplot2::scale_x_continuous(labels = scales::dollar_format(
+      prefix = "\u00A3")) +
     ggplot2::scale_y_continuous(labels = scales::percent_format()) +
     ggplot2::theme(
       plot.title.position = "plot", # Start title from near the margin
@@ -116,7 +118,7 @@ plot_CEAF_ <- function(.PSA_data, ...) {
                          c("points", "cm", "points", "points"))) +
     ggplot2::labs(
       title = "Cost Effectiveness Acceptability Frontier (CEAF)",
-      x = "Willingness-to-pay (£)",
+      x = "Willingness-to-pay (\u00A3)",
       y = "Probability cost-effective") +
     ggplot2::guides(
       # Increase the size of the points in the legend:
@@ -135,9 +137,11 @@ plot_CEAF_ <- function(.PSA_data, ...) {
         x_cord = .wtp_threshold,
         y_cord = 1,
         angle_cord = 0,
-        label_cord = paste0("£", format(.wtp_threshold,
-                                        big.mark = ",")),
-        lty_ = "Willingness-to-pay (£)")
+        label_cord = scales::dollar(
+          x = .wtp_threshold,
+          prefix = "\u00A3"
+        ),
+        lty_ = "Willingness-to-pay (\u00A3)")
 
     ## Plot:
     p <- p +

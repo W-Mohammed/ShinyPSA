@@ -121,10 +121,7 @@ calculate_ICERs_ <- function(.icer_data, .qalys = qalys, .costs = costs) {
         is.na(dominance) & !is.na(icer) ~ paste0("ICER = ",
                                                  scales::dollar(
                                                    x = icer,
-                                                   accuracy = 0.1,
-                                                   prefix = "£"),
-                                                 "; vs ",
-                                                 dplyr::lag(.id)),
+                                                   prefix = "\u00A3")),
         is.na(dominance) & is.na(icer) ~ dplyr::case_when(
           dplyr::n() > 1 ~ paste0("reference"),
           TRUE ~ icer_label),
@@ -244,10 +241,6 @@ compute_ICERs_ <- function(.icer_data, .effs = NULL, .costs = NULL,
     }
     if(is.null(.interventions)) {
       .interventions <- paste("intervention", 1:n.comparators)
-      # Associate .interventions with number IDs for cleaner plots' labels:
-      .interventions <- paste0(1:length(.interventions),
-                               ": ",
-                               .interventions)
     }
 
     # Define ICER table:

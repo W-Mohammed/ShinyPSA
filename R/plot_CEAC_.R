@@ -65,9 +65,10 @@ plot_CEAC_ <- function(.PSA_data, ...) {
   # Grab additional arguments:
   args_ <- list(...)
   # Assign additional arguments:
-  ShinyPSA::assign_extraArgs_(.default_args_ = default_args,
-                    .args_ = args_,
-                    .env_ = env_)
+  ShinyPSA::assign_extraArgs_(
+    .default_args_ = default_args,
+    .args_ = args_,
+    .env_ = env_)
   # Override .ref if more than two interventions exist:
   if(!is.null(.ref) & (length(.PSA_data$interventions) > 2)) .ref = NULL
   # Function to remove intervention from plot data:
@@ -82,9 +83,10 @@ plot_CEAC_ <- function(.PSA_data, ...) {
   ceac_df = .PSA_data$CEAC %>%
     drop_intervention(.data_ = ., .ref = .ref) %>%
     dplyr::mutate('WTP threshold' = .PSA_data$WTPs) %>%
-    tidyr::pivot_longer(cols = -`WTP threshold`,
-                 names_to = 'Option',
-                 values_to = 'Probability cost-effective')
+    tidyr::pivot_longer(
+      cols = -`WTP threshold`,
+      names_to = 'Option',
+      values_to = 'Probability cost-effective')
 
   # Zoom:
   if(.zoom | (!is.null(.zoom_cords) & is.numeric(.zoom_cords))) {
@@ -107,11 +109,13 @@ plot_CEAC_ <- function(.PSA_data, ...) {
       size = 0.1) +
     ggplot2::geom_line(
       data = ceac_df,
-      ggplot2::aes(x = `WTP threshold`,
-          y = `Probability cost-effective`,
-          color = Option),
+      ggplot2::aes(
+        x = `WTP threshold`,
+        y = `Probability cost-effective`,
+        color = Option),
       size = 0.4) +
-    ggplot2::scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
+    ggplot2::scale_x_continuous(labels = scales::dollar_format(
+      prefix = "\u00A3")) +
     ggplot2::scale_y_continuous(labels = scales::percent_format()) +
     ggplot2::theme(
       plot.title.position = "plot", # Start title from near the margin
@@ -129,10 +133,10 @@ plot_CEAC_ <- function(.PSA_data, ...) {
       # Add a border and space around the plot:
       panel.border = ggplot2::element_rect(colour = 'black', fill = NA),
       plot.margin = ggplot2::unit(c(5.5, 1, 5.5, 5.5), # more space LHS
-                         c("points", "cm", "points", "points"))) +
+                                  c("points", "cm", "points", "points"))) +
     ggplot2::labs(
       title = "Cost Effectiveness Acceptability Curve (CEAC)",
-      x = "Willingness-to-pay (£)",
+      x = "Willingness-to-pay (\u00A3)",
       y = "Probability cost-effective") +
     ggplot2::guides(
       # Increase the size of the points in the legend:
@@ -151,16 +155,19 @@ plot_CEAC_ <- function(.PSA_data, ...) {
         x_cord = .wtp_threshold,
         y_cord = 1,
         angle_cord = 0,
-        label_cord = paste0("£", format(.wtp_threshold,
-                                        big.mark = ",")),
-        lty_ = "Willingness-to-pay (£)")
+        label_cord = scales::dollar(
+          x = .wtp_threshold,
+          prefix = "\u00A3"
+        ),
+        lty_ = "Willingness-to-pay (\u00A3)")
 
     ## Plot:
     p <- p +
       ggplot2::geom_vline(
         data = .wtp,
-        ggplot2::aes(xintercept = x_cord,
-            linetype = lty_),
+        ggplot2::aes(
+          xintercept = x_cord,
+          linetype = lty_),
         colour = "dark gray") +
       ggplot2::scale_linetype_manual(
         breaks = .wtp$lty_[1], # keep one for the legend
@@ -178,10 +185,11 @@ plot_CEAC_ <- function(.PSA_data, ...) {
     p <- p +
       ggrepel::geom_text_repel(
         data = .wtp,
-        ggplot2::aes(x = x_cord,
-            y = y_cord,
-            angle = angle_cord,
-            label = label_cord),
+        ggplot2::aes(
+          x = x_cord,
+          y = y_cord,
+          angle = angle_cord,
+          label = label_cord),
         size = 1.5,
         show.legend = FALSE)
   }
@@ -205,9 +213,10 @@ plot_CEAC_ <- function(.PSA_data, ...) {
       ggplot2::geom_point(
         data = ceac_df %>%
           dplyr::filter(`WTP threshold` %in% n_points),
-        ggplot2::aes(x = `WTP threshold`,
-            y = `Probability cost-effective`,
-            shape = Option, color = Option),
+        ggplot2::aes(
+          x = `WTP threshold`,
+          y = `Probability cost-effective`,
+          shape = Option, color = Option),
         size = 1,
         show.legend = TRUE)
   }
@@ -230,15 +239,16 @@ plot_CEAC_ <- function(.PSA_data, ...) {
     ### CEAF:
     ceaf_df = .PSA_data$CEAF %>%
       dplyr::mutate('Best option' = .PSA_data$best_name,
-             'WTP threshold' = .PSA_data$WTPs)
+                    'WTP threshold' = .PSA_data$WTPs)
 
     ## Plot:
     p <- p +
       ggplot2::geom_point(
         data = ceaf_df %>%
           dplyr::filter(`WTP threshold` %in% n_points),
-        ggplot2::aes(x = `WTP threshold`,
-            y = ceaf),
+        ggplot2::aes(
+          x = `WTP threshold`,
+          y = ceaf),
         size = 2,
         stroke = 1,
         alpha = 0.8,

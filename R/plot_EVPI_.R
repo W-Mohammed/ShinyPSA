@@ -117,8 +117,10 @@ plot_EVPI_ <- function(.PSA_data, ...) {
       ggplot2::aes(x = `WTP threshold`,
           y = EVPI),
       size = 0.4) +
-    ggplot2::scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
-    ggplot2::scale_y_continuous(labels = scales::dollar_format(prefix = "£")) +
+    ggplot2::scale_x_continuous(labels = scales::dollar_format(
+      prefix = "\u00A3")) +
+    ggplot2::scale_y_continuous(labels = scales::dollar_format(
+      prefix = "\u00A3")) +
     ggplot2::theme(
       # Adjust title size and position:
       plot.title.position = "plot", # Start title from near the margin
@@ -141,7 +143,7 @@ plot_EVPI_ <- function(.PSA_data, ...) {
                          c("points", "cm", "points", "points"))) +
     ggplot2::labs(
       title = "Expected Value of Perfect Information (EVPI)",
-      x = "Willingness-to-pay (£)",
+      x = "Willingness-to-pay (\u00A3)",
       y = "Expected value of perfect information",
       subtitle = subtitle_lab)
 
@@ -154,9 +156,11 @@ plot_EVPI_ <- function(.PSA_data, ...) {
         x_cord = .wtp_threshold,
         y_cord = max(evpi_df$EVPI),
         angle_cord = 0,
-        label_cord = paste0("£", format(.wtp_threshold,
-                                        big.mark = ",")),
-        lty_ = "Willingness-to-pay (£)")
+        label_cord = scales::dollar(
+          x = .wtp_threshold,
+          prefix = "\u00A3"
+        ),
+        lty_ = "Willingness-to-pay (\u00A3)")
 
     ## Plot:
     p <- p +

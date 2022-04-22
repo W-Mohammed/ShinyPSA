@@ -48,10 +48,6 @@ compute_EVPIs_ = function(.effs, .costs, .interventions = NULL,
   }
   if(is.null(.interventions)) {
     .interventions <- paste("intervention", 1:n.comparators)
-    # Associate .interventions with number IDs for cleaner plots' labels:
-    .interventions <- paste0(1:length(.interventions),
-                             ": ",
-                             .interventions)
   }
 
   # Name .effs and .costs columns appropriately:
@@ -64,34 +60,36 @@ compute_EVPIs_ = function(.effs, .costs, .interventions = NULL,
   if (is.null(.Kmax)) {
     .Kmax <- 100000
   }
-  if (!is.null(.wtp)) {
-    .wtp <- sort(unique(.wtp))
-    .Kmax <- max(.wtp)
-    v.k <- .wtp
-    n.k <- length(.wtp)
-    names(v.k) <- paste0("£", format(v.k, big.mark = ","))
-  } else {
-    n.points <- .Kmax/100
-    v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
-    v.k <- c(v.k, 20000, 30000, 50000)
-    v.k <- sort(unique(v.k))
-    n.k <- length(v.k)
-    names(v.k) <- paste0("£", format(v.k, big.mark = ","))
+  if (is.null(.wtp)) {
+    .wtp <- c(20000, 30000, 50000)
   }
+  n.points <- .Kmax/.max_Kpoints
+  v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
+  v.k <- c(v.k, .wtp)
+  v.k <- sort(unique(v.k))
+  n.k <- length(v.k)
+  names(v.k) <- scales::dollar(
+    x = v.k,
+    prefix = "\u00A3"
+  )
 
   # Compute monetary net benefit (NMB) (default):
-  nmb <- purrr::map2(.x = .effs, .y = .costs,
-              .f = function(.eff = .x, .cost = .y) {
-                purrr::map_dfc(as.list(v.k),
-                        .f = function(.k = .x) {
-                          .eff * .k - .cost})}) %>%
+  nmb <- purrr::map2(
+    .x = .effs,
+    .y = .costs,
+    .f = function(.eff = .x, .cost = .y) {
+      purrr::map_dfc(
+        .x = as.list(v.k),
+        .f = function(.k = .x) {
+          .eff * .k - .cost})}) %>%
     purrr::transpose()
 
   # Compute expected net benefit (e.NMB):
   e.nmb <- nmb %>%
-    purrr::map_dfr(.f = function(.x) {
-      colMeans(dplyr::as_tibble(.x, .name_repair = "unique"))
-    })
+    purrr::map_dfr(
+      .f = function(.x) {
+        colMeans(dplyr::as_tibble(.x, .name_repair = "unique"))
+      })
 
   # Identify the best option for each willingness-to-pay value:
   best_interv <- e.nmb %>%
@@ -99,21 +97,25 @@ compute_EVPIs_ = function(.effs, .costs, .interventions = NULL,
 
   # Extract maximum nmb value at each iteration for each wtp/threshold:
   max_nmb_iter <- nmb %>%
-    purrr::map_dfr(.f = function(.x) {
-      do.call(pmax, dplyr::as_tibble(.x, .name_repair = "unique"))
-    })
+    purrr::map_dfr(
+      .f = function(.x) {
+        do.call(pmax, dplyr::as_tibble(.x, .name_repair = "unique"))
+      })
 
   # Compute opportunity loss (OL):
-  ol <- purrr::pmap_dfc(.l = list(nmb, best_interv, max_nmb_iter),
-                 .f = function(.x, .y, .z) {
-                   .z - .x[[.y]]
-                 })
+  ol <- purrr::pmap_dfc(
+    .l = list(nmb, best_interv, max_nmb_iter),
+    .f = function(.x, .y, .z) {
+      .z - .x[[.y]]
+    })
 
   # Compute value-of-information (VI):
-  vi <- purrr::map2_dfc(.x = max_nmb_iter, .y = nmb,
-                 .f = function(.x, .y) {
-                   .x - max(colMeans(dplyr::as_tibble(.y, .name_repair = "unique")))
-                 })
+  vi <- purrr::map2_dfc(
+    .x = max_nmb_iter,
+    .y = nmb,
+    .f = function(.x, .y) {
+      .x - max(colMeans(dplyr::as_tibble(.y, .name_repair = "unique")))
+    })
 
   # Compute expected value-of-information (EVPI):
   evi <- colMeans(ol)
