@@ -124,7 +124,7 @@ assign_extraArgs_ <- function(.default_args_, .env_, .args_) {
 run_shiny_R6_App <- function(example_app = "ShinyPSA") {
   appFolder <- switch(example_app,
                       ShinyPSA = "ShinyPSA")
-  appDir <- system.file("shiny-examples", appFolder,
+  appDir <- system.file("shiny_examples", appFolder,
                         package = "ShinyPSA")
   if (appDir == "") {
     stop("Could not find example directory. Try re-installing `ShinyPSA`.",

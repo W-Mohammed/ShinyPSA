@@ -57,7 +57,7 @@ plot_eNMB_ <- function(.PSA_data, ...) {
   # Grab additional arguments:
   args_ <- list(...)
   # Assign additional arguments:
-  ShinyPSA::assign_extraArgs_(
+  assign_extraArgs_(
     .default_args_ = default_args,
     .args_ = args_,
     .env_ = env_)
@@ -95,11 +95,12 @@ plot_eNMB_ <- function(.PSA_data, ...) {
       size = 0.1) +
     ggplot2::geom_line(
       data = enmb_df,
-      ggplot2::aes(x = `WTP threshold`,
-                   y = eNMB,
-                   group = Option,
-                   linetype = Option,
-                   color = Option),
+      ggplot2::aes(
+        x = `WTP threshold`,
+        y = eNMB,
+        group = Option,
+        linetype = Option,
+        color = Option),
       size = 0.4) +
     ggplot2::scale_x_continuous(labels = scales::dollar_format(
       prefix = "\u00A3")) +
@@ -148,8 +149,9 @@ plot_eNMB_ <- function(.PSA_data, ...) {
     p <- p +
       ggplot2::geom_vline(
         data = .wtp,
-        ggplot2::aes(xintercept = x_cord,
-                     alpha = lty_),
+        ggplot2::aes(
+          xintercept = x_cord,
+          alpha = lty_),
         color = 'dark gray',
         linetype = 3) +
       ggplot2::scale_alpha_manual(
@@ -171,10 +173,11 @@ plot_eNMB_ <- function(.PSA_data, ...) {
     p <- p +
       ggrepel::geom_text_repel(
         data = .wtp,
-        ggplot2::aes(x = x_cord,
-                     y = y_cord,
-                     angle = angle_cord,
-                     label = label_cord),
+        ggplot2::aes(
+          x = x_cord,
+          y = y_cord,
+          angle = angle_cord,
+          label = label_cord),
         size = 1.5,
         show.legend = FALSE)
   }
