@@ -4,7 +4,14 @@
 \alias{compute_NMBs_}
 \title{Compute Monetary Net-Benefit (NMB) or incremental NMB (iNMB)}
 \usage{
-compute_NMBs_(.effs, .costs, .interventions = NULL, .Kmax = NULL, .wtp = NULL)
+compute_NMBs_(
+  .effs,
+  .costs,
+  .interventions = NULL,
+  .Kmax = NULL,
+  .wtp = NULL,
+  .max_Kpoints = 100
+)
 }
 \arguments{
 \item{.effs}{A tibble containing the \code{effects} from PSA. Number of
@@ -26,6 +33,9 @@ analysis. This parameter is ignored if \code{wtp} is provided.}
 \item{.wtp}{A vector of numerical values declaring the
 willingness-to-pay (WTP) values to use in the analysis. If \code{NULL}
 (default) a range of WTP values (up to \code{.Kmax} will be used.}
+
+\item{.max_Kpoints}{Maximum number of willingness-to-pay values (default
+100) to use in the analysis.}
 }
 \value{
 A list containing the NMB list, eNMB tibble, WTP tibble and

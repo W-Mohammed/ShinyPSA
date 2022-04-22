@@ -37,8 +37,7 @@ ShinyPSA <- R6::R6Class(
   classname = "ShinyPSA",
   # Public elements:
   public = list(
-    #' @field Summary_table a summary table with differentials, ICER(s),
-    #' net benefits and probability being cost-effective.
+    #' @field Summary_table a summary table with differentials, ICER(s), net benefits and probability being cost-effective.
     Summary_table = NULL,
     #' @field CEP_plot the Cost-Effectiveness plane.
     CEP_plot = NULL,
@@ -382,7 +381,7 @@ ShinyPSA <- R6::R6Class(
     # A list of class \code{psa} with \code{24} elements.
     #
     # \dontrun{}
-    summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
+    summarise_PSA_ = function(.effs, .costs, .interventions = NULL,
                                .ref = NULL, .Kmax = 100000, .wtp = NULL,
                                .max_Kpoints = 100, .plot = FALSE) {
 
@@ -816,8 +815,9 @@ ShinyPSA <- R6::R6Class(
     # other objects.
     #
     # \dontrun{}
-    compute_NMBs_ <- function(.effs, .costs, .interventions = NULL,
-                              .Kmax = NULL, .wtp = NULL, .max_Kpoints = 100) {
+    compute_NMBs_ = function(.effs, .costs, .interventions = NULL,
+                              .Kmax = NULL, .wtp = NULL,
+                             .max_Kpoints = 100) {
       # Stop if .effs & .costs are not of class tibble or have unequal dims:
       stopifnot('.effs is a not tibble' = "data.frame" %in% class(.effs),
                 '.costs is a not tibble' = "data.frame" %in% class(.costs),
@@ -1011,7 +1011,8 @@ ShinyPSA <- R6::R6Class(
     #
     # \dontrun{}
     compute_EVPIs_ = function(.effs, .costs, .interventions = NULL,
-                              .Kmax = NULL, .wtp = NULL, .max_Kpoints = 100) {
+                              .Kmax = NULL, .wtp = NULL,
+                              .max_Kpoints = 100) {
       # Stop if .effs & .costs are not of class tibble or have unequal dims:
       stopifnot('.effs is not a tibble' = "data.frame" %in% class(.effs),
                 '.costs is not a tibble' = "data.frame" %in% class(.costs),

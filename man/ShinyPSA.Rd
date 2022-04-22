@@ -11,6 +11,16 @@ An instance of this class is expected to produce summary plots and
 tables.
 }
 \examples{
+\dontrun{
+library(ShinyPSA)
+
+PSA_summary <- ShinyPSA$new(
+  .effs = ShinyPSA::Smoking_PSA$e,
+  .costs = ShinyPSA::Smoking_PSA$c,
+  .interventions = ShinyPSA::Smoking_PSA$treats
+  )
+}
+
 
 ## ------------------------------------------------
 ## Method `ShinyPSA$new`
@@ -118,10 +128,26 @@ PSA_outputs <- ShinyPSA$new(
 
 PSA_outputs$get_EVPI()
 }
+
+## ------------------------------------------------
+## Method `ShinyPSA$get_WTP`
+## ------------------------------------------------
+
+\dontrun{
+# Instantiate a copy of class ShinyPSA:
+PSA_outputs <- ShinyPSA$new(
+                  .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
+                  .interventions = ShinyPSA::Smoking_PSA$treats)
+
+PSA_outputs$get_WTP()
+}
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
+\item{\code{Summary_table}}{a summary table with differentials, ICER(s), net benefits and probability being cost-effective.}
+
 \item{\code{CEP_plot}}{the Cost-Effectiveness plane.}
 
 \item{\code{CEAC_plot}}{the Cost-Effectiveness Acceptability Curve.}
@@ -146,6 +172,7 @@ PSA_outputs$get_EVPI()
 \item \href{#method-get_CEAF}{\code{ShinyPSA$get_CEAF()}}
 \item \href{#method-get_eNMB}{\code{ShinyPSA$get_eNMB()}}
 \item \href{#method-get_EVPI}{\code{ShinyPSA$get_EVPI()}}
+\item \href{#method-get_WTP}{\code{ShinyPSA$get_WTP()}}
 \item \href{#method-clone}{\code{ShinyPSA$clone()}}
 }
 }
@@ -225,33 +252,33 @@ PSA_outputs <- ShinyPSA$new(
 \if{html}{\out{<a id="method-get_Summary_table"></a>}}
 \if{latex}{\out{\hypertarget{method-get_Summary_table}{}}}
 \subsection{Method \code{get_Summary_table()}}{
-Get the default results summary table
+Get the results summary table
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ShinyPSA$get_Summary_table(
-  .wtp_ = c(20000, 30000),
-  .units_ = "£",
-  .effects_label = "QALYs"
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{ShinyPSA$get_Summary_table(...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{.wtp_}}{A numeric vector containing the willingness-to-pay
+\item{\code{...}}{arguments passed to the drawing function. These include:
+.wtp_ A numeric vector containing the willingness-to-pay
 value(s) to be considered in the summary table. Default values are
-\code{c(20,000, 30,000)}}
-
-\item{\code{.units_}}{A character, the units to associate with the
+\code{c(20,000, 30,000)}
+.units_ A character, the units to associate with the
 monitory values in the summary table. Default is sterling pounds
-(GBP) \code{£}.}
-
-\item{\code{.effects_label}}{The label or name to be given to the effects
-column in the summary table. Default is QALYs.}
+(GBP) \code{"\u00A3"}.
+.effects_label_ The label or name to be given to the effects
+column in the summary table. Default is QALYs.
+.beautify_ Return a visually improved version of the table. The
+returned version is built using DT::datatable()
+.long_ Logical (default \code{TRUE}) for whether a long version
+of the table is to be returned. If \code{FALSE}, a wide version of the
+table will be returned}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A ggplot2 object
+A table of class DT
 }
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
@@ -454,6 +481,35 @@ PSA_outputs <- ShinyPSA$new(
                   .interventions = ShinyPSA::Smoking_PSA$treats)
 
 PSA_outputs$get_EVPI()
+}
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-get_WTP"></a>}}
+\if{latex}{\out{\hypertarget{method-get_WTP}{}}}
+\subsection{Method \code{get_WTP()}}{
+Get the willingness-to-pay values used in the analysis
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ShinyPSA$get_WTP()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+An integer
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# Instantiate a copy of class ShinyPSA:
+PSA_outputs <- ShinyPSA$new(
+                  .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
+                  .interventions = ShinyPSA::Smoking_PSA$treats)
+
+PSA_outputs$get_WTP()
 }
 }
 \if{html}{\out{</div>}}
