@@ -63,9 +63,10 @@ plot_CEplane_ <- function(.PSA_data, ...) {
   # Grab additional arguments:
   args_ <- list(...)
   # Assign additional arguments:
-  ShinyPSA::assign_extraArgs_(.default_args_ = default_args,
-                    .args_ = args_,
-                    .env_ = env_)
+  assign_extraArgs_(
+    .default_args_ = default_args,
+    .args_ = args_,
+    .env_ = env_)
 
   # Plot data:
   ## CE plot points:
@@ -73,15 +74,15 @@ plot_CEplane_ <- function(.PSA_data, ...) {
     ce_plane_dt <- .PSA_data$e %>%
       dplyr::mutate(sims = dplyr::row_number()) %>%
       tidyr::pivot_longer(cols = -sims,
-                   names_to = "interventions",
-                   values_to = "Effects") %>%
+                          names_to = "interventions",
+                          values_to = "Effects") %>%
       dplyr::left_join(x = .,
-                y = .PSA_data$c %>%
-                  dplyr::mutate(sims = dplyr::row_number()) %>%
-                  tidyr::pivot_longer(cols = -sims,
-                               names_to = "interventions",
-                               values_to = "Costs"),
-                by = c("sims", "interventions"))
+                       y = .PSA_data$c %>%
+                         dplyr::mutate(sims = dplyr::row_number()) %>%
+                         tidyr::pivot_longer(cols = -sims,
+                                             names_to = "interventions",
+                                             values_to = "Costs"),
+                       by = c("sims", "interventions"))
     # Labels:
     .title_lab = "Cost Effectiveness Plane"
     .x_lab = "Effects"
@@ -91,16 +92,16 @@ plot_CEplane_ <- function(.PSA_data, ...) {
       ShinyPSA::calculate_differentials_(.ref = .ref) %>%
       dplyr::mutate(sims = dplyr::row_number()) %>%
       tidyr::pivot_longer(cols = -sims,
-                   names_to = "interventions",
-                   values_to = "Effects") %>%
+                          names_to = "interventions",
+                          values_to = "Effects") %>%
       dplyr::left_join(x = .,
-                y = .PSA_data$c %>%
-                  ShinyPSA::calculate_differentials_(.ref = .ref) %>%
-                  dplyr::mutate(sims = dplyr::row_number()) %>%
-                  tidyr::pivot_longer(cols = -sims,
-                               names_to = "interventions",
-                               values_to = "Costs"),
-                by = c("sims", "interventions"))
+                       y = .PSA_data$c %>%
+                         ShinyPSA::calculate_differentials_(.ref = .ref) %>%
+                         dplyr::mutate(sims = dplyr::row_number()) %>%
+                         tidyr::pivot_longer(cols = -sims,
+                                             names_to = "interventions",
+                                             values_to = "Costs"),
+                       by = c("sims", "interventions"))
     # Labels:
     .title_lab = "Cost Effectiveness Plane"
     .x_lab = "Effectiveness differential"
@@ -123,8 +124,8 @@ plot_CEplane_ <- function(.PSA_data, ...) {
     ggplot2::geom_point(
       data = ce_plane_dt,
       ggplot2::aes(x = Effects,
-          y = Costs,
-          color = interventions),
+                   y = Costs,
+                   color = interventions),
       size = 1, alpha = 0.5) +
     ggplot2::scale_y_continuous(
       labels = scales::dollar_format(prefix = "£",
@@ -132,8 +133,8 @@ plot_CEplane_ <- function(.PSA_data, ...) {
     ggplot2::geom_point(
       data = ce_plane_mean_dt,
       ggplot2::aes(x = Effects,
-          y = Costs,
-          fill = interventions),
+                   y = Costs,
+                   fill = interventions),
       shape = 21, colour = "black", show.legend = TRUE,
       size = 2, alpha = 1, stroke = 0.6) +
     ## Keep one value in the legend:
@@ -156,7 +157,7 @@ plot_CEplane_ <- function(.PSA_data, ...) {
       # Add a border around the plot:
       panel.border = ggplot2::element_rect(colour = 'black', fill = NA),
       plot.margin = ggplot2::unit(c(5.5, 1, 5.5, 5.5), # more space LHS
-                         c("points", "cm", "points", "points"))) +
+                                  c("points", "cm", "points", "points"))) +
     ggplot2::labs(
       title = .title_lab,
       x = .x_lab,
@@ -190,8 +191,8 @@ plot_CEplane_ <- function(.PSA_data, ...) {
       ggrepel::geom_text_repel(
         data = ce_plane_mean_dt,
         ggplot2::aes(x = Effects,
-            y = Costs,
-            label = .PSA_data$ICER$icer_label),
+                     y = Costs,
+                     label = .PSA_data$ICER$icer_label),
         force_pull = 8,
         size = 2.5,
         point.padding = 0,
@@ -262,8 +263,8 @@ plot_CEplane_ <- function(.PSA_data, ...) {
       ggplot2::geom_abline(
         data = .wtp,
         ggplot2::aes(intercept = 0,
-            slope = value,
-            linetype = lty_),
+                     slope = value,
+                     linetype = lty_),
         show.legend = TRUE) +
       ggplot2::scale_linetype_manual(
         breaks = .wtp$lty_[1], # keep one for the legend
@@ -271,9 +272,9 @@ plot_CEplane_ <- function(.PSA_data, ...) {
       ggrepel::geom_text_repel(
         data = .wtp,
         ggplot2::aes(x = x_cord,
-            y = y_cord,
-            #angle = angle_cord,
-            label = label_cord),
+                     y = y_cord,
+                     #angle = angle_cord,
+                     label = label_cord),
         size = 1.5,
         show.legend = FALSE) +
       ggplot2::guides(
@@ -296,7 +297,7 @@ plot_CEplane_ <- function(.PSA_data, ...) {
     # Plot:
     p <- p +
       ggplot2::coord_cartesian(xlim = x_lim, ylim = y_lim, expand = !.zoom,
-                      default = .zoom)
+                               default = .zoom)
   }
 
   if(.zoom & !is.null(.zoom_cords) &
@@ -308,7 +309,7 @@ plot_CEplane_ <- function(.PSA_data, ...) {
     # Plot:
     p <- p +
       ggplot2::coord_cartesian(xlim = x_lim, ylim = y_lim, expand = !.zoom,
-                      default = .zoom)
+                               default = .zoom)
   }
 
   return(p)

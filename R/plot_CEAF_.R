@@ -60,14 +60,15 @@ plot_CEAF_ <- function(.PSA_data, ...) {
   # Grab additional arguments:
   args_ <- list(...)
   # Assign additional arguments:
-  ShinyPSA::assign_extraArgs_(.default_args_ = default_args,
-                    .args_ = args_,
-                    .env_ = env_)
+  assign_extraArgs_(
+    .default_args_ = default_args,
+    .args_ = args_,
+    .env_ = env_)
 
   # Plot data:
   ceaf_df = .PSA_data$CEAF %>%
     dplyr::mutate('Best option' = .PSA_data$best_name,
-           'WTP threshold' = .PSA_data$WTPs)
+                  'WTP threshold' = .PSA_data$WTPs)
 
   # Zoom:
   if(.zoom | (!is.null(.zoom_cords) & is.numeric(.zoom_cords))) {
@@ -91,9 +92,9 @@ plot_CEAF_ <- function(.PSA_data, ...) {
     ggplot2::geom_line(
       data = ceaf_df,
       ggplot2::aes(x = `WTP threshold`,
-          y = ceaf,
-          group = 1,
-          color = `Best option`),
+                   y = ceaf,
+                   group = 1,
+                   color = `Best option`),
       size = 0.4) +
     ggplot2::scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
     ggplot2::scale_y_continuous(labels = scales::percent_format()) +
@@ -113,7 +114,7 @@ plot_CEAF_ <- function(.PSA_data, ...) {
       # Add a border and space around the plot:
       panel.border = ggplot2::element_rect(colour = 'black', fill = NA),
       plot.margin = ggplot2::unit(c(5.5, 1, 5.5, 5.5), # more space LHS
-                         c("points", "cm", "points", "points"))) +
+                                  c("points", "cm", "points", "points"))) +
     ggplot2::labs(
       title = "Cost Effectiveness Acceptability Frontier (CEAF)",
       x = "Willingness-to-pay (£)",
@@ -144,7 +145,7 @@ plot_CEAF_ <- function(.PSA_data, ...) {
       ggplot2::geom_vline(
         data = .wtp,
         ggplot2::aes(xintercept = x_cord,
-            linetype = lty_),
+                     linetype = lty_),
         colour = "dark gray") +
       ggplot2::scale_linetype_manual(
         breaks = .wtp$lty_[1], # keep one for the legend
@@ -163,9 +164,9 @@ plot_CEAF_ <- function(.PSA_data, ...) {
       ggrepel::geom_text_repel(
         data = .wtp,
         ggplot2::aes(x = x_cord,
-            y = y_cord,
-            angle = angle_cord,
-            label = label_cord),
+                     y = y_cord,
+                     angle = angle_cord,
+                     label = label_cord),
         size = 1.5,
         show.legend = FALSE)
   }
@@ -191,9 +192,9 @@ plot_CEAF_ <- function(.PSA_data, ...) {
         data = ceaf_df %>%
           dplyr::filter(`WTP threshold` %in% n_points),
         ggplot2::aes(x = `WTP threshold`,
-            y = ceaf,
-            color = `Best option`,
-            shape = `Best option`),
+                     y = ceaf,
+                     color = `Best option`,
+                     shape = `Best option`),
         size = 1.5,
         alpha = 0.8,
         show.legend = TRUE)

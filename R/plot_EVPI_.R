@@ -69,9 +69,10 @@ plot_EVPI_ <- function(.PSA_data, ...) {
   # Grab additional arguments:
   args_ <- list(...)
   # Assign additional arguments:
-  ShinyPSA::assign_extraArgs_(.default_args_ = default_args,
-                    .args_ = args_,
-                    .env_ = env_)
+  assign_extraArgs_(
+    .default_args_ = default_args,
+    .args_ = args_,
+    .env_ = env_)
 
   # Plot data:
   discounted_population = 1
@@ -89,8 +90,8 @@ plot_EVPI_ <- function(.PSA_data, ...) {
   }
   ## EVPI data:
   evpi_df <- dplyr::tibble('EVPI' = .PSA_data$EVPI * discounted_population,
-                    'WTP threshold' = .PSA_data$WTPs,
-                    'Best option' = .PSA_data$best_name)
+                           'WTP threshold' = .PSA_data$WTPs,
+                           'Best option' = .PSA_data$best_name)
 
   # Zoom:
   y_cords <- NULL
@@ -115,7 +116,7 @@ plot_EVPI_ <- function(.PSA_data, ...) {
     ggplot2::geom_line(
       data = evpi_df,
       ggplot2::aes(x = `WTP threshold`,
-          y = EVPI),
+                   y = EVPI),
       size = 0.4) +
     ggplot2::scale_x_continuous(labels = scales::dollar_format(prefix = "£")) +
     ggplot2::scale_y_continuous(labels = scales::dollar_format(prefix = "£")) +
@@ -138,7 +139,7 @@ plot_EVPI_ <- function(.PSA_data, ...) {
       # Add a border and space around the plot:
       panel.border = ggplot2::element_rect(colour = 'black', fill = NA),
       plot.margin = ggplot2::unit(c(5.5, 1, 5.5, 5.5), # more space LHS
-                         c("points", "cm", "points", "points"))) +
+                                  c("points", "cm", "points", "points"))) +
     ggplot2::labs(
       title = "Expected Value of Perfect Information (EVPI)",
       x = "Willingness-to-pay (£)",
@@ -163,7 +164,7 @@ plot_EVPI_ <- function(.PSA_data, ...) {
       ggplot2::geom_vline(
         data = .wtp,
         ggplot2::aes(xintercept = x_cord,
-            linetype = lty_),
+                     linetype = lty_),
         colour = "dark gray") +
       ggplot2::scale_linetype_manual(
         breaks = .wtp$lty_[1], # keep one for the legend
@@ -182,9 +183,9 @@ plot_EVPI_ <- function(.PSA_data, ...) {
       ggrepel::geom_text_repel(
         data = .wtp,
         ggplot2::aes(x = x_cord,
-            y = y_cord,
-            angle = angle_cord,
-            label = label_cord),
+                     y = y_cord,
+                     angle = angle_cord,
+                     label = label_cord),
         size = 1.5,
         show.legend = FALSE)
   }
