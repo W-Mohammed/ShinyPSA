@@ -1,6 +1,7 @@
 # Get the rocker image, latest shiny from rocker in this case:
 # Base image https://hub.docker.com/u/rocker/
-FROM rocker/shiny:latest
+# For latest version use: FROM rocker/shiny:latest
+FROM rocker/shiny:4.1.2
 
 # system libraries of general use
 ## install debian packages
