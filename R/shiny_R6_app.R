@@ -796,6 +796,23 @@ ShinyPSA_R6_App <- R6::R6Class(
         ui
       }
     },
+    ### Waiter:----
+    waiter_dev = function(.info_) {
+      div(
+        style = "
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content:center;
+            color: white;
+            opacity: 1 !important;
+          ",
+        h4(.info_),
+        h4("Please wait."),
+        br(),br(),
+        waiter::spin_wandering_cubes()
+      )
+    },
     ### Server:----
     server = function(input, output, session) {
       #### Secure server:----
@@ -871,21 +888,9 @@ ShinyPSA_R6_App <- R6::R6Class(
         handlerExpr = {
           ###### Waiter:----
           waiter <- waiter::Waiter$new(
-            # id = c("add", "remove"),
-            html = div(
-              style = "
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content:center;
-            color: white;
-            opacity: 1 !important;
-          ",
-              h4("Summarising selected PSA data..."),
-              h4("Please wait."),
-              br(),br(),
-              waiter::spin_wandering_cubes()
-            ),
+            html = self$waiter_dev(
+              .info_ = "Summarising selected PSA data..."
+              ),
             hide_on_render  = FALSE
           )
           waiter$show()
@@ -1003,20 +1008,8 @@ ShinyPSA_R6_App <- R6::R6Class(
         handlerExpr = {
           ###### Waiter:----
           waiter <- waiter::Waiter$new(
-            # id = c("add", "remove"),
-            html = div(
-              style = "
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content:center;
-            color: white;
-            opacity: 1 !important;
-          ",
-              h4("Summarising uploaded PSA data..."),
-              h4("Please wait."),
-              br(),br(),
-              waiter::spin_wandering_cubes()
+            html = self$waiter_dev(
+              .info_ = "Summarising uploaded PSA data..."
             ),
             hide_on_render  = FALSE
           )
@@ -1132,20 +1125,8 @@ ShinyPSA_R6_App <- R6::R6Class(
         handlerExpr = {
           ###### Waiter:----
           waiter <- waiter::Waiter$new(
-            # id = c("add", "remove"),
-            html = div(
-              style = "
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content:center;
-            color: white;
-            opacity: 1 !important;
-          ",
-              h4("Updating Summary table..."),
-              h4("Please wait."),
-              br(),br(),
-              waiter::spin_wandering_cubes()
+            html = self$waiter_dev(
+              .info_ = "Updating Summary table..."
             ),
             hide_on_render  = FALSE
           )
@@ -1211,20 +1192,8 @@ ShinyPSA_R6_App <- R6::R6Class(
         handlerExpr = {
           ###### Waiter:----
           waiter <- waiter::Waiter$new(
-            # id = c("add", "remove"),
-            html = div(
-              style = "
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content:center;
-            color: white;
-            opacity: 1 !important;
-          ",
-              h4("Resetting Summary table..."),
-              h4("Please wait."),
-              br(),br(),
-              waiter::spin_wandering_cubes()
+            html = self$waiter_dev(
+              .info_ = "Resetting Summary table..."
             ),
             hide_on_render  = FALSE
           )
@@ -1256,20 +1225,8 @@ ShinyPSA_R6_App <- R6::R6Class(
         handlerExpr = {
           ###### Waiter:----
           waiter <- waiter::Waiter$new(
-            # id = c("add", "remove"),
-            html = div(
-              style = "
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content:center;
-            color: white;
-            opacity: 1 !important;
-          ",
-              h4("Updating Cost-effectiveness plane..."),
-              h4("Please wait."),
-              br(),br(),
-              waiter::spin_wandering_cubes()
+            html = self$waiter_dev(
+              .info_ = "Updating Cost-effectiveness plane..."
             ),
             hide_on_render  = FALSE
           )
@@ -1331,20 +1288,8 @@ ShinyPSA_R6_App <- R6::R6Class(
         handlerExpr = {
           ###### Waiter:----
           waiter <- waiter::Waiter$new(
-            # id = c("add", "remove"),
-            html = div(
-              style = "
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content:center;
-            color: white;
-            opacity: 1 !important;
-          ",
-              h4("Resetting Cost-effectiveness plane..."),
-              h4("Please wait."),
-              br(),br(),
-              waiter::spin_wandering_cubes()
+            html = self$waiter_dev(
+              .info_ = "Resetting Cost-effectiveness plane..."
             ),
             hide_on_render  = FALSE
           )
@@ -1371,20 +1316,8 @@ ShinyPSA_R6_App <- R6::R6Class(
         handlerExpr = {
           ###### Waiter:----
           waiter <- waiter::Waiter$new(
-            # id = c("add", "remove"),
-            html = div(
-              style = "
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content:center;
-            color: white;
-            opacity: 1 !important;
-          ",
-              h4("Updating Cost-effectiveness acceptability curve..."),
-              h4("Please wait."),
-              br(),br(),
-              waiter::spin_wandering_cubes()
+            html = self$waiter_dev(
+              .info_ = "Updating Cost-effectiveness acceptability curve..."
             ),
             hide_on_render  = FALSE
           )
@@ -1454,20 +1387,8 @@ ShinyPSA_R6_App <- R6::R6Class(
         handlerExpr = {
           ###### Waiter:----
           waiter <- waiter::Waiter$new(
-            # id = c("add", "remove"),
-            html = div(
-              style = "
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content:center;
-            color: white;
-            opacity: 1 !important;
-          ",
-              h4("Resetting Cost-effectiveness acceptability curve..."),
-              h4("Please wait."),
-              br(),br(),
-              waiter::spin_wandering_cubes()
+            html = self$waiter_dev(
+              .info_ = "Resetting Cost-effectiveness acceptability curve..."
             ),
             hide_on_render  = FALSE
           )
@@ -1494,20 +1415,8 @@ ShinyPSA_R6_App <- R6::R6Class(
         handlerExpr = {
           ###### Waiter:----
           waiter <- waiter::Waiter$new(
-            # id = c("add", "remove"),
-            html = div(
-              style = "
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content:center;
-            color: white;
-            opacity: 1 !important;
-          ",
-              h4("Updating Cost-effectiveness acceptability frontier..."),
-              h4("Please wait."),
-              br(),br(),
-              waiter::spin_wandering_cubes()
+            html = self$waiter_dev(
+              .info_ = "Updating Cost-effectiveness acceptability frontier..."
             ),
             hide_on_render  = FALSE
           )
@@ -1568,20 +1477,8 @@ ShinyPSA_R6_App <- R6::R6Class(
         handlerExpr = {
           ###### Waiter:----
           waiter <- waiter::Waiter$new(
-            # id = c("add", "remove"),
-            html = div(
-              style = "
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content:center;
-            color: white;
-            opacity: 1 !important;
-          ",
-              h4("Reseting Cost-effectiveness acceptability frontier..."),
-              h4("Please wait."),
-              br(),br(),
-              waiter::spin_wandering_cubes()
+            html = self$waiter_dev(
+              .info_ = "Reseting Cost-effectiveness acceptability frontier..."
             ),
             hide_on_render  = FALSE
           )
@@ -1608,20 +1505,8 @@ ShinyPSA_R6_App <- R6::R6Class(
         handlerExpr = {
           ###### Waiter:----
           waiter <- waiter::Waiter$new(
-            # id = c("add", "remove"),
-            html = div(
-              style = "
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content:center;
-            color: white;
-            opacity: 1 !important;
-          ",
-              h4("Updating Net Monitory Benefit plot..."),
-              h4("Please wait."),
-              br(),br(),
-              waiter::spin_wandering_cubes()
+            html = self$waiter_dev(
+              .info_ = "Updating Net Monitory Benefit plot..."
             ),
             hide_on_render  = FALSE
           )
@@ -1680,20 +1565,8 @@ ShinyPSA_R6_App <- R6::R6Class(
         handlerExpr = {
           ###### Waiter:----
           waiter <- waiter::Waiter$new(
-            # id = c("add", "remove"),
-            html = div(
-              style = "
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content:center;
-            color: white;
-            opacity: 1 !important;
-          ",
-              h4("Resetting Net Monitory Benefit plot..."),
-              h4("Please wait."),
-              br(),br(),
-              waiter::spin_wandering_cubes()
+            html = self$waiter_dev(
+              .info_ = "Resetting Net Monitory Benefit plot..."
             ),
             hide_on_render  = FALSE
           )
@@ -1720,20 +1593,8 @@ ShinyPSA_R6_App <- R6::R6Class(
         handlerExpr = {
           ###### Waiter:----
           waiter <- waiter::Waiter$new(
-            # id = c("add", "remove"),
-            html = div(
-              style = "
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content:center;
-            color: white;
-            opacity: 1 !important;
-          ",
-              h4("Updating Expected value of perfect information plot..."),
-              h4("Please wait."),
-              br(),br(),
-              waiter::spin_wandering_cubes()
+            html = self$waiter_dev(
+              .info_ = "Updating Expected value of perfect information plot..."
             ),
             hide_on_render  = FALSE
           )
@@ -1801,20 +1662,8 @@ ShinyPSA_R6_App <- R6::R6Class(
         handlerExpr = {
           ###### Waiter:----
           waiter <- waiter::Waiter$new(
-            # id = c("add", "remove"),
-            html = div(
-              style = "
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content:center;
-            color: white;
-            opacity: 1 !important;
-          ",
-              h4("Resetting Expected value of perfect information plot..."),
-              h4("Please wait."),
-              br(),br(),
-              waiter::spin_wandering_cubes()
+            html = self$waiter_dev(
+              .info_ = "Resetting Expected value of perfect information plot..."
             ),
             hide_on_render  = FALSE
           )
