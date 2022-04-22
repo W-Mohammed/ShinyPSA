@@ -63,9 +63,10 @@ plot_CEplane_ <- function(.PSA_data, ...) {
   # Grab additional arguments:
   args_ <- list(...)
   # Assign additional arguments:
-  ShinyPSA::assign_extraArgs_(.default_args_ = default_args,
-                              .args_ = args_,
-                              .env_ = env_)
+  assign_extraArgs_(
+    .default_args_ = default_args,
+    .args_ = args_,
+    .env_ = env_)
 
   # Plot data:
   ## CE plot points:
@@ -80,9 +81,10 @@ plot_CEplane_ <- function(.PSA_data, ...) {
         x = .,
         y = .PSA_data$c %>%
           dplyr::mutate(sims = dplyr::row_number()) %>%
-          tidyr::pivot_longer(cols = -sims,
-                              names_to = "interventions",
-                              values_to = "Costs"),
+          tidyr::pivot_longer(
+            cols = -sims,
+            names_to = "interventions",
+            values_to = "Costs"),
         by = c("sims", "interventions"))
     # Labels:
     .title_lab = "Cost Effectiveness Plane"
@@ -101,9 +103,10 @@ plot_CEplane_ <- function(.PSA_data, ...) {
         y = .PSA_data$c %>%
           ShinyPSA::calculate_differentials_(.ref = .ref) %>%
           dplyr::mutate(sims = dplyr::row_number()) %>%
-          tidyr::pivot_longer(cols = -sims,
-                              names_to = "interventions",
-                              values_to = "Costs"),
+          tidyr::pivot_longer(
+            cols = -sims,
+            names_to = "interventions",
+            values_to = "Costs"),
         by = c("sims", "interventions"))
     # Labels:
     .title_lab = "Cost Effectiveness Plane"

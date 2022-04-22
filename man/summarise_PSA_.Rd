@@ -11,6 +11,7 @@ summarise_PSA_(
   .ref = NULL,
   .Kmax = 1e+05,
   .wtp = NULL,
+  .max_Kpoints = 100,
   .plot = FALSE
 )
 }
@@ -39,14 +40,31 @@ analysis. This parameter is ignored if \code{wtp} is provided.}
 willingness-to-pay (WTP) values to use in the analysis. If \code{NULL}
 (default) a range of WTP values (up to \code{.Kmax} will be used.}
 
+\item{.max_Kpoints}{Maximum number of willingness-to-pay values (default
+100) to use in the analysis.}
+
 \item{.plot}{A boolean, FALSE (default), for whether to generate plots.}
 }
 \value{
-A list of class \code{psa} with \code{24} elements.
+A list of class \code{psa} containing several objects.
 }
 \description{
 Summarise PSA outputs and report results
 }
 \examples{
-\dontrun{}
+\dontrun{
+library(ShinyPSA)
+
+PSA_summary = summarise_PSA_(
+  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+  .interventions = ShinyPSA::Vaccine_PSA$treats,
+  .plot = TRUE)
+
+PSA_summary2 = summarise_PSA_(
+  .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
+  .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
+  .interventions = ShinyPSA::Smoking_PSA$treats,
+  .plot = TRUE)
+}
 }

@@ -65,7 +65,7 @@ plot_CEAC_ <- function(.PSA_data, ...) {
   # Grab additional arguments:
   args_ <- list(...)
   # Assign additional arguments:
-  ShinyPSA::assign_extraArgs_(
+  assign_extraArgs_(
     .default_args_ = default_args,
     .args_ = args_,
     .env_ = env_)

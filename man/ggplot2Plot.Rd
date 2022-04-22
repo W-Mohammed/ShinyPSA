@@ -47,7 +47,7 @@ shiny::plotOutput
 \if{latex}{\out{\hypertarget{method-ui_output}{}}}
 \subsection{Method \code{ui_output()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ggplot2Plot$ui_output(.tag_ = "UI_output", .height_ = "700px")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{ggplot2Plot$ui_output(.tag_ = "UI_output", .height_ = "800px")}\if{html}{\out{</div>}}
 }
 
 }

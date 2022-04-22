@@ -37,8 +37,7 @@ ShinyPSA <- R6::R6Class(
   classname = "ShinyPSA",
   # Public elements:
   public = list(
-    #' @field Summary_table a summary table with differentials, ICER(s),
-    #' net benefits and probability being cost-effective.
+    #' @field Summary_table a summary table with differentials, ICER(s), net benefits and probability being cost-effective.
     Summary_table = NULL,
     #' @field CEP_plot the Cost-Effectiveness plane.
     CEP_plot = NULL,
@@ -375,14 +374,16 @@ ShinyPSA <- R6::R6Class(
     # willingness-to-pay (WTP) values to use in the analysis. If
     # \code{NULL} (default) a range of WTP values (up to \code{.Kmax} will
     # be used.
+    # .max_Kpoints Maximum number of willingness-to-pay values (default
+    # 100) to use in the analysis.
     # .plot A boolean, FALSE (default), for whether to generate plots.
     #
     # A list of class \code{psa} with \code{24} elements.
     #
     # \dontrun{}
     summarise_PSA_ = function(.effs, .costs, .interventions = NULL,
-                              .ref = NULL, .Kmax = 100000, .wtp = NULL,
-                              .plot = FALSE) {
+                               .ref = NULL, .Kmax = 100000, .wtp = NULL,
+                               .max_Kpoints = 100, .plot = FALSE) {
 
       # Stop if .effs & .costs have different dimensions:
       stopifnot('Unequal dimensions in .effs and .costs' =
@@ -426,20 +427,18 @@ ShinyPSA <- R6::R6Class(
       if (is.null(.Kmax)) {
         .Kmax <- 100000
       }
-      if (!is.null(.wtp)) {
-        .wtp <- sort(unique(.wtp))
-        .Kmax <- max(.wtp)
-        v.k <- .wtp
-        n.k <- length(.wtp)
-        names(v.k) <- paste0("\u00A3", format(v.k, big.mark = ","))
-      } else {
-        n.points <- .Kmax/100
-        v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
-        v.k <- c(v.k, 20000, 30000, 50000)
-        v.k <- sort(unique(v.k))
-        n.k <- length(v.k)
-        names(v.k) <- paste0("\u00A3", format(v.k, big.mark = ","))
+      if (is.null(.wtp)) {
+        .wtp <- c(20000, 30000, 50000)
       }
+      n.points <- .Kmax/.max_Kpoints
+      v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
+      v.k <- c(v.k, .wtp)
+      v.k <- sort(unique(v.k))
+      n.k <- length(v.k)
+      names(v.k) <- scales::dollar(
+        x = v.k,
+        prefix = "\u00A3"
+      )
 
       # Ensure .effs and .costs are tibbles and name columns appropriately:
       .effs <- .effs %>%
@@ -809,13 +808,16 @@ ShinyPSA <- R6::R6Class(
     # willingness-to-pay (WTP) values to use in the analysis.
     # If \code{NULL} (default) a range of WTP values (up to \code{.Kmax}
     # will be used.
+    # .max_Kpoints Maximum number of willingness-to-pay values (default
+    # 100) to use in the analysis.
     #
     # A list containing the NMB list, eNMB tibble, WTP tibble and
     # other objects.
     #
     # \dontrun{}
     compute_NMBs_ = function(.effs, .costs, .interventions = NULL,
-                             .Kmax = NULL, .wtp = NULL) {
+                              .Kmax = NULL, .wtp = NULL,
+                             .max_Kpoints = 100) {
       # Stop if .effs & .costs are not of class tibble or have unequal dims:
       stopifnot('.effs is a not tibble' = "data.frame" %in% class(.effs),
                 '.costs is a not tibble' = "data.frame" %in% class(.costs),
@@ -845,20 +847,18 @@ ShinyPSA <- R6::R6Class(
       if (is.null(.Kmax)) {
         .Kmax <- 100000
       }
-      if (!is.null(.wtp)) {
-        .wtp <- sort(unique(.wtp))
-        .Kmax <- max(.wtp)
-        v.k <- .wtp
-        n.k <- length(.wtp)
-        names(v.k) <- paste0("\u00A3", format(v.k, big.mark = ","))
-      } else {
-        n.points <- .Kmax/100
-        v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
-        v.k <- c(v.k, 20000, 30000, 50000)
-        v.k <- sort(unique(v.k))
-        n.k <- length(v.k)
-        names(v.k) <- paste0("\u00A3", format(v.k, big.mark = ","))
+      if (is.null(.wtp)) {
+        .wtp <- c(20000, 30000, 50000)
       }
+      n.points <- .Kmax/.max_Kpoints
+      v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
+      v.k <- c(v.k, .wtp)
+      v.k <- sort(unique(v.k))
+      n.k <- length(v.k)
+      names(v.k) <- scales::dollar(
+        x = v.k,
+        prefix = "\u00A3"
+      )
 
       # Compute monetary net benefit (NMB) (default):
       nmb <- purrr::map2(
@@ -1003,13 +1003,16 @@ ShinyPSA <- R6::R6Class(
     # willingness-to-pay (WTP) values to use in the analysis. If
     # \code{NULL} (default) a range of WTP values (up to \code{.Kmax} will
     # be used.
+    # .max_Kpoints Maximum number of willingness-to-pay values (default
+    # 100) to use in the analysis.
     #
     # A list containing the EVPI vector, value of information tibble,
     # opportunity lost tibble among others
     #
     # \dontrun{}
     compute_EVPIs_ = function(.effs, .costs, .interventions = NULL,
-                              .Kmax = NULL, .wtp = NULL) {
+                              .Kmax = NULL, .wtp = NULL,
+                              .max_Kpoints = 100) {
       # Stop if .effs & .costs are not of class tibble or have unequal dims:
       stopifnot('.effs is not a tibble' = "data.frame" %in% class(.effs),
                 '.costs is not a tibble' = "data.frame" %in% class(.costs),
@@ -1037,20 +1040,18 @@ ShinyPSA <- R6::R6Class(
       if (is.null(.Kmax)) {
         .Kmax <- 100000
       }
-      if (!is.null(.wtp)) {
-        .wtp <- sort(unique(.wtp))
-        .Kmax <- max(.wtp)
-        v.k <- .wtp
-        n.k <- length(.wtp)
-        names(v.k) <- paste0("\u00A3", format(v.k, big.mark = ","))
-      } else {
-        n.points <- .Kmax/100
-        v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
-        v.k <- c(v.k, 20000, 30000, 50000)
-        v.k <- sort(unique(v.k))
-        n.k <- length(v.k)
-        names(v.k) <- paste0("\u00A3", format(v.k, big.mark = ","))
+      if (is.null(.wtp)) {
+        .wtp <- c(20000, 30000, 50000)
       }
+      n.points <- .Kmax/.max_Kpoints
+      v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
+      v.k <- c(v.k, .wtp)
+      v.k <- sort(unique(v.k))
+      n.k <- length(v.k)
+      names(v.k) <- scales::dollar(
+        x = v.k,
+        prefix = "\u00A3"
+      )
 
       # Compute monetary net benefit (NMB) (default):
       nmb <- purrr::map2(
@@ -1957,9 +1958,10 @@ ShinyPSA <- R6::R6Class(
       # Grab additional arguments:
       args_ <- list(...)
       # Assign additional arguments:
-      ShinyPSA::assign_extraArgs_(.default_args_ = default_args,
-                                  .args_ = args_,
-                                  .env_ = env_)
+      private$assign_extraArgs_(
+        .default_args_ = default_args,
+        .args_ = args_,
+        .env_ = env_)
 
       # Plot data:
       ## CE plot points:
@@ -1974,9 +1976,10 @@ ShinyPSA <- R6::R6Class(
             x = .,
             y = .PSA_data$c %>%
               dplyr::mutate(sims = dplyr::row_number()) %>%
-              tidyr::pivot_longer(cols = -sims,
-                                  names_to = "interventions",
-                                  values_to = "Costs"),
+              tidyr::pivot_longer(
+                cols = -sims,
+                names_to = "interventions",
+                values_to = "Costs"),
             by = c("sims", "interventions"))
         # Labels:
         .title_lab = "Cost Effectiveness Plane"
@@ -1995,9 +1998,10 @@ ShinyPSA <- R6::R6Class(
             y = .PSA_data$c %>%
               ShinyPSA::calculate_differentials_(.ref = .ref) %>%
               dplyr::mutate(sims = dplyr::row_number()) %>%
-              tidyr::pivot_longer(cols = -sims,
-                                  names_to = "interventions",
-                                  values_to = "Costs"),
+              tidyr::pivot_longer(
+                cols = -sims,
+                names_to = "interventions",
+                values_to = "Costs"),
             by = c("sims", "interventions"))
         # Labels:
         .title_lab = "Cost Effectiveness Plane"
@@ -2171,19 +2175,21 @@ ShinyPSA <- R6::R6Class(
         p <- p +
           ggplot2::geom_abline(
             data = .wtp,
-            ggplot2::aes(intercept = 0,
-                         slope = value,
-                         linetype = lty_),
+            ggplot2::aes(
+              intercept = 0,
+              slope = value,
+              linetype = lty_),
             show.legend = TRUE) +
           ggplot2::scale_linetype_manual(
             breaks = .wtp$lty_[1], # keep one for the legend
             values = rep(3, nrow(.wtp))) +
           ggrepel::geom_text_repel(
             data = .wtp,
-            ggplot2::aes(x = x_cord,
-                         y = y_cord,
-                         #angle = angle_cord,
-                         label = label_cord),
+            ggplot2::aes(
+              x = x_cord,
+              y = y_cord,
+              #angle = angle_cord,
+              label = label_cord),
             size = 1.5,
             show.legend = FALSE) +
           ggplot2::guides(
@@ -2285,9 +2291,10 @@ ShinyPSA <- R6::R6Class(
       # Grab additional arguments:
       args_ <- list(...)
       # Assign additional arguments:
-      private$assign_extraArgs_(.default_args_ = default_args,
-                                .args_ = args_,
-                                .env_ = env_)
+      private$assign_extraArgs_(
+        .default_args_ = default_args,
+        .args_ = args_,
+        .env_ = env_)
 
       # Plot data:
       discounted_population = 1
@@ -2304,9 +2311,10 @@ ShinyPSA <- R6::R6Class(
                               "Discount rate: ", .discount_rate, ".]")
       }
       ## EVPI data:
-      evpi_df <- dplyr::tibble('EVPI' = .PSA_data$EVPI * discounted_population,
-                               'WTP threshold' = .PSA_data$WTPs,
-                               'Best option' = .PSA_data$best_name)
+      evpi_df <- dplyr::tibble(
+        'EVPI' = .PSA_data$EVPI * discounted_population,
+        'WTP threshold' = .PSA_data$WTPs,
+        'Best option' = .PSA_data$best_name)
 
       # Zoom:
       y_cords <- NULL
@@ -2330,8 +2338,9 @@ ShinyPSA <- R6::R6Class(
           size = 0.1) +
         ggplot2::geom_line(
           data = evpi_df,
-          ggplot2::aes(x = `WTP threshold`,
-                       y = EVPI),
+          ggplot2::aes(
+            x = `WTP threshold`,
+            y = EVPI),
           size = 0.4) +
         ggplot2::scale_x_continuous(labels = scales::dollar_format(
           prefix = "\u00A3")) +
@@ -2381,8 +2390,9 @@ ShinyPSA <- R6::R6Class(
         p <- p +
           ggplot2::geom_vline(
             data = .wtp,
-            ggplot2::aes(xintercept = x_cord,
-                         linetype = lty_),
+            ggplot2::aes(
+              xintercept = x_cord,
+              linetype = lty_),
             colour = "dark gray") +
           ggplot2::scale_linetype_manual(
             breaks = .wtp$lty_[1], # keep one for the legend
@@ -2400,10 +2410,11 @@ ShinyPSA <- R6::R6Class(
         p <- p +
           ggrepel::geom_text_repel(
             data = .wtp,
-            ggplot2::aes(x = x_cord,
-                         y = y_cord,
-                         angle = angle_cord,
-                         label = label_cord),
+            ggplot2::aes(
+              x = x_cord,
+              y = y_cord,
+              angle = angle_cord,
+              label = label_cord),
             size = 1.5,
             show.legend = FALSE)
       }
@@ -2459,18 +2470,20 @@ ShinyPSA <- R6::R6Class(
       # Grab additional arguments:
       args_ <- list(...)
       # Assign additional arguments:
-      private$assign_extraArgs_(.default_args_ = default_args,
-                                .args_ = args_,
-                                .env_ = env_)
+      private$assign_extraArgs_(
+        .default_args_ = default_args,
+        .args_ = args_,
+        .env_ = env_)
 
       # Plot data:
       enmb_df <- .PSA_data$e.NMB %>%
         dplyr::as_tibble() %>%
         dplyr::mutate('WTP threshold' = .PSA_data$WTPs,
                       'Best option' = .PSA_data$best_name) %>%
-        tidyr::pivot_longer(cols = colnames(.PSA_data$e.NMB),
-                            names_to = 'Option',
-                            values_to = 'eNMB')
+        tidyr::pivot_longer(
+          cols = colnames(.PSA_data$e.NMB),
+          names_to = 'Option',
+          values_to = 'eNMB')
 
       # Zoom:
       y_cords <- NULL
@@ -2494,11 +2507,12 @@ ShinyPSA <- R6::R6Class(
           size = 0.1) +
         ggplot2::geom_line(
           data = enmb_df,
-          ggplot2::aes(x = `WTP threshold`,
-                       y = eNMB,
-                       group = Option,
-                       linetype = Option,
-                       color = Option),
+          ggplot2::aes(
+            x = `WTP threshold`,
+            y = eNMB,
+            group = Option,
+            linetype = Option,
+            color = Option),
           size = 0.4) +
         ggplot2::scale_x_continuous(labels = scales::dollar_format(
           prefix = "\u00A3")) +
@@ -2546,8 +2560,9 @@ ShinyPSA <- R6::R6Class(
         p <- p +
           ggplot2::geom_vline(
             data = .wtp,
-            ggplot2::aes(xintercept = x_cord,
-                         alpha = lty_),
+            ggplot2::aes(
+              xintercept = x_cord,
+              alpha = lty_),
             color = 'dark gray',
             linetype = 3) +
           ggplot2::scale_alpha_manual(
@@ -2569,10 +2584,11 @@ ShinyPSA <- R6::R6Class(
         p <- p +
           ggrepel::geom_text_repel(
             data = .wtp,
-            ggplot2::aes(x = x_cord,
-                         y = y_cord,
-                         angle = angle_cord,
-                         label = label_cord),
+            ggplot2::aes(
+              x = x_cord,
+              y = y_cord,
+              angle = angle_cord,
+              label = label_cord),
             size = 1.5,
             show.legend = FALSE)
       }

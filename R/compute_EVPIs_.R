@@ -24,6 +24,8 @@
 #' @param .wtp A vector of numerical values declaring the
 #' willingness-to-pay (WTP) values to use in the analysis. If \code{NULL}
 #' (default) a range of WTP values (up to \code{.Kmax} will be used.
+#' @param .max_Kpoints Maximum number of willingness-to-pay values (default
+#' 100) to use in the analysis.
 #'
 #' @return A list containing the EVPI vector, value of information tibble,
 #' opportunity lost tibble among others
@@ -32,7 +34,7 @@
 #' @examples
 #' \dontrun{}
 compute_EVPIs_ = function(.effs, .costs, .interventions = NULL,
-                          .Kmax = NULL, .wtp = NULL) {
+                          .Kmax = NULL, .wtp = NULL, .max_Kpoints = 100) {
   # Stop if .effs & .costs are not of class tibble or have unequal dims:
   stopifnot('.effs is not a tibble' = "data.frame" %in% class(.effs),
             '.costs is not a tibble' = "data.frame" %in% class(.costs),

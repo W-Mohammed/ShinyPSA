@@ -65,7 +65,7 @@ An instance of this class is used in similar way to DT::renderDataTable
 \if{latex}{\out{\hypertarget{method-server}{}}}
 \subsection{Method \code{server()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{dataTableDT$server(input, output, session, .table_)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{dataTableDT$server(input, output, session, .table_, .readyDT_)}\if{html}{\out{</div>}}
 }
 
 }
