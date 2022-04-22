@@ -25,7 +25,7 @@ identify_dominance_ <- function(.icer_data, .qalys = qalys,
                                 .costs = costs) {
   # Check if missing key columns and create them if so:
   .icer_data <- .icer_data %>%
-    ShinyPSA::add_missing_columns_(
+    add_missing_columns_(
       .x = .,
       .characters = c("dominance", "icer_label"),
       .numerics = c(".id", "delta.e", "delta.c", "icer"))
@@ -62,7 +62,7 @@ identify_dominance_ <- function(.icer_data, .qalys = qalys,
 identify_e.dominance_ <- function(.icer_data, .qalys = qalys) {
   # Check if missing key columns and create them if so:
   .icer_data <- .icer_data %>%
-    ShinyPSA::add_missing_columns_(
+    add_missing_columns_(
       .x = .,
       .characters = c("dominance", "icer_label"),
       .numerics = c(".id", "delta.e", "delta.c", "icer"))
@@ -101,7 +101,7 @@ identify_e.dominance_ <- function(.icer_data, .qalys = qalys) {
 calculate_ICERs_ <- function(.icer_data, .qalys = qalys, .costs = costs) {
   # Check if missing key columns and create them if so:
   .icer_data <- .icer_data %>%
-    ShinyPSA::add_missing_columns_(
+    add_missing_columns_(
       .x = .,
       .characters = c("dominance", "icer_label"),
       .numerics = c(".id", "delta.e", "delta.c", "icer"))
@@ -143,7 +143,7 @@ calculate_ICERs_ <- function(.icer_data, .qalys = qalys, .costs = costs) {
 dominance_wraper_ <- function(.x) {
   # Check if missing key columns and create them if so:
   .x <- .x %>%
-    ShinyPSA::add_missing_columns_(
+    add_missing_columns_(
       .x = .,
       .characters = c("dominance", "icer_label"),
       .numerics = c(".id", "delta.e", "delta.c", "icer"))
@@ -152,11 +152,11 @@ dominance_wraper_ <- function(.x) {
   while (any("SD" %in%
              (.x %>%
               dplyr::filter(dplyr::if_any(dominance, ~ is.na(.))) %>%
-              ShinyPSA::identify_dominance_() %>%
+              identify_dominance_() %>%
               dplyr::pull(dominance)))) {
     # Do until all dominated are identified
     .x <- .x %>%
-      ShinyPSA::identify_dominance_()
+      identify_dominance_()
   }
 
   return(.x)
@@ -174,7 +174,7 @@ dominance_wraper_ <- function(.x) {
 e.dominance_wraper_ <- function(.x) {
   # Check if missing key columns and create them if so:
   .x <- .x %>%
-    ShinyPSA::add_missing_columns_(
+    add_missing_columns_(
       .x = .,
       .characters = c("dominance", "icer_label"),
       .numerics = c(".id", "delta.e", "delta.c", "icer"))
@@ -183,12 +183,12 @@ e.dominance_wraper_ <- function(.x) {
   while (any("ED" %in%
              (.x %>%
               dplyr::filter(dplyr::if_any(dominance, ~ is.na(.))) %>%
-              ShinyPSA::identify_e.dominance_() %>%
+              identify_e.dominance_() %>%
               dplyr::pull(dominance)))) {
     # Do until all extendedly dominated are identified:
     .x <- .x %>%
-      ShinyPSA::identify_e.dominance_() %>%
-      ShinyPSA::calculate_ICERs_() # ICER(s) for un-dominated/e.dominated
+      identify_e.dominance_() %>%
+      calculate_ICERs_() # ICER(s) for un-dominated/e.dominated
   }
 
   return(.x)
@@ -220,7 +220,7 @@ compute_ICERs_ <- function(.icer_data, .effs = NULL, .costs = NULL,
   if(!is.null(.icer_data)) {
     # Check if missing key columns and create them if so:
     icer_tmp <- .icer_data %>%
-      ShinyPSA::add_missing_columns_(
+      add_missing_columns_(
         .x = .,
         .characters = c("dominance", "icer_label"),
         .numerics = c(".id", "delta.e", "delta.c", "icer"))
@@ -248,7 +248,7 @@ compute_ICERs_ <- function(.icer_data, .effs = NULL, .costs = NULL,
       'intervention' = .interventions,
       'qalys' = colMeans(.effs),
       'costs' = colMeans(.costs)) %>%
-      ShinyPSA::add_missing_columns_(
+      add_missing_columns_(
         .x = .,
         .characters = c("dominance", "icer_label"),
         .numerics = c(".id", "delta.e", "delta.c",

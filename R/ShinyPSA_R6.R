@@ -1987,7 +1987,7 @@ ShinyPSA <- R6::R6Class(
         .y_lab = "Costs (\u00A3)"
       } else { # Rescale point data
         ce_plane_dt <- .PSA_data$e %>%
-          ShinyPSA::calculate_differentials_(.ref = .ref) %>%
+          private$calculate_differentials_(.ref = .ref) %>%
           dplyr::mutate(sims = dplyr::row_number()) %>%
           tidyr::pivot_longer(
             cols = -sims,
@@ -1996,7 +1996,7 @@ ShinyPSA <- R6::R6Class(
           dplyr::left_join(
             x = .,
             y = .PSA_data$c %>%
-              ShinyPSA::calculate_differentials_(.ref = .ref) %>%
+              private$calculate_differentials_(.ref = .ref) %>%
               dplyr::mutate(sims = dplyr::row_number()) %>%
               tidyr::pivot_longer(
                 cols = -sims,

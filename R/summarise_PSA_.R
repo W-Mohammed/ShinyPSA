@@ -127,11 +127,11 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
 
   # Compute effects and costs differentials:
   if(n.comparators == 2) {
-    delta.effs <- ShinyPSA::calculate_differentials_(
+    delta.effs <- calculate_differentials_(
       .data = .effs,
       .ref = .ref
     )
-    delta.costs <- ShinyPSA::calculate_differentials_(
+    delta.costs <- calculate_differentials_(
       .data = .costs,
       .ref = .ref
     )
