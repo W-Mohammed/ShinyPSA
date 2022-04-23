@@ -28,6 +28,7 @@ Imports:
     purrr,
     R6,
     scales,
+    shinyjs,
     shinymanager,
     shinyWidgets,
     stringr,
