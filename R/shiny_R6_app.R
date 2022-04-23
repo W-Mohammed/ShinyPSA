@@ -130,6 +130,18 @@ ShinyPSA_R6_App <- R6::R6Class(
       self$iContainer[["wtpTxt0"]] <- textInput$new(
         .label_ = "Enter WTP vector (comma delimited):"
       )
+      self$iContainer[["popEVPI0"]] <- prettySwitch$new(
+        .label_ = "Estimate individual EVPI"
+      )
+      self$iContainer[["timEVPI0"]] <- numericInput$new(
+        .label_ = "Population EVPI time horizon:"
+      )
+      self$iContainer[["dsRtEVPI0"]] <- numericInput$new(
+        .label_ = "Population discount rate:"
+      )
+      self$iContainer[["popSzEVPI0"]] <- numericInput$new(
+        .label_ = "Population EVPI sample size:"
+      )
       self$iContainer[["getRef1"]] <- inputSelection$new(
         .label_ = "Select the reference intervention:"
       )
@@ -516,6 +528,28 @@ ShinyPSA_R6_App <- R6::R6Class(
                           ),
                         self$iContainer[["wtpTxt0"]]$
                           ui_input(),
+                        self$iContainer[["popEVPI0"]]$
+                          ui_input(
+                            .class_ = "pl-2 flex-fill text-left"
+                          ),
+                        self$iContainer[["timEVPI0"]]$
+                          ui_input(
+                            .min_ = 1,
+                            .max_ = 100,
+                            .value_ = 1
+                          ),
+                        self$iContainer[["dsRtEVPI0"]]$
+                          ui_input(
+                            .min_ = 0,
+                            .max_ = 1,
+                            .value_ = 0.035
+                          ),
+                        self$iContainer[["popSzEVPI0"]]$
+                          ui_input(
+                            .min_ = 0,
+                            .max_ = 1e8,
+                            .value_ = 1.5e3
+                          ),
                         self$iContainer[["RstBtn0"]]$
                           ui_input(
                             .width_ = "100%"
@@ -1255,7 +1289,19 @@ ShinyPSA_R6_App <- R6::R6Class(
                   .beautify_ = TRUE,
                   .long_ = !input[[self$iContainer[["orinSch"]]$
                                      get_uiInId()]],
-                  .wtp_ = wtp_
+                  .wtp_ = wtp_,
+                  .individual_evpi_ =
+                    input[[self$iContainer[["popEVPI0"]]$
+                                               get_uiInId()]],
+                  .evpi_population_ =
+                    input[[self$iContainer[["popSzEVPI0"]]$
+                                               get_uiInId()]],
+                  .discount_rate_ =
+                    input[[self$iContainer[["dsRtEVPI0"]]$
+                                             get_uiInId()]],
+                  .time_horion_ =
+                    input[[self$iContainer[["timEVPI0"]]$
+                                           get_uiInId()]]
                 ),
               .readyDT_ = TRUE
             )

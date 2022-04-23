@@ -102,13 +102,13 @@ draw_summary_table_ = function(.PSA_data, .wtp_ = c(20000, 30000),
   dplyr::mutate(`CEAF - WTP` = paste0("Prob. CE @ ",
                                       scales::dollar(
                                         x = `CEAF - WTP`,
-                                        accuracy = 0.001,
+                                        accuracy = 1,
                                         prefix = .units_)))
 
   ## Get the EVPI from the result's object:----
   ### Estimate population EVPI if user provided necessary data:----
   discounted_population = 1
-  table_caption = "* Individual EVPI"
+  table_caption = "Individual EVPI"
   if(!.individual_evpi_) {
     if(is.null(.evpi_population_) | is.null(.time_horion_)) {
       .individual_evpi_ <- TRUE
@@ -120,7 +120,7 @@ draw_summary_table_ = function(.PSA_data, .wtp_ = c(20000, 30000),
     #### re-estimate discounted population for population EVPI:
     discounted_population <- sum(
       .evpi_population_ / ((1 + .discount_rate_)^(1:.time_horion_)))
-    table_caption = paste0("* Population EVPI:- ",
+    table_caption = paste0("Population EVPI:- ",
                            "Population size: ", .evpi_population_, "; ",
                            "Time horizon: ", .time_horion_, " year(s); ",
                            "Discount rate: ", .discount_rate_ * 100, "%.")
@@ -266,7 +266,7 @@ draw_summary_table_ = function(.PSA_data, .wtp_ = c(20000, 30000),
                       rep("Probability Cost-Effective",
                           length(.wtp_)),
                       rep(glue::glue("Expected Value of Perfect
-                                      Information ({.units_})*"),
+                          Information ({.units_}) [1]"),
                           length(.wtp_))),
         ##### Prepare border info:----
         RowBorder_ = c(0, 1, 0, 1, 1,
@@ -276,6 +276,16 @@ draw_summary_table_ = function(.PSA_data, .wtp_ = c(20000, 30000),
       )
     #### Number of columns to show:----
     ColShow_ <- nrow(ICER_tbl)
+    #### JS function to add a second caption in the bottom:----
+    notes_ <- c(
+      "function(settings){",
+      "  var datatable = settings.oInstance.api();",
+      "  var table = datatable.table().node();",
+      glue::glue("  var caption = '<sup><strong>[1] </strong></sup><em>{table_caption}</em>'"),
+      "  $(table).append('<caption style=\"caption-side: bottom;text-align: left\">' +
+      caption + '</caption>');",
+      "}"
+    )
     #### Build the table:----
     Summary_tbl <- Summary_tbl %>%
       DT::datatable(
@@ -302,15 +312,18 @@ draw_summary_table_ = function(.PSA_data, .wtp_ = c(20000, 30000),
               className = 'dt-body-center',
               targets = 1:ColShow_
             )
-          )
+          ),
+          drawCallback = htmlwidgets::JS(notes_)
         ),
         extensions = c('RowGroup', 'Buttons'),
         selection = 'none', ## enable selection of a single row
         filter = 'none', ## include column filters at the bottom
         rownames = FALSE,  ## don't show row numbers/names
         caption = htmltools::tags$caption(
-          style = 'caption-side: bottom; text-align: left;',
-          'EVPI: ', htmltools::em(table_caption)
+          style = 'caption-side: top; text-align: left;',
+          htmltools::h3(
+            "Probabilistic Sensitivity Analysis Results"
+          )
         )
       ) %>%
       DT::formatStyle(
@@ -333,7 +346,7 @@ draw_summary_table_ = function(.PSA_data, .wtp_ = c(20000, 30000),
           th(rowspan = 2, 'ICER'), # 1 column (merge 2 rows)
           th(colspan = length(.wtp_), 'Net Benefit'), # span over num .wtp_
           th(colspan = length(.wtp_), 'Probability cost-effective'),
-          th(colspan = length(.wtp_), 'EVPI *'),
+          th(colspan = length(.wtp_), 'EVPI [1]'),
         ),
         tr(
           purrr::map(
@@ -351,7 +364,17 @@ draw_summary_table_ = function(.PSA_data, .wtp_ = c(20000, 30000),
                     6 + length(.wtp_),
                     6 + (length(.wtp_) * 2),
                     6 + (length(.wtp_) * 3))
-    #### build the table:----
+    #### JS function to add a second caption in the bottom:----
+    notes_ <- c(
+      "function(settings){",
+      "  var datatable = settings.oInstance.api();",
+      "  var table = datatable.table().node();",
+      glue::glue("  var caption = '<sup><strong>[1] </strong></sup><em>{table_caption}</em>'"),
+      "  $(table).append('<caption style=\"caption-side: bottom;text-align: left\">' +
+      caption + '</caption>');",
+      "}"
+    )
+    #### Build the table:----
     Summary_tbl <- Summary_tbl %>%
       DT::datatable(
         class = 'compact row-border',
@@ -374,7 +397,8 @@ draw_summary_table_ = function(.PSA_data, .wtp_ = c(20000, 30000),
               targets = 0,
               className = 'dt-body-left'
             )
-          )
+          ),
+          drawCallback = htmlwidgets::JS(notes_)
         ),
         container = sketch_, ## object to use to draw table
         extensions = 'Buttons',
@@ -382,8 +406,10 @@ draw_summary_table_ = function(.PSA_data, .wtp_ = c(20000, 30000),
         filter = 'none', ## include column filters at the bottom
         rownames = FALSE,  ## don't show row numbers/names
         caption = htmltools::tags$caption(
-          style = 'caption-side: bottom; text-align: left;',
-          'EVPI: ', htmltools::em(table_caption)
+          style = 'caption-side: top; text-align: left;',
+          htmltools::h3(
+            "Probabilistic Sensitivity Analysis Results"
+          )
         )
       ) %>%
       DT::formatStyle(
