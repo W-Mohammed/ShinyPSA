@@ -881,10 +881,7 @@ ShinyPSA_R6_App <- R6::R6Class(
       if(self$make_secure) {
         ui <- shinymanager::secure_app(
           ui = ui,
-          theme = bslib::bs_theme(
-            bg = "white",
-            fg = "black"
-          )
+          theme = bslib::bs_theme()
         )
       } else {
         ui
@@ -1256,28 +1253,6 @@ ShinyPSA_R6_App <- R6::R6Class(
           if(!is.null(wtp_))
             if(length(wtp_) < 1)
               wtp_ <- NULL
-          if(!is.null(wtp_))
-            wtp_ <- wtp_[!is.na(wtp_)]
-          if(any(wtp_ > max(rContainer[[sData_name()]]$
-                            get_WTP())))
-            wtp_ <- c(wtp_[wtp_ < max(rContainer[[sData_name()]]$
-                                        get_WTP())],
-                      max(rContainer[[sData_name()]]$
-                            get_WTP()))
-          # replace unevaluated wtp with nearest replacements:
-          wtp_index_ <- purrr::map_dbl(
-            .x = wtp_,
-            .f = function(.wtp_ = .x) {
-              which.min(
-                abs(
-                  .wtp_ - rContainer[[sData_name()]]$
-                    get_WTP()
-                )
-              )
-            }
-          )
-          wtp_ <- unique(rContainer[[sData_name()]]$
-                           get_WTP()[wtp_index_])
           # Pass values to the get_Summary_table function:
           self$iContainer[["sumTbl"]]$
             server(
@@ -1292,16 +1267,16 @@ ShinyPSA_R6_App <- R6::R6Class(
                   .wtp_ = wtp_,
                   .individual_evpi_ =
                     input[[self$iContainer[["popEVPI0"]]$
-                                               get_uiInId()]],
+                             get_uiInId()]],
                   .evpi_population_ =
                     input[[self$iContainer[["popSzEVPI0"]]$
-                                               get_uiInId()]],
+                             get_uiInId()]],
                   .discount_rate_ =
                     input[[self$iContainer[["dsRtEVPI0"]]$
-                                             get_uiInId()]],
+                             get_uiInId()]],
                   .time_horion_ =
                     input[[self$iContainer[["timEVPI0"]]$
-                                           get_uiInId()]]
+                             get_uiInId()]]
                 ),
               .readyDT_ = TRUE
             )
@@ -1820,9 +1795,7 @@ ShinyPSA_R6_App <- R6::R6Class(
               bslib::bs_theme()
             } else {
               bslib::bs_theme(
-                bg = "black",
-                fg = "white",
-                primary = "orange"
+                bootswatch = "solar" #"sandstone"
               )
             }
           )

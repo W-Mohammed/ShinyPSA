@@ -1166,6 +1166,31 @@ ShinyPSA <- R6::R6Class(
       ## Set currency label if none were provided:----
       if(is.null(.units_) | length(.units_) != 1) .units_ = "\u00A3"
 
+      ## Sort out .wtp values:----
+      ### Remove wtp values greater than max WTP set by user:
+      if(is.null(.wtp_))
+        .wtp_ <- c(20000, 30000)
+      if(!is.null(.wtp_))
+        if(length(.wtp_) < 1)
+          .wtp_ <- NULL
+      if(!is.null(.wtp_))
+        .wtp_ <- .wtp_[!is.na(.wtp_)]
+      if(any(.wtp_ > max(.PSA_data$WTPs)))
+        .wtp_ <- c(.wtp_[.wtp_ < max(.PSA_data$WTPs)],
+                   max(.PSA_data$WTPs))
+      ### replace unevaluated wtp with nearest replacements:
+      wtp_index_ <- purrr::map_dbl(
+        .x = .wtp_,
+        .f = function(wtp_ = .x) {
+          which.min(
+            abs(
+              wtp_ - .PSA_data$WTPs
+            )
+          )
+        }
+      )
+      .wtp_ <- unique(.PSA_data$WTPs[wtp_index_])
+
       ## Get the ICER table from the result's object:----
       ICER_tbl <- .PSA_data[["ICER"]]
 

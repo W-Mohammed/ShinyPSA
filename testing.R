@@ -1412,7 +1412,7 @@ p = plot_eNMB_(PSA_summary2,
 p
 
 t = draw_summary_table_(.PSA_data = PSA_summary,
-                       .wtp_ = c(20000, 30000),
+                       .wtp_ = c(20000, 30000, 1, 555, 1e+10),
                        .beautify_ = TRUE,
                        .long_ = TRUE)
 
