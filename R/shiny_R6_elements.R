@@ -48,7 +48,8 @@ prettySwitch = R6::R6Class(
             inputId = private$uiInput_Id_,
             label = private$label_,
             inline = TRUE,
-            value = .value_
+            value = .value_,
+            status = "success"
           )
         )
       )
