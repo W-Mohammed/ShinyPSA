@@ -2762,7 +2762,7 @@ ShinyPSA <- R6::R6Class(
     check_PSA_stability = function(.PSA_data = private$PSA_summary,
                                    .effs = NULL, .costs = NULL,
                                    .interventions = NULL, ...) {
-      # Grab effects and costs if .PSA_data was supplied but not .effs and .costs:
+      # Grab effects and costs if .PSA_data was supplied but not .effs and .costs:----
       if(is.null(.effs)) {
         .effs = .PSA_data$e
       }
@@ -2773,16 +2773,16 @@ ShinyPSA <- R6::R6Class(
         .interventions = .PSA_data$interventions
       }
 
-      # Stop if .effs & .costs are not of class tibble or have unequal dims:
+      # Stop if .effs & .costs are not of class tibble or have unequal dims:----
       stopifnot('.effs is not a tibble' = "data.frame" %in% class(.effs),
                 '.costs is not a tibble' = "data.frame" %in% class(.costs),
                 '.effs and .costs have unequal dimensions' =
                   dim(.effs) == dim(.costs))
 
-      # Get number of interventions in supplied matrix:
+      # Get number of interventions in supplied matrix:----
       n.comparators <- ncol(.effs) # Number of interventions
 
-      # Check supplied interventions labels, create ones if any is missing:
+      # Check supplied interventions labels, create ones if any is missing:----
       if(is.null(.interventions)) {
         .interventions <- paste("intervention", 1:n.comparators)
       }
@@ -2790,7 +2790,7 @@ ShinyPSA <- R6::R6Class(
         .interventions <- paste("intervention", 1:n.comparators)
       }
 
-      # Ensure .effs and .costs are tibbles and name columns appropriately:
+      # Ensure .effs and .costs are tibbles and name columns appropriately:----
       .effs <- .effs %>%
         dplyr::as_tibble(.name_repair = "unique") %>%
         `colnames<-`(.interventions)
@@ -2798,7 +2798,7 @@ ShinyPSA <- R6::R6Class(
         dplyr::as_tibble(.name_repair = "unique") %>%
         `colnames<-`(.interventions)
 
-      # Estimate PSA outputs' stability:
+      # Estimate PSA outputs' stability:----
       effs_stab <- purrr::map_dfc(
         .x = .effs,
         .f = dplyr::cummean)
@@ -2807,8 +2807,8 @@ ShinyPSA <- R6::R6Class(
         .f = dplyr::cummean)
       csts_per_effs <- csts_stab / effs_stab
 
-      # Plot data:
-      ## Effects plot data:
+      # Plot data:----
+      ## Effects plot data:----
       effs_stab_df <- effs_stab  %>%
         dplyr::mutate(
           `PSA runs` = 1:nrow(.)) %>%
@@ -2816,7 +2816,7 @@ ShinyPSA <- R6::R6Class(
           cols = -`PSA runs`,
           names_to = 'Interventions',
           values_to = 'Effects')
-      ## Costs plot data:
+      ## Costs plot data:----
       csts_stab_df <- csts_stab %>%
         dplyr::mutate(
           `PSA runs` = 1:nrow(.)) %>%
@@ -2824,7 +2824,7 @@ ShinyPSA <- R6::R6Class(
           cols = -`PSA runs`,
           names_to = 'Interventions',
           values_to = 'Costs')
-      ## Cost per Effect data:
+      ## Cost per Effect data:----
       csts_per_effs_df <- csts_per_effs %>%
         dplyr::mutate(
           `PSA runs` = 1:nrow(.)) %>%
@@ -2833,26 +2833,26 @@ ShinyPSA <- R6::R6Class(
           names_to = 'Interventions',
           values_to = 'Cost (£) per effect')
 
-      # Stability plot defaults:
-      ## Grab the function's environment for correct assignment in assign():
+      # Stability plot defaults:----
+      ## Grab the function's environment for correct assignment in assign():----
       env_ = environment()
-      ## Define defaults:
+      ## Define defaults:----
       default_args <- list(
         '.arrange' = "all", # all/v/h
         '.zoom' = FALSE, # TRUE/FALSE
         '.zoom_cords' = NULL, # c(x, x) double min and max x axis values
         '.legend_pos' = c(0.8, 0.85)) # c(x, y) double values between 0:1
-      ## Grab additional arguments:
+      ## Grab additional arguments:----
       args_ <- list(...)
-      ## Assign additional arguments:
+      ## Assign additional arguments:----
       assign_extraArgs_(
         .default_args_ = default_args,
         .args_ = args_,
         .env_ = env_)
 
-      # Stability main plots:
+      # Stability main plots:----
       plots_list <- NULL
-      ## Effects plot:
+      ## Effects plot:----
       plots_list[['Effects stability']] <- private$plot_stability_lines(
         df = effs_stab_df,
         x_var = "`PSA runs`",
@@ -2865,7 +2865,7 @@ ShinyPSA <- R6::R6Class(
         .zoom_ = .zoom,
         .zoom_cords_ = .zoom_cords,
         .add_ylabel = FALSE)
-      ## Costs plot:
+      ## Costs plot:----
       plots_list[['Costs stability']] <- private$plot_stability_lines(
         df = csts_stab_df,
         x_var = "`PSA runs`",
@@ -2878,7 +2878,7 @@ ShinyPSA <- R6::R6Class(
         .zoom_ = .zoom,
         .zoom_cords_ = .zoom_cords,
         .add_ylabel = TRUE)
-      ## Cost per effect stability plot:
+      ## Cost per effect stability plot:----
       plots_list[['Cost per effect stability']] <- private$plot_stability_lines(
         df = csts_per_effs_df,
         x_var = "`PSA runs`",
@@ -2891,8 +2891,8 @@ ShinyPSA <- R6::R6Class(
         .zoom_ = .zoom,
         .zoom_cords_ = .zoom_cords,
         .add_ylabel = TRUE)
-
-      if(!.arrange %in% c('v', 'h')) {
+      ## Combine plots into one compass:----
+      if(.arrange == 'all') {
         grouped_plots <- ggpubr::ggarrange(
           plotlist = plots_list[3], # plots_list[c(1, 2)]
           ggpubr::ggarrange(

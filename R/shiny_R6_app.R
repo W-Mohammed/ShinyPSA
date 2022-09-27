@@ -118,6 +118,9 @@ ShinyPSA_R6_App <- R6::R6Class(
       self$iContainer[["EVPI"]] <- ggplot2Plot$new(
         .label_ = "EVPI"
       )
+      self$iContainer[["PSA_stability"]] <- ggplot2Plot$new(
+        .label_ = "PSA Stability"
+      )
       self$iContainer[["updBtn0"]] <- actionButton$new(
         .label_ = "Update summary table"
       )
@@ -870,6 +873,21 @@ ShinyPSA_R6_App <- R6::R6Class(
                           ui_output()
                       )
                     )
+                  ),
+                  ###### PSA Outputs Stability:----
+                  bslib::nav(
+                    width = 9,
+                    title = "PSA outputs stability",
+                    fluidRow(
+                      column(
+                        width = 2
+                      ),
+                      column(
+                        width = 10,
+                        self$iContainer[["PSA_stability"]]$
+                          ui_output()
+                      )
+                    )
                   )
                 )
               )
@@ -1104,6 +1122,16 @@ ShinyPSA_R6_App <- R6::R6Class(
               output = output,
               .plot_ = rContainer[[sData_name()]]$
                 get_EVPI()
+            )
+
+          ###### Retrieve the PSA Stability plots from the ShinyPSA object:----
+          self$iContainer[["PSA_stability"]]$
+            server(
+              session = session,
+              input = input,
+              output = output,
+              .plot_ = rContainer[[sData_name()]]$
+                get_PSA_stabl_plots()
             )
 
         },
