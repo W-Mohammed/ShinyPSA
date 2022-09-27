@@ -214,6 +214,9 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
     eNMB_plot <- ShinyPSA::plot_eNMB_(
       .PSA_data = results
     )
+    stability_plots <- ShinyPSA::check_PSA_stability(
+      .PSA_data = results
+    )
 
     # Save plots/table to the final results object:
     results <- c(results,
@@ -222,7 +225,8 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
                  'CEAC_plot' = list(CEAC_plot),
                  'CEAF_plot' = list(CEAF_plot),
                  'EVPI_plot' = list(EVPI_plot),
-                 'eNMB_plot' = list(eNMB_plot))
+                 'eNMB_plot' = list(eNMB_plot),
+                 'Stability_plots' = list(stability_plots))
   }
 
   return(results)

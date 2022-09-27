@@ -130,6 +130,20 @@ PSA_outputs$get_EVPI()
 }
 
 ## ------------------------------------------------
+## Method `ShinyPSA$get_PSA_stabl_plots`
+## ------------------------------------------------
+
+\dontrun{
+# Instantiate a copy of class ShinyPSA:
+PSA_outputs <- ShinyPSA$new(
+                  .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
+                  .interventions = ShinyPSA::Smoking_PSA$treats)
+
+PSA_outputs$get_PSA_stabl_plots()
+}
+
+## ------------------------------------------------
 ## Method `ShinyPSA$get_WTP`
 ## ------------------------------------------------
 
@@ -158,6 +172,8 @@ PSA_outputs$get_WTP()
 
 \item{\code{eNMB_plot}}{the expected Net Monitory Benefit.}
 
+\item{\code{stability_plots}}{PSA outputs' values' stability plots.}
+
 \item{\code{app}}{a list to store shiny app elements}
 }
 \if{html}{\out{</div>}}
@@ -165,20 +181,21 @@ PSA_outputs$get_WTP()
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{ShinyPSA$new()}}
-\item \href{#method-get_Summary_table}{\code{ShinyPSA$get_Summary_table()}}
-\item \href{#method-get_CEP}{\code{ShinyPSA$get_CEP()}}
-\item \href{#method-get_CEAC}{\code{ShinyPSA$get_CEAC()}}
-\item \href{#method-get_CEAF}{\code{ShinyPSA$get_CEAF()}}
-\item \href{#method-get_eNMB}{\code{ShinyPSA$get_eNMB()}}
-\item \href{#method-get_EVPI}{\code{ShinyPSA$get_EVPI()}}
-\item \href{#method-get_WTP}{\code{ShinyPSA$get_WTP()}}
-\item \href{#method-clone}{\code{ShinyPSA$clone()}}
+\item \href{#method-ShinyPSA-new}{\code{ShinyPSA$new()}}
+\item \href{#method-ShinyPSA-get_Summary_table}{\code{ShinyPSA$get_Summary_table()}}
+\item \href{#method-ShinyPSA-get_CEP}{\code{ShinyPSA$get_CEP()}}
+\item \href{#method-ShinyPSA-get_CEAC}{\code{ShinyPSA$get_CEAC()}}
+\item \href{#method-ShinyPSA-get_CEAF}{\code{ShinyPSA$get_CEAF()}}
+\item \href{#method-ShinyPSA-get_eNMB}{\code{ShinyPSA$get_eNMB()}}
+\item \href{#method-ShinyPSA-get_EVPI}{\code{ShinyPSA$get_EVPI()}}
+\item \href{#method-ShinyPSA-get_PSA_stabl_plots}{\code{ShinyPSA$get_PSA_stabl_plots()}}
+\item \href{#method-ShinyPSA-get_WTP}{\code{ShinyPSA$get_WTP()}}
+\item \href{#method-ShinyPSA-clone}{\code{ShinyPSA$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-ShinyPSA-new"></a>}}
+\if{latex}{\out{\hypertarget{method-ShinyPSA-new}{}}}
 \subsection{Method \code{new()}}{
 Initialisation method (triggered when a new object is created).
 Summary plots and table(s) are created alongside the construction
@@ -249,8 +266,8 @@ PSA_outputs <- ShinyPSA$new(
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_Summary_table"></a>}}
-\if{latex}{\out{\hypertarget{method-get_Summary_table}{}}}
+\if{html}{\out{<a id="method-ShinyPSA-get_Summary_table"></a>}}
+\if{latex}{\out{\hypertarget{method-ShinyPSA-get_Summary_table}{}}}
 \subsection{Method \code{get_Summary_table()}}{
 Get the results summary table
 \subsection{Usage}{
@@ -298,8 +315,8 @@ PSA_outputs$get_Summary_table()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_CEP"></a>}}
-\if{latex}{\out{\hypertarget{method-get_CEP}{}}}
+\if{html}{\out{<a id="method-ShinyPSA-get_CEP"></a>}}
+\if{latex}{\out{\hypertarget{method-ShinyPSA-get_CEP}{}}}
 \subsection{Method \code{get_CEP()}}{
 Get the Cost-Effectiveness plane
 \subsection{Usage}{
@@ -345,8 +362,8 @@ PSA_outputs$get_CEP(
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_CEAC"></a>}}
-\if{latex}{\out{\hypertarget{method-get_CEAC}{}}}
+\if{html}{\out{<a id="method-ShinyPSA-get_CEAC"></a>}}
+\if{latex}{\out{\hypertarget{method-ShinyPSA-get_CEAC}{}}}
 \subsection{Method \code{get_CEAC()}}{
 Get the Cost-Effectiveness Acceptability Curve
 \subsection{Usage}{
@@ -381,8 +398,8 @@ PSA_outputs$get_CEAC()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_CEAF"></a>}}
-\if{latex}{\out{\hypertarget{method-get_CEAF}{}}}
+\if{html}{\out{<a id="method-ShinyPSA-get_CEAF"></a>}}
+\if{latex}{\out{\hypertarget{method-ShinyPSA-get_CEAF}{}}}
 \subsection{Method \code{get_CEAF()}}{
 Get the Cost-Effectiveness Acceptability Frontier
 \subsection{Usage}{
@@ -417,8 +434,8 @@ PSA_outputs$get_CEAF()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_eNMB"></a>}}
-\if{latex}{\out{\hypertarget{method-get_eNMB}{}}}
+\if{html}{\out{<a id="method-ShinyPSA-get_eNMB"></a>}}
+\if{latex}{\out{\hypertarget{method-ShinyPSA-get_eNMB}{}}}
 \subsection{Method \code{get_eNMB()}}{
 Get the expected Net Monitory Benefit
 \subsection{Usage}{
@@ -453,8 +470,8 @@ PSA_outputs$get_eNMB()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_EVPI"></a>}}
-\if{latex}{\out{\hypertarget{method-get_EVPI}{}}}
+\if{html}{\out{<a id="method-ShinyPSA-get_EVPI"></a>}}
+\if{latex}{\out{\hypertarget{method-ShinyPSA-get_EVPI}{}}}
 \subsection{Method \code{get_EVPI()}}{
 Get the Expected Value of Perfect Information
 \subsection{Usage}{
@@ -489,8 +506,44 @@ PSA_outputs$get_EVPI()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_WTP"></a>}}
-\if{latex}{\out{\hypertarget{method-get_WTP}{}}}
+\if{html}{\out{<a id="method-ShinyPSA-get_PSA_stabl_plots"></a>}}
+\if{latex}{\out{\hypertarget{method-ShinyPSA-get_PSA_stabl_plots}{}}}
+\subsection{Method \code{get_PSA_stabl_plots()}}{
+Get the PSA outputs stability plots
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ShinyPSA$get_PSA_stabl_plots(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Extra arguments passed to the plotting functions}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A ggplot2 object
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# Instantiate a copy of class ShinyPSA:
+PSA_outputs <- ShinyPSA$new(
+                  .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
+                  .interventions = ShinyPSA::Smoking_PSA$treats)
+
+PSA_outputs$get_PSA_stabl_plots()
+}
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-ShinyPSA-get_WTP"></a>}}
+\if{latex}{\out{\hypertarget{method-ShinyPSA-get_WTP}{}}}
 \subsection{Method \code{get_WTP()}}{
 Get the willingness-to-pay values used in the analysis
 \subsection{Usage}{
@@ -518,8 +571,8 @@ PSA_outputs$get_WTP()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-ShinyPSA-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-ShinyPSA-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

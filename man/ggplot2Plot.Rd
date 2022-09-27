@@ -13,20 +13,20 @@ shiny::plotOutput
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{ggplot2Plot$new()}}
-\item \href{#method-ui_input}{\code{ggplot2Plot$ui_input()}}
-\item \href{#method-ui_output}{\code{ggplot2Plot$ui_output()}}
-\item \href{#method-ui_render_output}{\code{ggplot2Plot$ui_render_output()}}
-\item \href{#method-server}{\code{ggplot2Plot$server()}}
-\item \href{#method-get_uiInId}{\code{ggplot2Plot$get_uiInId()}}
-\item \href{#method-get_uiOtId}{\code{ggplot2Plot$get_uiOtId()}}
-\item \href{#method-get_uiRdOtId}{\code{ggplot2Plot$get_uiRdOtId()}}
-\item \href{#method-clone}{\code{ggplot2Plot$clone()}}
+\item \href{#method-ggplot2Plot-new}{\code{ggplot2Plot$new()}}
+\item \href{#method-ggplot2Plot-ui_input}{\code{ggplot2Plot$ui_input()}}
+\item \href{#method-ggplot2Plot-ui_output}{\code{ggplot2Plot$ui_output()}}
+\item \href{#method-ggplot2Plot-ui_render_output}{\code{ggplot2Plot$ui_render_output()}}
+\item \href{#method-ggplot2Plot-server}{\code{ggplot2Plot$server()}}
+\item \href{#method-ggplot2Plot-get_uiInId}{\code{ggplot2Plot$get_uiInId()}}
+\item \href{#method-ggplot2Plot-get_uiOtId}{\code{ggplot2Plot$get_uiOtId()}}
+\item \href{#method-ggplot2Plot-get_uiRdOtId}{\code{ggplot2Plot$get_uiRdOtId()}}
+\item \href{#method-ggplot2Plot-clone}{\code{ggplot2Plot$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-ggplot2Plot-new"></a>}}
+\if{latex}{\out{\hypertarget{method-ggplot2Plot-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ggplot2Plot$new(.label_)}\if{html}{\out{</div>}}
@@ -34,8 +34,8 @@ shiny::plotOutput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_input"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_input}{}}}
+\if{html}{\out{<a id="method-ggplot2Plot-ui_input"></a>}}
+\if{latex}{\out{\hypertarget{method-ggplot2Plot-ui_input}{}}}
 \subsection{Method \code{ui_input()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ggplot2Plot$ui_input(.tag_ = "UI_input")}\if{html}{\out{</div>}}
@@ -43,8 +43,8 @@ shiny::plotOutput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_output"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_output}{}}}
+\if{html}{\out{<a id="method-ggplot2Plot-ui_output"></a>}}
+\if{latex}{\out{\hypertarget{method-ggplot2Plot-ui_output}{}}}
 \subsection{Method \code{ui_output()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ggplot2Plot$ui_output(.tag_ = "UI_output", .height_ = "800px")}\if{html}{\out{</div>}}
@@ -52,8 +52,8 @@ shiny::plotOutput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_render_output"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_render_output}{}}}
+\if{html}{\out{<a id="method-ggplot2Plot-ui_render_output"></a>}}
+\if{latex}{\out{\hypertarget{method-ggplot2Plot-ui_render_output}{}}}
 \subsection{Method \code{ui_render_output()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ggplot2Plot$ui_render_output(.tag_ = "UI_render_output")}\if{html}{\out{</div>}}
@@ -61,8 +61,8 @@ shiny::plotOutput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-server"></a>}}
-\if{latex}{\out{\hypertarget{method-server}{}}}
+\if{html}{\out{<a id="method-ggplot2Plot-server"></a>}}
+\if{latex}{\out{\hypertarget{method-ggplot2Plot-server}{}}}
 \subsection{Method \code{server()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ggplot2Plot$server(input, output, session, .plot_)}\if{html}{\out{</div>}}
@@ -70,8 +70,8 @@ shiny::plotOutput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiInId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiInId}{}}}
+\if{html}{\out{<a id="method-ggplot2Plot-get_uiInId"></a>}}
+\if{latex}{\out{\hypertarget{method-ggplot2Plot-get_uiInId}{}}}
 \subsection{Method \code{get_uiInId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ggplot2Plot$get_uiInId()}\if{html}{\out{</div>}}
@@ -79,8 +79,8 @@ shiny::plotOutput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiOtId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiOtId}{}}}
+\if{html}{\out{<a id="method-ggplot2Plot-get_uiOtId"></a>}}
+\if{latex}{\out{\hypertarget{method-ggplot2Plot-get_uiOtId}{}}}
 \subsection{Method \code{get_uiOtId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ggplot2Plot$get_uiOtId()}\if{html}{\out{</div>}}
@@ -88,8 +88,8 @@ shiny::plotOutput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiRdOtId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiRdOtId}{}}}
+\if{html}{\out{<a id="method-ggplot2Plot-get_uiRdOtId"></a>}}
+\if{latex}{\out{\hypertarget{method-ggplot2Plot-get_uiRdOtId}{}}}
 \subsection{Method \code{get_uiRdOtId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ggplot2Plot$get_uiRdOtId()}\if{html}{\out{</div>}}
@@ -97,8 +97,8 @@ shiny::plotOutput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-ggplot2Plot-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-ggplot2Plot-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

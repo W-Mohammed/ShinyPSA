@@ -12,20 +12,20 @@ An instance of this class is used in similar way to shiny::actionButton
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{actionButton$new()}}
-\item \href{#method-ui_input}{\code{actionButton$ui_input()}}
-\item \href{#method-ui_output}{\code{actionButton$ui_output()}}
-\item \href{#method-ui_render_output}{\code{actionButton$ui_render_output()}}
-\item \href{#method-server}{\code{actionButton$server()}}
-\item \href{#method-get_uiInId}{\code{actionButton$get_uiInId()}}
-\item \href{#method-get_uiOtId}{\code{actionButton$get_uiOtId()}}
-\item \href{#method-get_uiRdOtId}{\code{actionButton$get_uiRdOtId()}}
-\item \href{#method-clone}{\code{actionButton$clone()}}
+\item \href{#method-actionButton-new}{\code{actionButton$new()}}
+\item \href{#method-actionButton-ui_input}{\code{actionButton$ui_input()}}
+\item \href{#method-actionButton-ui_output}{\code{actionButton$ui_output()}}
+\item \href{#method-actionButton-ui_render_output}{\code{actionButton$ui_render_output()}}
+\item \href{#method-actionButton-server}{\code{actionButton$server()}}
+\item \href{#method-actionButton-get_uiInId}{\code{actionButton$get_uiInId()}}
+\item \href{#method-actionButton-get_uiOtId}{\code{actionButton$get_uiOtId()}}
+\item \href{#method-actionButton-get_uiRdOtId}{\code{actionButton$get_uiRdOtId()}}
+\item \href{#method-actionButton-clone}{\code{actionButton$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-actionButton-new"></a>}}
+\if{latex}{\out{\hypertarget{method-actionButton-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{actionButton$new(.label_)}\if{html}{\out{</div>}}
@@ -33,8 +33,8 @@ An instance of this class is used in similar way to shiny::actionButton
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_input"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_input}{}}}
+\if{html}{\out{<a id="method-actionButton-ui_input"></a>}}
+\if{latex}{\out{\hypertarget{method-actionButton-ui_input}{}}}
 \subsection{Method \code{ui_input()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{actionButton$ui_input(
@@ -47,8 +47,8 @@ An instance of this class is used in similar way to shiny::actionButton
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_output"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_output}{}}}
+\if{html}{\out{<a id="method-actionButton-ui_output"></a>}}
+\if{latex}{\out{\hypertarget{method-actionButton-ui_output}{}}}
 \subsection{Method \code{ui_output()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{actionButton$ui_output(.tag_ = "UI_output")}\if{html}{\out{</div>}}
@@ -56,8 +56,8 @@ An instance of this class is used in similar way to shiny::actionButton
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_render_output"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_render_output}{}}}
+\if{html}{\out{<a id="method-actionButton-ui_render_output"></a>}}
+\if{latex}{\out{\hypertarget{method-actionButton-ui_render_output}{}}}
 \subsection{Method \code{ui_render_output()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{actionButton$ui_render_output(.tag_ = "UI_render_output")}\if{html}{\out{</div>}}
@@ -65,8 +65,8 @@ An instance of this class is used in similar way to shiny::actionButton
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-server"></a>}}
-\if{latex}{\out{\hypertarget{method-server}{}}}
+\if{html}{\out{<a id="method-actionButton-server"></a>}}
+\if{latex}{\out{\hypertarget{method-actionButton-server}{}}}
 \subsection{Method \code{server()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{actionButton$server(input, output, session)}\if{html}{\out{</div>}}
@@ -74,8 +74,8 @@ An instance of this class is used in similar way to shiny::actionButton
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiInId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiInId}{}}}
+\if{html}{\out{<a id="method-actionButton-get_uiInId"></a>}}
+\if{latex}{\out{\hypertarget{method-actionButton-get_uiInId}{}}}
 \subsection{Method \code{get_uiInId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{actionButton$get_uiInId()}\if{html}{\out{</div>}}
@@ -83,8 +83,8 @@ An instance of this class is used in similar way to shiny::actionButton
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiOtId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiOtId}{}}}
+\if{html}{\out{<a id="method-actionButton-get_uiOtId"></a>}}
+\if{latex}{\out{\hypertarget{method-actionButton-get_uiOtId}{}}}
 \subsection{Method \code{get_uiOtId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{actionButton$get_uiOtId()}\if{html}{\out{</div>}}
@@ -92,8 +92,8 @@ An instance of this class is used in similar way to shiny::actionButton
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiRdOtId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiRdOtId}{}}}
+\if{html}{\out{<a id="method-actionButton-get_uiRdOtId"></a>}}
+\if{latex}{\out{\hypertarget{method-actionButton-get_uiRdOtId}{}}}
 \subsection{Method \code{get_uiRdOtId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{actionButton$get_uiRdOtId()}\if{html}{\out{</div>}}
@@ -101,8 +101,8 @@ An instance of this class is used in similar way to shiny::actionButton
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-actionButton-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-actionButton-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

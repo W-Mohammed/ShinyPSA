@@ -13,20 +13,20 @@ shinyWidgets::prettySwitch
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{prettySwitch$new()}}
-\item \href{#method-ui_input}{\code{prettySwitch$ui_input()}}
-\item \href{#method-ui_output}{\code{prettySwitch$ui_output()}}
-\item \href{#method-ui_render_output}{\code{prettySwitch$ui_render_output()}}
-\item \href{#method-server}{\code{prettySwitch$server()}}
-\item \href{#method-get_uiInId}{\code{prettySwitch$get_uiInId()}}
-\item \href{#method-get_uiOtId}{\code{prettySwitch$get_uiOtId()}}
-\item \href{#method-get_uiRdOtId}{\code{prettySwitch$get_uiRdOtId()}}
-\item \href{#method-clone}{\code{prettySwitch$clone()}}
+\item \href{#method-prettySwitch-new}{\code{prettySwitch$new()}}
+\item \href{#method-prettySwitch-ui_input}{\code{prettySwitch$ui_input()}}
+\item \href{#method-prettySwitch-ui_output}{\code{prettySwitch$ui_output()}}
+\item \href{#method-prettySwitch-ui_render_output}{\code{prettySwitch$ui_render_output()}}
+\item \href{#method-prettySwitch-server}{\code{prettySwitch$server()}}
+\item \href{#method-prettySwitch-get_uiInId}{\code{prettySwitch$get_uiInId()}}
+\item \href{#method-prettySwitch-get_uiOtId}{\code{prettySwitch$get_uiOtId()}}
+\item \href{#method-prettySwitch-get_uiRdOtId}{\code{prettySwitch$get_uiRdOtId()}}
+\item \href{#method-prettySwitch-clone}{\code{prettySwitch$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-prettySwitch-new"></a>}}
+\if{latex}{\out{\hypertarget{method-prettySwitch-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{prettySwitch$new(.label_)}\if{html}{\out{</div>}}
@@ -34,8 +34,8 @@ shinyWidgets::prettySwitch
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_input"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_input}{}}}
+\if{html}{\out{<a id="method-prettySwitch-ui_input"></a>}}
+\if{latex}{\out{\hypertarget{method-prettySwitch-ui_input}{}}}
 \subsection{Method \code{ui_input()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{prettySwitch$ui_input(
@@ -47,8 +47,8 @@ shinyWidgets::prettySwitch
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_output"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_output}{}}}
+\if{html}{\out{<a id="method-prettySwitch-ui_output"></a>}}
+\if{latex}{\out{\hypertarget{method-prettySwitch-ui_output}{}}}
 \subsection{Method \code{ui_output()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{prettySwitch$ui_output(.tag_ = "UI_output")}\if{html}{\out{</div>}}
@@ -56,8 +56,8 @@ shinyWidgets::prettySwitch
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_render_output"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_render_output}{}}}
+\if{html}{\out{<a id="method-prettySwitch-ui_render_output"></a>}}
+\if{latex}{\out{\hypertarget{method-prettySwitch-ui_render_output}{}}}
 \subsection{Method \code{ui_render_output()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{prettySwitch$ui_render_output(.tag_ = "UI_render_output")}\if{html}{\out{</div>}}
@@ -65,8 +65,8 @@ shinyWidgets::prettySwitch
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-server"></a>}}
-\if{latex}{\out{\hypertarget{method-server}{}}}
+\if{html}{\out{<a id="method-prettySwitch-server"></a>}}
+\if{latex}{\out{\hypertarget{method-prettySwitch-server}{}}}
 \subsection{Method \code{server()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{prettySwitch$server(input, output, session)}\if{html}{\out{</div>}}
@@ -74,8 +74,8 @@ shinyWidgets::prettySwitch
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiInId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiInId}{}}}
+\if{html}{\out{<a id="method-prettySwitch-get_uiInId"></a>}}
+\if{latex}{\out{\hypertarget{method-prettySwitch-get_uiInId}{}}}
 \subsection{Method \code{get_uiInId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{prettySwitch$get_uiInId()}\if{html}{\out{</div>}}
@@ -83,8 +83,8 @@ shinyWidgets::prettySwitch
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiOtId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiOtId}{}}}
+\if{html}{\out{<a id="method-prettySwitch-get_uiOtId"></a>}}
+\if{latex}{\out{\hypertarget{method-prettySwitch-get_uiOtId}{}}}
 \subsection{Method \code{get_uiOtId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{prettySwitch$get_uiOtId()}\if{html}{\out{</div>}}
@@ -92,8 +92,8 @@ shinyWidgets::prettySwitch
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiRdOtId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiRdOtId}{}}}
+\if{html}{\out{<a id="method-prettySwitch-get_uiRdOtId"></a>}}
+\if{latex}{\out{\hypertarget{method-prettySwitch-get_uiRdOtId}{}}}
 \subsection{Method \code{get_uiRdOtId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{prettySwitch$get_uiRdOtId()}\if{html}{\out{</div>}}
@@ -101,8 +101,8 @@ shinyWidgets::prettySwitch
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-prettySwitch-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-prettySwitch-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

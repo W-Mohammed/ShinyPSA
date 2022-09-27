@@ -8,7 +8,7 @@ Description: A tool to summarise cost-effectiveness probabilistic sensitivity an
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
 URL: https://github.com/W-Mohammed/ShinyPSA
 BugReports: https://github.com/W-Mohammed/ShinyPSA/issues
 Suggests: 
@@ -22,6 +22,7 @@ Imports:
     dplyr,
     DT,
     ggplot2,
+    ggpubr,
     ggrepel,
     magrittr,
     plyr,

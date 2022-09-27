@@ -12,20 +12,20 @@ An instance of this class is used in similar way to shiny::sliderInput
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{sliderInput$new()}}
-\item \href{#method-ui_input}{\code{sliderInput$ui_input()}}
-\item \href{#method-ui_output}{\code{sliderInput$ui_output()}}
-\item \href{#method-ui_render_output}{\code{sliderInput$ui_render_output()}}
-\item \href{#method-server}{\code{sliderInput$server()}}
-\item \href{#method-get_uiInId}{\code{sliderInput$get_uiInId()}}
-\item \href{#method-get_uiOtId}{\code{sliderInput$get_uiOtId()}}
-\item \href{#method-get_uiRdOtId}{\code{sliderInput$get_uiRdOtId()}}
-\item \href{#method-clone}{\code{sliderInput$clone()}}
+\item \href{#method-sliderInput-new}{\code{sliderInput$new()}}
+\item \href{#method-sliderInput-ui_input}{\code{sliderInput$ui_input()}}
+\item \href{#method-sliderInput-ui_output}{\code{sliderInput$ui_output()}}
+\item \href{#method-sliderInput-ui_render_output}{\code{sliderInput$ui_render_output()}}
+\item \href{#method-sliderInput-server}{\code{sliderInput$server()}}
+\item \href{#method-sliderInput-get_uiInId}{\code{sliderInput$get_uiInId()}}
+\item \href{#method-sliderInput-get_uiOtId}{\code{sliderInput$get_uiOtId()}}
+\item \href{#method-sliderInput-get_uiRdOtId}{\code{sliderInput$get_uiRdOtId()}}
+\item \href{#method-sliderInput-clone}{\code{sliderInput$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-sliderInput-new"></a>}}
+\if{latex}{\out{\hypertarget{method-sliderInput-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{sliderInput$new(.label_)}\if{html}{\out{</div>}}
@@ -33,8 +33,8 @@ An instance of this class is used in similar way to shiny::sliderInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_input"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_input}{}}}
+\if{html}{\out{<a id="method-sliderInput-ui_input"></a>}}
+\if{latex}{\out{\hypertarget{method-sliderInput-ui_input}{}}}
 \subsection{Method \code{ui_input()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{sliderInput$ui_input(
@@ -48,8 +48,8 @@ An instance of this class is used in similar way to shiny::sliderInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_output"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_output}{}}}
+\if{html}{\out{<a id="method-sliderInput-ui_output"></a>}}
+\if{latex}{\out{\hypertarget{method-sliderInput-ui_output}{}}}
 \subsection{Method \code{ui_output()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{sliderInput$ui_output(.tag_ = "UI_output")}\if{html}{\out{</div>}}
@@ -57,8 +57,8 @@ An instance of this class is used in similar way to shiny::sliderInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_render_output"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_render_output}{}}}
+\if{html}{\out{<a id="method-sliderInput-ui_render_output"></a>}}
+\if{latex}{\out{\hypertarget{method-sliderInput-ui_render_output}{}}}
 \subsection{Method \code{ui_render_output()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{sliderInput$ui_render_output(.tag_ = "UI_render_output")}\if{html}{\out{</div>}}
@@ -66,8 +66,8 @@ An instance of this class is used in similar way to shiny::sliderInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-server"></a>}}
-\if{latex}{\out{\hypertarget{method-server}{}}}
+\if{html}{\out{<a id="method-sliderInput-server"></a>}}
+\if{latex}{\out{\hypertarget{method-sliderInput-server}{}}}
 \subsection{Method \code{server()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{sliderInput$server(input, output, session, .min_, .max_)}\if{html}{\out{</div>}}
@@ -75,8 +75,8 @@ An instance of this class is used in similar way to shiny::sliderInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiInId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiInId}{}}}
+\if{html}{\out{<a id="method-sliderInput-get_uiInId"></a>}}
+\if{latex}{\out{\hypertarget{method-sliderInput-get_uiInId}{}}}
 \subsection{Method \code{get_uiInId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{sliderInput$get_uiInId()}\if{html}{\out{</div>}}
@@ -84,8 +84,8 @@ An instance of this class is used in similar way to shiny::sliderInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiOtId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiOtId}{}}}
+\if{html}{\out{<a id="method-sliderInput-get_uiOtId"></a>}}
+\if{latex}{\out{\hypertarget{method-sliderInput-get_uiOtId}{}}}
 \subsection{Method \code{get_uiOtId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{sliderInput$get_uiOtId()}\if{html}{\out{</div>}}
@@ -93,8 +93,8 @@ An instance of this class is used in similar way to shiny::sliderInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiRdOtId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiRdOtId}{}}}
+\if{html}{\out{<a id="method-sliderInput-get_uiRdOtId"></a>}}
+\if{latex}{\out{\hypertarget{method-sliderInput-get_uiRdOtId}{}}}
 \subsection{Method \code{get_uiRdOtId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{sliderInput$get_uiRdOtId()}\if{html}{\out{</div>}}
@@ -102,8 +102,8 @@ An instance of this class is used in similar way to shiny::sliderInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-sliderInput-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-sliderInput-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

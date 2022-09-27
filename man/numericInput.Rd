@@ -12,20 +12,20 @@ An instance of this class is used in similar way to shiny::numericInput
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{numericInput$new()}}
-\item \href{#method-ui_input}{\code{numericInput$ui_input()}}
-\item \href{#method-ui_output}{\code{numericInput$ui_output()}}
-\item \href{#method-ui_render_output}{\code{numericInput$ui_render_output()}}
-\item \href{#method-server}{\code{numericInput$server()}}
-\item \href{#method-get_uiInId}{\code{numericInput$get_uiInId()}}
-\item \href{#method-get_uiOtId}{\code{numericInput$get_uiOtId()}}
-\item \href{#method-get_uiRdOtId}{\code{numericInput$get_uiRdOtId()}}
-\item \href{#method-clone}{\code{numericInput$clone()}}
+\item \href{#method-numericInput-new}{\code{numericInput$new()}}
+\item \href{#method-numericInput-ui_input}{\code{numericInput$ui_input()}}
+\item \href{#method-numericInput-ui_output}{\code{numericInput$ui_output()}}
+\item \href{#method-numericInput-ui_render_output}{\code{numericInput$ui_render_output()}}
+\item \href{#method-numericInput-server}{\code{numericInput$server()}}
+\item \href{#method-numericInput-get_uiInId}{\code{numericInput$get_uiInId()}}
+\item \href{#method-numericInput-get_uiOtId}{\code{numericInput$get_uiOtId()}}
+\item \href{#method-numericInput-get_uiRdOtId}{\code{numericInput$get_uiRdOtId()}}
+\item \href{#method-numericInput-clone}{\code{numericInput$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-numericInput-new"></a>}}
+\if{latex}{\out{\hypertarget{method-numericInput-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{numericInput$new(.label_)}\if{html}{\out{</div>}}
@@ -33,8 +33,8 @@ An instance of this class is used in similar way to shiny::numericInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_input"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_input}{}}}
+\if{html}{\out{<a id="method-numericInput-ui_input"></a>}}
+\if{latex}{\out{\hypertarget{method-numericInput-ui_input}{}}}
 \subsection{Method \code{ui_input()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{numericInput$ui_input(
@@ -49,8 +49,8 @@ An instance of this class is used in similar way to shiny::numericInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_output"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_output}{}}}
+\if{html}{\out{<a id="method-numericInput-ui_output"></a>}}
+\if{latex}{\out{\hypertarget{method-numericInput-ui_output}{}}}
 \subsection{Method \code{ui_output()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{numericInput$ui_output(.tag_ = "UI_output")}\if{html}{\out{</div>}}
@@ -58,8 +58,8 @@ An instance of this class is used in similar way to shiny::numericInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_render_output"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_render_output}{}}}
+\if{html}{\out{<a id="method-numericInput-ui_render_output"></a>}}
+\if{latex}{\out{\hypertarget{method-numericInput-ui_render_output}{}}}
 \subsection{Method \code{ui_render_output()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{numericInput$ui_render_output(.tag_ = "UI_render_output")}\if{html}{\out{</div>}}
@@ -67,8 +67,8 @@ An instance of this class is used in similar way to shiny::numericInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-server"></a>}}
-\if{latex}{\out{\hypertarget{method-server}{}}}
+\if{html}{\out{<a id="method-numericInput-server"></a>}}
+\if{latex}{\out{\hypertarget{method-numericInput-server}{}}}
 \subsection{Method \code{server()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{numericInput$server(input, output, session, .min_, .max_)}\if{html}{\out{</div>}}
@@ -76,8 +76,8 @@ An instance of this class is used in similar way to shiny::numericInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiInId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiInId}{}}}
+\if{html}{\out{<a id="method-numericInput-get_uiInId"></a>}}
+\if{latex}{\out{\hypertarget{method-numericInput-get_uiInId}{}}}
 \subsection{Method \code{get_uiInId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{numericInput$get_uiInId()}\if{html}{\out{</div>}}
@@ -85,8 +85,8 @@ An instance of this class is used in similar way to shiny::numericInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiOtId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiOtId}{}}}
+\if{html}{\out{<a id="method-numericInput-get_uiOtId"></a>}}
+\if{latex}{\out{\hypertarget{method-numericInput-get_uiOtId}{}}}
 \subsection{Method \code{get_uiOtId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{numericInput$get_uiOtId()}\if{html}{\out{</div>}}
@@ -94,8 +94,8 @@ An instance of this class is used in similar way to shiny::numericInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiRdOtId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiRdOtId}{}}}
+\if{html}{\out{<a id="method-numericInput-get_uiRdOtId"></a>}}
+\if{latex}{\out{\hypertarget{method-numericInput-get_uiRdOtId}{}}}
 \subsection{Method \code{get_uiRdOtId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{numericInput$get_uiRdOtId()}\if{html}{\out{</div>}}
@@ -103,8 +103,8 @@ An instance of this class is used in similar way to shiny::numericInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-numericInput-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-numericInput-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

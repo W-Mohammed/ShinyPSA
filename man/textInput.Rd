@@ -12,20 +12,20 @@ An instance of this class is used in similar way to shiny::textInput
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{textInput$new()}}
-\item \href{#method-ui_input}{\code{textInput$ui_input()}}
-\item \href{#method-ui_output}{\code{textInput$ui_output()}}
-\item \href{#method-ui_render_output}{\code{textInput$ui_render_output()}}
-\item \href{#method-server}{\code{textInput$server()}}
-\item \href{#method-get_uiInId}{\code{textInput$get_uiInId()}}
-\item \href{#method-get_uiOtId}{\code{textInput$get_uiOtId()}}
-\item \href{#method-get_uiRdOtId}{\code{textInput$get_uiRdOtId()}}
-\item \href{#method-clone}{\code{textInput$clone()}}
+\item \href{#method-textInput-new}{\code{textInput$new()}}
+\item \href{#method-textInput-ui_input}{\code{textInput$ui_input()}}
+\item \href{#method-textInput-ui_output}{\code{textInput$ui_output()}}
+\item \href{#method-textInput-ui_render_output}{\code{textInput$ui_render_output()}}
+\item \href{#method-textInput-server}{\code{textInput$server()}}
+\item \href{#method-textInput-get_uiInId}{\code{textInput$get_uiInId()}}
+\item \href{#method-textInput-get_uiOtId}{\code{textInput$get_uiOtId()}}
+\item \href{#method-textInput-get_uiRdOtId}{\code{textInput$get_uiRdOtId()}}
+\item \href{#method-textInput-clone}{\code{textInput$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-textInput-new"></a>}}
+\if{latex}{\out{\hypertarget{method-textInput-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{textInput$new(.label_)}\if{html}{\out{</div>}}
@@ -33,8 +33,8 @@ An instance of this class is used in similar way to shiny::textInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_input"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_input}{}}}
+\if{html}{\out{<a id="method-textInput-ui_input"></a>}}
+\if{latex}{\out{\hypertarget{method-textInput-ui_input}{}}}
 \subsection{Method \code{ui_input()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{textInput$ui_input(
@@ -47,8 +47,8 @@ An instance of this class is used in similar way to shiny::textInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_output"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_output}{}}}
+\if{html}{\out{<a id="method-textInput-ui_output"></a>}}
+\if{latex}{\out{\hypertarget{method-textInput-ui_output}{}}}
 \subsection{Method \code{ui_output()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{textInput$ui_output(.tag_ = "UI_output")}\if{html}{\out{</div>}}
@@ -56,8 +56,8 @@ An instance of this class is used in similar way to shiny::textInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_render_output"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_render_output}{}}}
+\if{html}{\out{<a id="method-textInput-ui_render_output"></a>}}
+\if{latex}{\out{\hypertarget{method-textInput-ui_render_output}{}}}
 \subsection{Method \code{ui_render_output()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{textInput$ui_render_output(.tag_ = "UI_render_output")}\if{html}{\out{</div>}}
@@ -65,8 +65,8 @@ An instance of this class is used in similar way to shiny::textInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-server"></a>}}
-\if{latex}{\out{\hypertarget{method-server}{}}}
+\if{html}{\out{<a id="method-textInput-server"></a>}}
+\if{latex}{\out{\hypertarget{method-textInput-server}{}}}
 \subsection{Method \code{server()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{textInput$server(input, output, session, .min_, .max_)}\if{html}{\out{</div>}}
@@ -74,8 +74,8 @@ An instance of this class is used in similar way to shiny::textInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiInId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiInId}{}}}
+\if{html}{\out{<a id="method-textInput-get_uiInId"></a>}}
+\if{latex}{\out{\hypertarget{method-textInput-get_uiInId}{}}}
 \subsection{Method \code{get_uiInId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{textInput$get_uiInId()}\if{html}{\out{</div>}}
@@ -83,8 +83,8 @@ An instance of this class is used in similar way to shiny::textInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiOtId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiOtId}{}}}
+\if{html}{\out{<a id="method-textInput-get_uiOtId"></a>}}
+\if{latex}{\out{\hypertarget{method-textInput-get_uiOtId}{}}}
 \subsection{Method \code{get_uiOtId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{textInput$get_uiOtId()}\if{html}{\out{</div>}}
@@ -92,8 +92,8 @@ An instance of this class is used in similar way to shiny::textInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiRdOtId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiRdOtId}{}}}
+\if{html}{\out{<a id="method-textInput-get_uiRdOtId"></a>}}
+\if{latex}{\out{\hypertarget{method-textInput-get_uiRdOtId}{}}}
 \subsection{Method \code{get_uiRdOtId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{textInput$get_uiRdOtId()}\if{html}{\out{</div>}}
@@ -101,8 +101,8 @@ An instance of this class is used in similar way to shiny::textInput
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-textInput-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-textInput-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

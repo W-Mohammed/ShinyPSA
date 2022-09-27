@@ -13,20 +13,20 @@ shiny::inputSelection
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{inputSelection$new()}}
-\item \href{#method-ui_input}{\code{inputSelection$ui_input()}}
-\item \href{#method-ui_output}{\code{inputSelection$ui_output()}}
-\item \href{#method-ui_render_output}{\code{inputSelection$ui_render_output()}}
-\item \href{#method-server}{\code{inputSelection$server()}}
-\item \href{#method-get_uiInId}{\code{inputSelection$get_uiInId()}}
-\item \href{#method-get_uiOtId}{\code{inputSelection$get_uiOtId()}}
-\item \href{#method-get_uiRdOtId}{\code{inputSelection$get_uiRdOtId()}}
-\item \href{#method-clone}{\code{inputSelection$clone()}}
+\item \href{#method-inputSelection-new}{\code{inputSelection$new()}}
+\item \href{#method-inputSelection-ui_input}{\code{inputSelection$ui_input()}}
+\item \href{#method-inputSelection-ui_output}{\code{inputSelection$ui_output()}}
+\item \href{#method-inputSelection-ui_render_output}{\code{inputSelection$ui_render_output()}}
+\item \href{#method-inputSelection-server}{\code{inputSelection$server()}}
+\item \href{#method-inputSelection-get_uiInId}{\code{inputSelection$get_uiInId()}}
+\item \href{#method-inputSelection-get_uiOtId}{\code{inputSelection$get_uiOtId()}}
+\item \href{#method-inputSelection-get_uiRdOtId}{\code{inputSelection$get_uiRdOtId()}}
+\item \href{#method-inputSelection-clone}{\code{inputSelection$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-inputSelection-new"></a>}}
+\if{latex}{\out{\hypertarget{method-inputSelection-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{inputSelection$new(.label_)}\if{html}{\out{</div>}}
@@ -34,8 +34,8 @@ shiny::inputSelection
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_input"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_input}{}}}
+\if{html}{\out{<a id="method-inputSelection-ui_input"></a>}}
+\if{latex}{\out{\hypertarget{method-inputSelection-ui_input}{}}}
 \subsection{Method \code{ui_input()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{inputSelection$ui_input(
@@ -51,8 +51,8 @@ shiny::inputSelection
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_output"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_output}{}}}
+\if{html}{\out{<a id="method-inputSelection-ui_output"></a>}}
+\if{latex}{\out{\hypertarget{method-inputSelection-ui_output}{}}}
 \subsection{Method \code{ui_output()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{inputSelection$ui_output(.tag_ = "UI_output")}\if{html}{\out{</div>}}
@@ -60,8 +60,8 @@ shiny::inputSelection
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui_render_output"></a>}}
-\if{latex}{\out{\hypertarget{method-ui_render_output}{}}}
+\if{html}{\out{<a id="method-inputSelection-ui_render_output"></a>}}
+\if{latex}{\out{\hypertarget{method-inputSelection-ui_render_output}{}}}
 \subsection{Method \code{ui_render_output()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{inputSelection$ui_render_output(.tag_ = "UI_render_output")}\if{html}{\out{</div>}}
@@ -69,8 +69,8 @@ shiny::inputSelection
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-server"></a>}}
-\if{latex}{\out{\hypertarget{method-server}{}}}
+\if{html}{\out{<a id="method-inputSelection-server"></a>}}
+\if{latex}{\out{\hypertarget{method-inputSelection-server}{}}}
 \subsection{Method \code{server()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{inputSelection$server(input, output, session, .choices_ = .choices_)}\if{html}{\out{</div>}}
@@ -78,8 +78,8 @@ shiny::inputSelection
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiInId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiInId}{}}}
+\if{html}{\out{<a id="method-inputSelection-get_uiInId"></a>}}
+\if{latex}{\out{\hypertarget{method-inputSelection-get_uiInId}{}}}
 \subsection{Method \code{get_uiInId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{inputSelection$get_uiInId()}\if{html}{\out{</div>}}
@@ -87,8 +87,8 @@ shiny::inputSelection
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiOtId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiOtId}{}}}
+\if{html}{\out{<a id="method-inputSelection-get_uiOtId"></a>}}
+\if{latex}{\out{\hypertarget{method-inputSelection-get_uiOtId}{}}}
 \subsection{Method \code{get_uiOtId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{inputSelection$get_uiOtId()}\if{html}{\out{</div>}}
@@ -96,8 +96,8 @@ shiny::inputSelection
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_uiRdOtId"></a>}}
-\if{latex}{\out{\hypertarget{method-get_uiRdOtId}{}}}
+\if{html}{\out{<a id="method-inputSelection-get_uiRdOtId"></a>}}
+\if{latex}{\out{\hypertarget{method-inputSelection-get_uiRdOtId}{}}}
 \subsection{Method \code{get_uiRdOtId()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{inputSelection$get_uiRdOtId()}\if{html}{\out{</div>}}
@@ -105,8 +105,8 @@ shiny::inputSelection
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-inputSelection-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-inputSelection-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

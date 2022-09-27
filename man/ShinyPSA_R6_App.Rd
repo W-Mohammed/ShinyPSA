@@ -12,16 +12,16 @@ An instance of this class is a fully fledged shiny app.
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{ShinyPSA_R6_App$new()}}
-\item \href{#method-ui}{\code{ShinyPSA_R6_App$ui()}}
-\item \href{#method-waiter_dev}{\code{ShinyPSA_R6_App$waiter_dev()}}
-\item \href{#method-server}{\code{ShinyPSA_R6_App$server()}}
-\item \href{#method-clone}{\code{ShinyPSA_R6_App$clone()}}
+\item \href{#method-ShinyPSA_R6_App-new}{\code{ShinyPSA_R6_App$new()}}
+\item \href{#method-ShinyPSA_R6_App-ui}{\code{ShinyPSA_R6_App$ui()}}
+\item \href{#method-ShinyPSA_R6_App-waiter_dev}{\code{ShinyPSA_R6_App$waiter_dev()}}
+\item \href{#method-ShinyPSA_R6_App-server}{\code{ShinyPSA_R6_App$server()}}
+\item \href{#method-ShinyPSA_R6_App-clone}{\code{ShinyPSA_R6_App$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-ShinyPSA_R6_App-new"></a>}}
+\if{latex}{\out{\hypertarget{method-ShinyPSA_R6_App-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ShinyPSA_R6_App$new()}\if{html}{\out{</div>}}
@@ -29,8 +29,8 @@ An instance of this class is a fully fledged shiny app.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ui"></a>}}
-\if{latex}{\out{\hypertarget{method-ui}{}}}
+\if{html}{\out{<a id="method-ShinyPSA_R6_App-ui"></a>}}
+\if{latex}{\out{\hypertarget{method-ShinyPSA_R6_App-ui}{}}}
 \subsection{Method \code{ui()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ShinyPSA_R6_App$ui()}\if{html}{\out{</div>}}
@@ -38,8 +38,8 @@ An instance of this class is a fully fledged shiny app.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-waiter_dev"></a>}}
-\if{latex}{\out{\hypertarget{method-waiter_dev}{}}}
+\if{html}{\out{<a id="method-ShinyPSA_R6_App-waiter_dev"></a>}}
+\if{latex}{\out{\hypertarget{method-ShinyPSA_R6_App-waiter_dev}{}}}
 \subsection{Method \code{waiter_dev()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ShinyPSA_R6_App$waiter_dev(.info_)}\if{html}{\out{</div>}}
@@ -47,8 +47,8 @@ An instance of this class is a fully fledged shiny app.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-server"></a>}}
-\if{latex}{\out{\hypertarget{method-server}{}}}
+\if{html}{\out{<a id="method-ShinyPSA_R6_App-server"></a>}}
+\if{latex}{\out{\hypertarget{method-ShinyPSA_R6_App-server}{}}}
 \subsection{Method \code{server()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ShinyPSA_R6_App$server(input, output, session)}\if{html}{\out{</div>}}
@@ -56,8 +56,8 @@ An instance of this class is a fully fledged shiny app.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-ShinyPSA_R6_App-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-ShinyPSA_R6_App-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{
