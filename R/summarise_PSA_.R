@@ -16,6 +16,8 @@
 #' @param .costs A matrix containing the \code{costs} from PSA. Number of
 #'  \code{columns} is equal to the interventions while the number of
 #'  \code{rows} is equal to the number of PSA simulations to be summarised.
+#' @param .params A matrix containing parameters' configurations used in
+#' the PSA.
 #' @param .interventions A vector containing the names of all
 #' interventions. If not provided or less names than needed is provided,
 #' the function will generate generic names, for example
@@ -30,6 +32,7 @@
 #' (default) a range of WTP values (up to \code{.Kmax} will be used.
 #' @param .max_Kpoints Maximum number of willingness-to-pay values (default
 #' 100) to use in the analysis.
+#' @param .lambda Maximum acceptable ICER, default is 30,000.
 #' @param .plot A boolean, FALSE (default), for whether to generate plots.
 #'
 #' @return A list of class \code{psa} containing several objects.
@@ -51,9 +54,9 @@
 #'   .interventions = ShinyPSA::Smoking_PSA$treats,
 #'   .plot = TRUE)
 #' }
-summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
+summarise_PSA_ <- function(.effs, .costs, .params, .interventions = NULL,
                            .ref = NULL, .Kmax = 100000, .wtp = NULL,
-                           .max_Kpoints = 100, .plot = FALSE) {
+                           .max_Kpoints = 100, .lambda = 30000, .plot = FALSE) {
 
   # Stop if .effs & .costs have different dimensions:
   stopifnot('Unequal dimensions in .effs and .costs' =
@@ -173,6 +176,10 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
     .effs = .effs, .costs = .costs, .Kmax = .Kmax,
     .interventions = .interventions, .wtp = .wtp
   )
+  # Compute EVPPI:
+  # EVPPI <- ShinyPSA::compute_EVPPI_(
+  #
+  # )
   U <- EVPIs$U
   Ustar <- EVPIs$Ustar
   ol <- EVPIs$ol
@@ -182,12 +189,12 @@ summarise_PSA_ <- function(.effs, .costs, .interventions = NULL,
   ## Outputs of the function:
   results <- list(
 
-    interventions = .interventions, ref = .ref, comp = comp,
-    ICER = ICER, NMB = NMB, e.NMB = e.NMB, CEAC = CEAC, CEAF = CEAF,
-    EVPI = EVPI, best_id = best, best_name = best_name, WTPs = v.k,
+    interventions = .interventions, ref = .ref, comp = comp, ICER = ICER,
+    NMB = NMB, e.NMB = e.NMB, CEAC = CEAC, CEAF = CEAF, EVPI = EVPI,
+    EVPPI = EVPPI, best_id = best, best_name = best_name, WTPs = v.k,
     WTPstar = kstar, U = U, Ustar = Ustar, vi = vi, ol = ol, e = .effs,
-    c = .costs, delta.e = delta.effs, delta.c = delta.costs, n.sim = n.sim,
-    n.comparators = n.comparators, step = n.k, Kmax = .Kmax
+    c = .costs, p = .params, delta.e = delta.effs, delta.c = delta.costs,
+    n.sim = n.sim, n.comparators = n.comparators, step = n.k, Kmax = .Kmax
   )
 
   class(results) <- "psa"

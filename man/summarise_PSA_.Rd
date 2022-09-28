@@ -7,11 +7,13 @@
 summarise_PSA_(
   .effs,
   .costs,
+  .params,
   .interventions = NULL,
   .ref = NULL,
   .Kmax = 1e+05,
   .wtp = NULL,
   .max_Kpoints = 100,
+  .lambda = 30000,
   .plot = FALSE
 )
 }
@@ -23,6 +25,9 @@ summarise_PSA_(
 \item{.costs}{A matrix containing the \code{costs} from PSA. Number of
 \code{columns} is equal to the interventions while the number of
 \code{rows} is equal to the number of PSA simulations to be summarised.}
+
+\item{.params}{A matrix containing parameters' configurations used in
+the PSA.}
 
 \item{.interventions}{A vector containing the names of all
 interventions. If not provided or less names than needed is provided,
@@ -42,6 +47,8 @@ willingness-to-pay (WTP) values to use in the analysis. If \code{NULL}
 
 \item{.max_Kpoints}{Maximum number of willingness-to-pay values (default
 100) to use in the analysis.}
+
+\item{.lambda}{Maximum acceptable ICER, default is 30,000.}
 
 \item{.plot}{A boolean, FALSE (default), for whether to generate plots.}
 }
