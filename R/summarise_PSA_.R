@@ -176,10 +176,7 @@ summarise_PSA_ <- function(.effs, .costs, .params, .interventions = NULL,
     .effs = .effs, .costs = .costs, .Kmax = .Kmax,
     .interventions = .interventions, .wtp = .wtp
   )
-  # Compute EVPPI:
-  # EVPPI <- ShinyPSA::compute_EVPPI_(
-  #
-  # )
+
   U <- EVPIs$U
   Ustar <- EVPIs$Ustar
   ol <- EVPIs$ol
@@ -191,7 +188,7 @@ summarise_PSA_ <- function(.effs, .costs, .params, .interventions = NULL,
 
     interventions = .interventions, ref = .ref, comp = comp, ICER = ICER,
     NMB = NMB, e.NMB = e.NMB, CEAC = CEAC, CEAF = CEAF, EVPI = EVPI,
-    EVPPI = EVPPI, best_id = best, best_name = best_name, WTPs = v.k,
+    best_id = best, best_name = best_name, WTPs = v.k,
     WTPstar = kstar, U = U, Ustar = Ustar, vi = vi, ol = ol, e = .effs,
     c = .costs, p = .params, delta.e = delta.effs, delta.c = delta.costs,
     n.sim = n.sim, n.comparators = n.comparators, step = n.k, Kmax = .Kmax
