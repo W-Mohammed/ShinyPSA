@@ -34,7 +34,7 @@
 #' @param .time_horion_ The time expected to pass (in years) before the
 #' interventions under consideration change (how long before the decision
 #' under consideration become obsolete or requires updating).
-#' @param .session
+#' @param .session Shiny app session.
 #'
 #' @return A list containing the EVPPI results table and caption information.
 #' @export
@@ -62,17 +62,11 @@
 #'     .evppi_population_ = 1000,
 #'     .time_horion_ = 5)
 #' }
-compute_EVPPIs_ <- function(.PSA_data,
-                            .effs = NULL,
-                            .costs = NULL,
-                            .params = NULL,
-                            .MAICER_ = 30000,
-                            .units_ = "\u00A3",
-                            .individual_evppi_ = TRUE,
-                            .evppi_population_ = NULL,
-                            .discount_rate_ = 0.035,
-                            .time_horion_ = NULL,
-                            .session = NULL) {
+compute_EVPPIs_ <- function(.PSA_data, .effs = NULL, .costs = NULL,
+                            .params = NULL, .MAICER_ = 30000,
+                            .units_ = "\u00A3", .individual_evppi_ = TRUE,
+                            .evppi_population_ = NULL, .discount_rate_ = 0.035,
+                            .time_horion_ = NULL, .session = NULL) {
 
   # Sanity checks:----
   if(is.null(.effs) | is.null(.costs) | is.null(.params)) {
@@ -91,11 +85,18 @@ compute_EVPPIs_ <- function(.PSA_data,
   EVPPI <- applyCalcSingleParamGam( # Strong et al. function
     .params = .PSA_data$p,
     nb = inb,
-    session = .session)
+    .session = .session)
 
   # Estimate population EVPPI if user provided necessary data:----
-  discounted_population = 1
-  table_caption = "Individual EVPPI"
+  discounted_population <- 1
+  plot_caption <- table_caption <- paste0(
+    "Per Individual EVPPI (", .units_, ") estimated at a ",
+    scales::dollar(
+      x = .MAICER_,
+      prefix = .units_),
+    " MAICER.\n",
+    "Percentage values represent EVPPI values indexed to overall EVPI.")
+
   if(!.individual_evppi_) {
     if(is.null(.evppi_population_) | is.null(.time_horion_)) {
       .individual_evppi_ <- TRUE
@@ -107,17 +108,17 @@ compute_EVPPIs_ <- function(.PSA_data,
     ## Re-estimate discounted population for population EVPPI:----
     discounted_population <- sum(
       .evppi_population_ / ((1 + .discount_rate_)^(1:.time_horion_)))
-    table_caption = paste0("Population EVPPI:- ",
-                           "Population size: ", .evppi_population_, "; ",
-                           "Time horizon: ", .time_horion_, " year(s); ",
-                           "Discount rate: ", .discount_rate_ * 100, "%.")
+    table_caption = paste0("Population EVPPI (", .units_, ") estimated for ",
+                           .evppi_population_, " individuals over ",
+                           .time_horion_, " year(s) at ", .discount_rate_ * 100,
+                           "% annual discount rate.")
   }
 
   # Prepare EVPI:----
   EVPI <- if(!is.null(.PSA_data[["EVPI"]])) {
     ## Get EVPI data from the PSA_data object:----
     dplyr::tibble(
-      'EVPI_values' = .PSA_data[["EVPI"]] * discounted_population,
+      'EVPI_values' = .PSA_data[["EVPI"]],
       ## put WTP in a column next to EVPI:----
       'WTP_values' = .PSA_data[["WTPs"]]) %>%
       ## filter and keep values corresponding to ones the in .MAICER_ vector:----
@@ -160,18 +161,22 @@ compute_EVPPIs_ <- function(.PSA_data,
 
   if(!is.null(pop_evppi)) {
     return(
-      list('Population EVPPI' = pop_evppi,
-           'Caption' = table_caption))
+      list('Individual EVPPI' = pop_evppi,
+           'Table caption' = table_caption,
+           'Plot caption' = plot_caption))
   } else {
     return(
       list('Population EVPPI' = ind_evppi,
-           'Caption' = table_caption))
+           'Table caption' = table_caption,
+           'Plot caption' = plot_caption))
   }
 }
 
 # The functions below were defined by Mark Strong, Penny Breeze, Chloe Thomas
 # and Alan Brennan, the authors of SAVI - Sheffield Accelerated Value of
 # Information. See [here](https://github.com/Sheffield-Accelerated-VoI/SAVI)!
+
+# GAM functions:----
 
 # Calculating Incremental Net Benefits (INB)
 #
@@ -199,12 +204,12 @@ createInb <- function(costs.int, effects.int, lambda) {
 # @param NB Data structure containing Net Benefit (NB).
 # @param sets Column containing PSA samples of the parameter of interest.
 # @param s Number of simulations for the Monte Carlo computation of the SE.
-# @param session Shiny session.
+# @param .session Shiny session.
 #
 # @return
 #
 # @examples
-gamFunc <- function(.params, NB, sets, s = 1000, session = NULL) {
+gamFunc <- function(.params, NB, sets, s = 1000, .session = NULL) {
 
   if(!is.null(dim(NB))) {
     NB <- NB - NB[, 1]
@@ -248,7 +253,7 @@ gamFunc <- function(.params, NB, sets, s = 1000, session = NULL) {
   regression.model <- formulaGenerator(colnames(input.parameters)[sets])
 
 
-  if(!is.null(session)) {
+  if(!is.null(.session)) {
     progress <- shiny::Progress$new(session, min=1, max=D-1)
     on.exit(progress$close())
     progress$set(message = 'Calculating conditional expected net benefits',
@@ -257,7 +262,7 @@ gamFunc <- function(.params, NB, sets, s = 1000, session = NULL) {
 
   for (d in 2:D) {
 
-    if(!is.null(session)) {
+    if(!is.null(.session)) {
       progress$set(value = d - 1)
     }
 
@@ -365,7 +370,7 @@ applyCalcSingleParamGam <- function(.params, nb, session = NULL) {
 
   numVar <- NCOL(.params)
 
-  if(!is.null(session)) {
+  if(!is.null(.session)) {
     progress <- shiny::Progress$new(session, min=1, max=sum(numVar))
     on.exit(progress$close())
     progress$set(message = 'Calculation in progress',
@@ -375,7 +380,7 @@ applyCalcSingleParamGam <- function(.params, nb, session = NULL) {
   res <- matrix(ncol = 2, nrow = NCOL(.params))
 
   for (i in 1:NCOL(.params)) {
-    if(!is.null(session)) {
+    if(!is.null(.session)) {
       progress$set(i)
     }
 
@@ -386,4 +391,285 @@ applyCalcSingleParamGam <- function(.params, nb, session = NULL) {
   }
 
   return(res)
+}
+
+# Functions to calculate the GP:----
+## Bug fix 25th Jan 2019
+
+# Inverse gamma distribution density function
+#
+# @param x
+# @param alpha
+# @param beta
+#
+# @return
+#
+# @examples
+dinvgamma <- function(x, alpha, beta) {
+  (beta ^ alpha) / gamma(alpha) * x ^ (-alpha - 1) * exp(-beta / x)
+}
+
+# Gaussian Correlation function?
+#
+# @param X
+# @param phi
+# @param m
+#
+# @return
+#
+# @examples
+cor.Gaussian <- function(X, phi, m) { #  needs sorting...... probably with dist()
+  txbuild1 <- function(h) exp(-rowSums(t((t(X) - h) / phi) ^ 2))
+  apply(as.matrix(as.matrix(X)[1:m, ]), 1, txbuild1)
+}
+
+# Make a matrix with the Gaussian correlation function
+#
+# @param X
+# @param phi
+#
+# @return
+#
+# @examples
+makeA.Gaussian <- function(X, phi) {
+  n <- NROW(X)
+  if(length(phi) > 1) {
+    b <- diag(phi ^ (-2))
+  } else {
+    b <- phi ^ (-2) }
+  R <- X %*% as.matrix(b) %*% t(X)
+
+  S <- matrix(diag(R), nrow = n, ncol = n)
+  exp(2 * R - S - t(S))
+}
+
+# Calculate posterior density
+#
+# @param hyperparams
+# @param NB
+# @param input.m
+#
+# @return
+#
+# @examples
+post.density <- function(hyperparams, NB, input.m) {
+
+  input.m <- as.matrix(input.m, drop = FALSE)
+
+  N <- nrow(input.m)
+  p <- NCOL(input.m)
+  H <- cbind(1, input.m)
+  q <- ncol(H)
+
+  a.sigma <- 0.001; b.sigma <- 0.001  ##  hyperparameters for IG prior for sigma^2
+  a.nu <- 0.001; b.nu <- 1            ##  hyperparameters for IG prior for nu
+  delta <- exp(hyperparams)[1:p]
+  nu <- exp(hyperparams)[p + 1]
+
+  A <- makeA.Gaussian(input.m, delta)
+  Astar <- A + nu * diag(N)
+  T <- chol(Astar)
+  y <- backsolve(t(T), NB, upper.tri = FALSE)
+  x <- backsolve(t(T), H, upper.tri = FALSE)
+  tHAstarinvH <- t(x) %*% (x) + 1e-7* diag(q)
+  betahat <- solve(tHAstarinvH) %*% t(x) %*% y
+  residSS <- y %*% y -t(y) %*% x %*% betahat - t(betahat) %*% t(x) %*% y +
+    t(betahat) %*% tHAstarinvH %*% betahat
+  prior <- prod(dnorm(log(delta), 0, sqrt(1e5))) * dinvgamma(nu, a.nu, b.nu)
+  l <- -sum(log(diag(T))) - 1 / 2 * log(det(tHAstarinvH)) -
+    (N - q + 2 * a.sigma) / 2 * log(residSS / 2 + b.sigma) + log(prior)
+
+  return(l)
+}
+
+# Estimate Hyper-parameters
+#
+# @param NB
+# @param inputs
+# @param .session Shiny app session.
+#
+# @return
+#
+# @examples
+estimate.hyperparameters <- function(NB, inputs, .session = NULL) {
+
+  p <- NCOL(inputs)
+  D <- ncol(NB)
+
+  hyperparameters <- vector("list", D)
+  hyperparameters[[1]] <- NA
+
+  if(!is.null(.session)){
+    progress1 <- shiny::Progress$new(session, min=1, max=D)
+    on.exit(progress1$close())
+    progress1$set(message = 'Estimating GP hyperparameters',
+                  detail = 'Please wait...')
+    progress1$set(value = 1)
+  }
+
+  for(d in 2:D) {
+    if(!is.null(.session)) {
+      progress1$set(value = d)
+    }
+
+    initial.values <- rep(0, p + 1)
+    repeat {
+      print(paste("calling optim function for net benefit", d))
+      log.hyperparameters <- optim(initial.values, fn=post.density,
+                                   NB=NB[, d], input.m=inputs,
+                                   method="Nelder-Mead",
+                                   control=list(fnscale=-1, maxit=10000, trace=0))$par
+      if (sum(abs(initial.values - log.hyperparameters)) < 0.05) {
+        hyperparameters[[d]] <- exp(log.hyperparameters)
+        break
+      }
+      initial.values <- log.hyperparameters
+    }
+  }
+
+  return(hyperparameters)
+
+}
+
+# calculate the GP
+#
+# @param .params
+# @param NB
+# @param sets
+# @param s
+# @param .session Shiny app session.
+#
+# @return
+#
+# @examples
+gpFunc <- function(.params, NB, sets, s=1000, .session = NULL) {
+
+  input.parameters <- .params
+  paramSet <- cbind(input.parameters[, sets])
+  constantParams <- (apply(paramSet, 2, var) == 0)
+
+  #remove constants
+  if (sum(constantParams) == length(sets)) return(list(EVPI=0, SE=0)) # if all regressors are constant
+  if (sum(constantParams) > 0) sets <- sets[-which(constantParams)] # remove constants
+
+  # check for linear dependence and remove
+  paramSet <- cbind(cbind(input.parameters)[, sets]) # now with constants removed
+  rankifremoved <- sapply(1:NCOL(paramSet), function (x) qr(paramSet[, -x])$rank)
+  while(length(unique(rankifremoved)) > 1) {
+    linearCombs <- which(rankifremoved == max(rankifremoved))
+    # print(linearCombs)
+    print(paste("Linear dependence: removing column", colnames(paramSet)[max(linearCombs)]))
+    paramSet <- cbind(paramSet[, -max(linearCombs)])
+    sets <- sets[-max(linearCombs)]
+    rankifremoved <- sapply(1:NCOL(paramSet), function(x) qr(paramSet[, -x])$rank)
+  }
+  if(qr(paramSet)$rank == rankifremoved[1]) {
+    paramSet <- cbind(paramSet[, -1]) # special case only lincomb left
+    sets <- sets[-1]
+    print(paste("Linear dependence: removing column", colnames(paramSet)[1]))
+  }
+
+  inputs.of.interest <- sets
+  p <- length(inputs.of.interest)
+
+  if(!is.null(dim(NB))) {
+    NB <- NB - NB[, 1]
+  } else {
+    NB <- cbind(0, NB)
+  }
+
+  maxSample <- min(7500, nrow(NB)) # to avoid trying to invert huge matrix
+  NB <- as.matrix(NB[1:maxSample, ])
+  D <- ncol(NB)
+
+  input.matrix <- as.matrix(input.parameters[1:maxSample, inputs.of.interest, drop=FALSE])
+  colmin <- apply(input.matrix, 2, min)
+  colmax <- apply(input.matrix, 2, max)
+  colrange <- colmax - colmin
+  input.matrix <- sweep(input.matrix, 2, colmin, "-")
+  input.matrix <- sweep(input.matrix, 2, colrange, "/")
+  N <- nrow(input.matrix)
+  p <- ncol(input.matrix)
+  H <- cbind(1, input.matrix)
+  q <- ncol(H)
+
+  m <- min(30 * p, 250)
+  m <- min(nrow(NB), m)
+  setForHyperparamEst <- 1:m # sample(1:N, m, replace=FALSE)
+  hyperparameters <- estimate.hyperparameters(NB[setForHyperparamEst, ],
+                                              input.matrix[setForHyperparamEst, ],
+                                              .session = .session)
+
+  V <- g.hat <- vector("list", D)
+  g.hat[[1]] <- rep(0, N)
+
+
+  if(!is.null(.session)) {
+    progress1 <- shiny::Progress$new(.session, min=1, max=D)
+    on.exit(progress1$close())
+    progress1$set(message = 'Calculating conditional expected net benefits',
+                  detail = 'Please wait...')
+    progress1$set(value = 1)
+  }
+
+  for(d in 2:D)
+  {
+    if(!is.null(.session)) {
+      progress1$set(value = d)
+    }
+    print(paste("estimating g.hat for incremental NB for option", d, "versus 1"))
+    delta.hat <- hyperparameters[[d]][1:p]
+    nu.hat <- hyperparameters[[d]][p+1]
+    A <- makeA.Gaussian(input.matrix, delta.hat)
+    Astar <- A + nu.hat * diag(N)
+    Astarinv <- chol2inv(chol(Astar))
+    rm(Astar); gc()
+    AstarinvY <- Astarinv %*% NB[, d]
+    tHAstarinv <- t(H) %*% Astarinv
+    tHAHinv <- solve(tHAstarinv %*% H + 1e-7* diag(q))
+    betahat <- tHAHinv %*% (tHAstarinv %*% NB[, d])
+    Hbetahat <- H %*% betahat
+    resid <- NB[, d] - Hbetahat
+    g.hat[[d]] <- Hbetahat+A %*% (Astarinv %*% resid)
+    AAstarinvH <- A %*% t(tHAstarinv)
+    sigmasqhat <- as.numeric(t(resid) %*% Astarinv %*% resid)/(N - q - 2)
+    V[[d]] <- sigmasqhat*(nu.hat * diag(N) - nu.hat ^ 2 * Astarinv +
+                            (H - AAstarinvH) %*% (tHAHinv %*% t(H - AAstarinvH)))
+    rm(A, Astarinv, AstarinvY, tHAstarinv, tHAHinv, betahat, Hbetahat, resid, sigmasqhat);gc()
+  }
+
+  perfect.info <- mean(do.call(pmax, g.hat))
+  baseline <- max(unlist(lapply(g.hat, mean)))
+
+  partial.evpi <- perfect.info - baseline
+
+  print("Computing standard error via Monte Carlo")
+  tilde.g <- vector("list", D)
+  tilde.g[[1]] <- matrix(0, nrow=s, ncol=min(N, 1000))   # bug fix 25.1.19
+
+  if(!is.null(.session)) {
+    progress2 <- shiny::Progress$new(session, min=1, max=D)
+    on.exit(progress2$close())
+    progress2$set(message = 'Calculating Standard Error',
+                  detail = 'Please wait...')
+    progress2$set(value = 1)
+  }
+
+  for(d in 2:D) {
+    progress2$set(value = d)
+    tilde.g[[d]] <- mvrnorm(s, g.hat[[d]][1:(min(N, 1000))], V[[d]][1:(min(N, 1000)), 1:(min(N, 1000))])
+  }
+  if(!is.null(.session)) {
+    progress2$close()
+  }
+
+  sampled.perfect.info <- rowMeans(do.call(pmax, tilde.g))
+  sampled.baseline <- do.call(pmax, lapply(tilde.g, rowMeans))
+  rm(tilde.g);gc()
+
+  sampled.partial.evpi <- sampled.perfect.info - sampled.baseline
+  SE <- sd(sampled.partial.evpi)
+  rm(V, g.hat);gc()
+
+  return(list(EVPI=partial.evpi, SE=SE))
 }

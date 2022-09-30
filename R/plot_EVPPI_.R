@@ -9,11 +9,12 @@
 
 #' Plot the Expected Value of Perfect Partial Information (EVPPI) results.
 #'
-#' @param EVPPI_res
-#' @param .show_percent
-#' @param .min_percent
-#' @param .max_params
-#' @param .params_num
+#' @param EVPPI_res A list containing EVPPI results.
+#' @param .show_percent Bolean for whether to show the percentage of overall
+#' EVPI on the bars.
+#' @param .min_percent Only parameters with percentage of overall EVPI equal to
+#' or higher than .min_percent will make it to the plot.
+#' @param .params_num The number of parameters to show in the bar plot.
 #'
 #' @return An Object of class ggplot2.
 #' @export
@@ -41,7 +42,7 @@
 #'   .min_percent = NULL)
 #' }
 plot_EVPPI_ <- function(EVPPI_res, .show_percent = TRUE, .min_percent = 1,
-                        .max_params = NULL, .params_num = NULL) {
+                        .params_num = NULL) {
   # Prepare plot data:----
   EVPPI_data <- EVPPI_res[[1]] %>%
     ## subset data columns:----
@@ -56,14 +57,6 @@ plot_EVPPI_ <- function(EVPPI_res, .show_percent = TRUE, .min_percent = 1,
     dplyr::rename("Percent overall EVPI" = "Indexed to Overall EVPI (%)") %>%
     ## sort EVPPI values in descending order:----
     dplyr::arrange(dplyr::desc(`Per Person EVPPI`)) %>%
-    ## if too many parameters exist, keep set number:----
-    {if(is.null(.max_params)) {
-      .
-    } else {
-      if(is.numeric(.max_params)) {
-        dplyr::slice_head(.data = ., n = .max_params)
-      } else {
-        .}}} %>%
     ## if a subset of EVPPI is requested:----
     {if(is.null(.params_num)) {
       .
@@ -115,7 +108,7 @@ plot_EVPPI_ <- function(EVPPI_res, .show_percent = TRUE, .min_percent = 1,
       # panel.border = element_blank()) +
     ggplot2::labs(
       title = "Per Person EVPPI",
-      caption = colnames(EVPPI_res[[1]])[2],
+      caption = EVPPI_res[['Plot caption']],
       x = "EVPPI (\u00A3)",
       y = "Parameters")
 
@@ -134,5 +127,3 @@ plot_EVPPI_ <- function(EVPPI_res, .show_percent = TRUE, .min_percent = 1,
   return(p)
 
 }
-
-# plot_EVPPI_(pEVPI = evppi, .params = ShinyPSA::Brennan_50K_PSA$p)

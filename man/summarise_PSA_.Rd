@@ -63,15 +63,10 @@ Summarise PSA outputs and report results
 library(ShinyPSA)
 
 PSA_summary = summarise_PSA_(
-  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-  .interventions = ShinyPSA::Vaccine_PSA$treats,
-  .plot = TRUE)
-
-PSA_summary2 = summarise_PSA_(
-  .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
-  .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
-  .interventions = ShinyPSA::Smoking_PSA$treats,
+  .effs = ShinyPSA::Brennan_1K_PSA$e,
+  .costs = ShinyPSA::Brennan_1K_PSA$c,
+  .params = ShinyPSA::Brennan_1K_PSA$p,
+  .interventions = ShinyPSA::Brennan_1K_PSA$treats,
   .plot = TRUE)
 }
 }
