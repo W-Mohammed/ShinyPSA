@@ -9,11 +9,14 @@ compute_EVPPIs_(
   .effs = NULL,
   .costs = NULL,
   .params = NULL,
+  .set = NULL,
+  .set_names = NULL,
+  .subset_ = FALSE,
   .MAICER_ = 30000,
   .units_ = "£",
   .individual_evppi_ = TRUE,
-  .evppi_population_ = NULL,
   .discount_rate_ = 0.035,
+  .evppi_population_ = NULL,
   .time_horion_ = NULL,
   .session = NULL
 )
@@ -33,6 +36,13 @@ results.}
 \item{.params}{A matrix containing parameters' configurations used in
 the PSA.}
 
+\item{.set}{A vector of parameters' names for conditional EVPPI.}
+
+\item{.set_names}{A vector of parameter-names to be used for EVPPI.}
+
+\item{.subset_}{Boolean for whether to estimate conditional EVPPI for a
+subset of parameters.}
+
 \item{.MAICER_}{The Maximum acceptable incremental cost-effectiveness ratio.
 (MAICER) to be considered in the summary table. Default value is
 \code{30,000}.}
@@ -44,11 +54,11 @@ monitory values in the summary table. Default is sterling pounds
 \item{.individual_evppi_}{Logical (default \code{TRUE}) to return per person
 EVPPI, otherwise population EVPPI will be reported.}
 
-\item{.evppi_population_}{The size of the population that is annually
-affected by the competing health technologies under evaluation.}
-
 \item{.discount_rate_}{The discount rate used to discount future affected
 populations.}
+
+\item{.evppi_population_}{The size of the population that is annually
+affected by the competing health technologies under evaluation.}
 
 \item{.time_horion_}{The time expected to pass (in years) before the
 interventions under consideration change (how long before the decision
@@ -66,23 +76,5 @@ Compute the Expected Value of Perfect Partial Information (EVPPI).
 \dontrun{
 library(ShinyPSA)
 
-# Summarise PSA results:
-PSA_summary = summarise_PSA_(
-  .effs = ShinyPSA::Brennan_1K_PSA$e,
-  .costs = ShinyPSA::Brennan_1K_PSA$c,
-  .params = ShinyPSA::Brennan_1K_PSA$p,
-  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
-
-# Estimate EVPPI:
-EVPPI_ind_res <- compute_EVPPIs_(
-    .PSA_data = PSA_summary,
-    .MAICER_ = 30000)
-
-EVPPI_pop_res <- compute_EVPPIs_(
-    .PSA_data = PSA_summary,
-    .MAICER_ = 20000,
-    .individual_evppi_ = FALSE,
-    .evppi_population_ = 1000,
-    .time_horion_ = 5)
 }
 }

@@ -19,6 +19,10 @@
 #' \code{rows} is equal to the number of PSA simulations to be summarised.
 #' @param .params A matrix containing parameters' configurations used in
 #' the PSA.
+#' @param .set A vector of parameters' names for conditional EVPPI.
+#' @param .set_names A vector of parameter-names to be used for EVPPI.
+#' @param .subset_ Boolean for whether to estimate conditional EVPPI for a
+#' subset of parameters.
 #' @param .MAICER_ The Maximum acceptable incremental cost-effectiveness ratio.
 #' (MAICER) to be considered in the summary table. Default value is
 #' \code{30,000}.
@@ -27,10 +31,10 @@
 #' (GBP) \code{"\u00A3"}.
 #' @param .individual_evppi_ Logical (default \code{TRUE}) to return per person
 #' EVPPI, otherwise population EVPPI will be reported.
-#' @param .evppi_population_ The size of the population that is annually
-#' affected by the competing health technologies under evaluation.
 #' @param .discount_rate_ The discount rate used to discount future affected
 #' populations.
+#' @param .evppi_population_ The size of the population that is annually
+#' affected by the competing health technologies under evaluation.
 #' @param .time_horion_ The time expected to pass (in years) before the
 #' interventions under consideration change (how long before the decision
 #' under consideration become obsolete or requires updating).
@@ -43,36 +47,62 @@
 #' \dontrun{
 #' library(ShinyPSA)
 #'
-#' # Summarise PSA results:
-#' PSA_summary = summarise_PSA_(
-#'   .effs = ShinyPSA::Brennan_1K_PSA$e,
-#'   .costs = ShinyPSA::Brennan_1K_PSA$c,
-#'   .params = ShinyPSA::Brennan_1K_PSA$p,
-#'   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
-#'
-#' # Estimate EVPPI:
-#' EVPPI_ind_res <- compute_EVPPIs_(
-#'     .PSA_data = PSA_summary,
-#'     .MAICER_ = 30000)
-#'
-#' EVPPI_pop_res <- compute_EVPPIs_(
-#'     .PSA_data = PSA_summary,
-#'     .MAICER_ = 20000,
-#'     .individual_evppi_ = FALSE,
-#'     .evppi_population_ = 1000,
-#'     .time_horion_ = 5)
+# # Summarise PSA results:
+# PSA_summary = summarise_PSA_(
+#   .effs = ShinyPSA::Brennan_1K_PSA$e,
+#   .costs = ShinyPSA::Brennan_1K_PSA$c,
+#   .params = ShinyPSA::Brennan_1K_PSA$p,
+#   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
+#
+# # Estimate EVPPI:
+# EVPPI_ind_res <- compute_EVPPIs_(
+#     .PSA_data = PSA_summary,
+#     .MAICER_ = 30000)
+#
+# EVPPI_pop_res <- compute_EVPPIs_(
+#     .PSA_data = PSA_summary,
+#     .MAICER_ = 20000,
+#     .individual_evppi_ = FALSE,
+#     .evppi_population_ = 1000,
+#     .time_horion_ = 5)
+#
+# # Estimate Conditional EVPPI:
+# cEVPPI_ind_res <- compute_EVPPIs_(
+#     .PSA_data = PSA_summary,
+#     .set = c(6, 14, 15, 16),
+#     .subset_ = TRUE,
+#     .MAICER_ = 30000)
+#
+# cEVPPI_pop_res <- compute_EVPPIs_(
+#     .PSA_data = PSA_summary,
+#     .set_names = c("theta6", "theta14", "theta15", "theta16"),
+#     .subset_ = TRUE,
+#     .MAICER_ = 20000,
+#     .individual_evppi_ = FALSE,
+#     .evppi_population_ = 1000,
+#     .time_horion_ = 5)
 #' }
 compute_EVPPIs_ <- function(.PSA_data, .effs = NULL, .costs = NULL,
-                            .params = NULL, .MAICER_ = 30000,
-                            .units_ = "\u00A3", .individual_evppi_ = TRUE,
-                            .evppi_population_ = NULL, .discount_rate_ = 0.035,
-                            .time_horion_ = NULL, .session = NULL) {
+                            .params = NULL, .set = NULL, .set_names = NULL,
+                            .subset_ = FALSE, .MAICER_ = 30000, .units_ = "\u00A3",
+                            .individual_evppi_ = TRUE, .discount_rate_ = 0.035,
+                            .evppi_population_ = NULL, .time_horion_ = NULL,
+                            .session = NULL) {
 
   # Sanity checks:----
   if(is.null(.effs) | is.null(.costs) | is.null(.params)) {
     .effs = .PSA_data$e
     .costs = .PSA_data$c
     .params = .PSA_data$p
+  }
+  if(is.null(.set) & is.null(.set_names)) {
+    .subset_ <- FALSE
+  }
+  if(!is.null(.set) & is.null(.set_names)) {
+    .set_names <- colnames(.params)[.set]
+  }
+  if(is.null(.set) & !is.null(.set_names)) {
+    .set <- which(colnames(.params) %in% .set_names)
   }
 
   # Estimate individual EVPPI:----
@@ -81,11 +111,25 @@ compute_EVPPIs_ <- function(.PSA_data, .effs = NULL, .costs = NULL,
     costs.int = .costs,
     effects.int = .effs,
     lambda = .MAICER_)
-
-  EVPPI <- applyCalcSingleParamGam( # Strong et al. function
-    .params = .PSA_data$p,
-    nb = inb,
-    .session = .session)
+  ## Calculate per parameter or conditional EVPPI:----
+  EVPPI <- if(!isTRUE(.subset_)) {
+    applyCalcSingleParamGam( # Strong et al. function
+      .params = .PSA_data$p,
+      nb = inb,
+      .session = .session)
+  } else {
+    t(
+      as.matrix(
+        unlist(
+          calSubsetEvpi( # Strong et al. function
+            .nb = inb,
+            .effs = .effs,
+            .costs = .costs,
+            .params = .params,
+            sets = .set,
+            .sets_names = .set_names,
+            lambda = .MAICER_,
+            .session = .session))))}
 
   # Estimate population EVPPI if user provided necessary data:----
   discounted_population <- 1
@@ -94,8 +138,8 @@ compute_EVPPIs_ <- function(.PSA_data, .effs = NULL, .costs = NULL,
     scales::dollar(
       x = .MAICER_,
       prefix = .units_),
-    " MAICER.\n",
-    "Percentage values represent EVPPI values indexed to overall EVPI.")
+    " MAICER.
+    Percentage values represent EVPPI values indexed to overall EVPI.")
 
   if(!.individual_evppi_) {
     if(is.null(.evppi_population_) | is.null(.time_horion_)) {
@@ -139,8 +183,10 @@ compute_EVPPIs_ <- function(.PSA_data, .effs = NULL, .costs = NULL,
                        x = .MAICER_,
                        prefix = .units_))
   ind_evppi <- dplyr::tibble(
-    "Parameters" =
-      colnames(.PSA_data$p),
+    "Parameters" = if(isTRUE(.subset_)) {
+      paste(.set_names, collapse = " + ")
+    } else {
+      colnames(.PSA_data$p)},
     {{tmp_name}} :=
       round(EVPPI[, 1], 2),
     "Standard Error" =
@@ -155,18 +201,18 @@ compute_EVPPIs_ <- function(.PSA_data, .effs = NULL, .costs = NULL,
     pop_evppi <- ind_evppi %>%
       dplyr::mutate(
         {{tmp_name}} :=
-          signif(EVPPI[, 1] * discounted_population, 4)
-      )
+          signif(EVPPI[, 1] * discounted_population, 4))
   }
 
+  # Prepare results list:----
   if(!is.null(pop_evppi)) {
     return(
-      list('Individual EVPPI' = pop_evppi,
+      list('Population EVPPI' = pop_evppi,
            'Table caption' = table_caption,
            'Plot caption' = plot_caption))
   } else {
     return(
-      list('Population EVPPI' = ind_evppi,
+      list('Individual EVPPI' = ind_evppi,
            'Table caption' = table_caption,
            'Plot caption' = plot_caption))
   }
@@ -182,7 +228,7 @@ compute_EVPPIs_ <- function(.PSA_data, .effs = NULL, .costs = NULL,
 #
 # @param costs.int Costs data structure.
 # @param effects.int Effects data structure.
-# @param lambda Maximum Willingness-to-Pay.
+# @param lambda Maximum Acceptable Incremental Cost-Effectiveness Ratio (MAICER).
 #
 # @return
 #
@@ -362,9 +408,9 @@ formulaGenerator_s <- function(namesList) {
 #
 # @examples
 # \dontrun{
-# pEVPI <- applyCalcSingleParamGam(.params, inb, session)
+# pEVPI <- applyCalcSingleParamGam(.params, inb, .session)
 # }
-applyCalcSingleParamGam <- function(.params, nb, session = NULL) {
+applyCalcSingleParamGam <- function(.params, nb, .session = NULL) {
 
   .params <- as.matrix(.params)
 
@@ -385,7 +431,7 @@ applyCalcSingleParamGam <- function(.params, nb, session = NULL) {
     }
 
     result <- gamFunc(NB = nb, sets = i, s = 1000, .params = .params,
-                      session = session)
+                      .session = .session)
 
     res[i, ] <- unlist(result)
   }
@@ -446,7 +492,7 @@ makeA.Gaussian <- function(X, phi) {
 # Calculate posterior density
 #
 # @param hyperparams
-# @param NB
+# @param NB Net Benefits (NB) matrix.
 # @param input.m
 #
 # @return
@@ -484,7 +530,7 @@ post.density <- function(hyperparams, NB, input.m) {
 
 # Estimate Hyper-parameters
 #
-# @param NB
+# @param NB Net Benefits (NB) matrix.
 # @param inputs
 # @param .session Shiny app session.
 #
@@ -533,16 +579,16 @@ estimate.hyperparameters <- function(NB, inputs, .session = NULL) {
 
 # calculate the GP
 #
-# @param .params
-# @param NB
-# @param sets
-# @param s
+# @param .params Parameters matrix.
+# @param NB Net Benefits (NB) matrix.
+# @param sets A vector of parameter-indexes
+# @param s Number of simulations for the Monte Carlo computation of the SE.
 # @param .session Shiny app session.
 #
 # @return
 #
 # @examples
-gpFunc <- function(.params, NB, sets, s=1000, .session = NULL) {
+gpFunc <- function(.params, NB, sets, s = 1000, .session = NULL) {
 
   input.parameters <- .params
   paramSet <- cbind(input.parameters[, sets])
@@ -672,4 +718,50 @@ gpFunc <- function(.params, NB, sets, s=1000, .session = NULL) {
   rm(V, g.hat);gc()
 
   return(list(EVPI=partial.evpi, SE=SE))
+}
+
+# Calculate Parameters' Subset EVPPI
+#
+# @param .nb Net Benefits (NB) matrix.
+# @param .effs A matrix containing the \code{effects} from PSA. Number of
+# \code{columns} is equal to the interventions while the number of
+# \code{rows} is equal to the number of PSA simulations to be summarised.
+# @param .costs A matrix containing the \code{costs} from PSA. Number of
+# \code{columns} is equal to the interventions while the number of
+# \code{rows} is equal to the number of PSA simulations to be summarised.
+# @param .params A matrix containing parameters' configurations used in
+# the PSA.
+# @param sets A vector of parameter-indexes to be used for EVPPI.
+# @param .sets_names A vector of parameter-names to be used for EVPPI.
+# @param lambda Maximum Acceptable Incremental Cost-Effectiveness Ratio (MAICER).
+# @param .session Shiny app session.
+#
+# @return
+#
+# @examples
+calSubsetEvpi <- function(.nb, .effs, .costs, .params, sets, .sets_names = NULL,
+                          lambda, .session = NULL) {
+  # grab parameter-indexes from the parameters dataset:
+  if(is.null(sets)) {
+   sets <- which(colnames(.params) %in% .sets_names)
+  }
+
+  numParams <- length(sets) # number of parameters in the set
+  regressionFunction <- ifelse(numParams > 4, "gpFunc", "gamFunc") # change gp to ppr
+  f <- formulaGenerator(sets)
+
+  # calculate incremental net benefit (INB):
+  inb <- if(is.null(.nb)) {
+    createInb( # Strong et al. function
+      costs.int = .costs,
+      effects.int = .effs,
+      lambda = lambda)
+  } else {
+    .nb
+  }
+
+  # estimate conditional EVPPI:
+  output <- get(regressionFunction)(.params, inb, sets, s = 1000, .session)
+
+  return(output)
 }
