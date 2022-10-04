@@ -17,6 +17,9 @@
 #' @param .costs A matrix containing the \code{costs} from PSA. Number of
 #' \code{columns} is equal to the interventions while the number of
 #' \code{rows} is equal to the number of PSA simulations to be summarised.
+#' @param .EVPI A data table containing EVPI data.
+#' @param .WTPs A vector containing the Willingness-to-pay values over which
+#' EVPI values were estimated.
 #' @param .params A matrix containing parameters' configurations used in
 #' the PSA.
 #' @param .set A vector of parameters' names for conditional EVPPI.
@@ -47,54 +50,70 @@
 #' \dontrun{
 #' library(ShinyPSA)
 #'
-# # Summarise PSA results:
-# PSA_summary = summarise_PSA_(
-#   .effs = ShinyPSA::Brennan_1K_PSA$e,
-#   .costs = ShinyPSA::Brennan_1K_PSA$c,
-#   .params = ShinyPSA::Brennan_1K_PSA$p,
-#   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
-#
-# # Estimate EVPPI:
-# EVPPI_ind_res <- compute_EVPPIs_(
-#     .PSA_data = PSA_summary,
-#     .MAICER_ = 30000)
-#
-# EVPPI_pop_res <- compute_EVPPIs_(
-#     .PSA_data = PSA_summary,
-#     .MAICER_ = 20000,
-#     .individual_evppi_ = FALSE,
-#     .evppi_population_ = 1000,
-#     .time_horion_ = 5)
-#
-# # Estimate Conditional EVPPI:
-# cEVPPI_ind_res <- compute_EVPPIs_(
-#     .PSA_data = PSA_summary,
-#     .set = c(6, 14, 15, 16),
-#     .subset_ = TRUE,
-#     .MAICER_ = 30000)
-#
-# cEVPPI_pop_res <- compute_EVPPIs_(
-#     .PSA_data = PSA_summary,
-#     .set_names = c("theta6", "theta14", "theta15", "theta16"),
-#     .subset_ = TRUE,
-#     .MAICER_ = 20000,
-#     .individual_evppi_ = FALSE,
-#     .evppi_population_ = 1000,
-#     .time_horion_ = 5)
+#' # Summarise PSA results:
+#' PSA_summary = summarise_PSA_(
+#'   .effs = ShinyPSA::Brennan_1K_PSA$e,
+#'   .costs = ShinyPSA::Brennan_1K_PSA$c,
+#'   .params = ShinyPSA::Brennan_1K_PSA$p,
+#'   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
+#'
+#' # Estimate EVPPI:
+#' EVPPI_ind_res <- compute_EVPPIs_(
+#'     .PSA_data = PSA_summary,
+#'     .MAICER_ = 30000)
+#'
+#' EVPPI_pop_res <- compute_EVPPIs_(
+#'     .PSA_data = PSA_summary,
+#'     .MAICER_ = 20000,
+#'     .individual_evppi_ = FALSE,
+#'     .evppi_population_ = 1000,
+#'     .time_horion_ = 5)
+#'
+#' # Estimate Conditional EVPPI:
+#' cEVPPI_ind_res <- compute_EVPPIs_(
+#'     .PSA_data = PSA_summary,
+#'     .set = c(6, 14, 15, 16),
+#'     .subset_ = TRUE,
+#'     .MAICER_ = 30000)
+#'
+#' cEVPPI_pop_res <- compute_EVPPIs_(
+#'     .PSA_data = PSA_summary,
+#'     .set_names = c("theta6", "theta14", "theta15", "theta16"),
+#'     .subset_ = TRUE,
+#'     .MAICER_ = 20000,
+#'     .individual_evppi_ = FALSE,
+#'     .evppi_population_ = 1000,
+#'     .time_horion_ = 5)
 #' }
 compute_EVPPIs_ <- function(.PSA_data, .effs = NULL, .costs = NULL,
-                            .params = NULL, .set = NULL, .set_names = NULL,
-                            .subset_ = FALSE, .MAICER_ = 30000, .units_ = "\u00A3",
+                            .EVPI = NULL, .WTPs = NULL, .params = NULL,
+                            .set = NULL, .set_names = NULL, .subset_ = FALSE,
+                            .MAICER_ = 30000, .units_ = "\u00A3",
                             .individual_evppi_ = TRUE, .discount_rate_ = 0.035,
                             .evppi_population_ = NULL, .time_horion_ = NULL,
                             .session = NULL) {
 
   # Sanity checks:----
+  stopifnot(
+    'Please pass necessary data for EVPPI estimation' =
+      !is.null(.PSA_data) |
+      !is.null(.effs) |
+      !is.null(.costs) |
+      !is.null(.params),
+    'Please pass necessary data for EVPI estimation' =
+      !is.null(.PSA_data) |
+      !is.null(.EVPI) |
+      !is.null(.WTPs)
+    )
   if(is.null(.effs) | is.null(.costs) | is.null(.params)) {
     .effs = .PSA_data$e
     .costs = .PSA_data$c
     .params = .PSA_data$p
   }
+  stopifnot(
+    'Unequal dimensions in .effs and .costs' =
+      dim(.effs) == dim(.costs)
+  )
   if(is.null(.set) & is.null(.set_names)) {
     .subset_ <- FALSE
   }
@@ -114,7 +133,7 @@ compute_EVPPIs_ <- function(.PSA_data, .effs = NULL, .costs = NULL,
   ## Calculate per parameter or conditional EVPPI:----
   EVPPI <- if(!isTRUE(.subset_)) {
     applyCalcSingleParamGam( # Strong et al. function
-      .params = .PSA_data$p,
+      .params = .params,
       nb = inb,
       .session = .session)
   } else {
@@ -166,9 +185,18 @@ compute_EVPPIs_ <- function(.PSA_data, .effs = NULL, .costs = NULL,
       ## put WTP in a column next to EVPI:----
       'WTP_values' = .PSA_data[["WTPs"]]) %>%
       ## filter and keep values corresponding to ones the in .MAICER_ vector:----
-    dplyr::filter(WTP_values %in% .MAICER_) %>%
+      dplyr::filter(WTP_values %in% .MAICER_) %>%
       ## rename WTP values to use as column names later:----
-    dplyr::pull(var = EVPI_values)
+      dplyr::pull(var = EVPI_values)
+  } else if(!is.null(.EVPI) & !is.null(.WTPs)) {
+    dplyr::tibble(
+      'EVPI_values' = .EVPI,
+      ## put WTP in a column next to EVPI:----
+      'WTP_values' = .WTPs) %>%
+      ## filter and keep values corresponding to ones the in .MAICER_ vector:----
+      dplyr::filter(WTP_values %in% .MAICER_) %>%
+      ## rename WTP values to use as column names later:----
+      dplyr::pull(var = EVPI_values)
   } else {
     ## Calculate EVPI from inputs if PSA_data object was not provided:----
     ShinyPSA::compute_EVPIs_(
@@ -186,7 +214,7 @@ compute_EVPPIs_ <- function(.PSA_data, .effs = NULL, .costs = NULL,
     "Parameters" = if(isTRUE(.subset_)) {
       paste(.set_names, collapse = " + ")
     } else {
-      colnames(.PSA_data$p)},
+      colnames(.params)},
     {{tmp_name}} :=
       round(EVPPI[, 1], 2),
     "Standard Error" =
@@ -335,7 +363,8 @@ gamFunc <- function(.params, NB, sets, s = 1000, .session = NULL) {
   print("computing standard error via Monte Carlo ...")
 
   for(d in 2:D) {
-    sampled.coef <- rockchalk::mvrnorm(s, beta.hat[[d]], V[[d]])
+    # sampled.coef <- rockchalk::mvrnorm(s, beta.hat[[d]], V[[d]])
+    sampled.coef <- MASS::mvrnorm(s, beta.hat[[d]], V[[d]])
     tilde.g[[d]] <- sampled.coef%*%t(Xstar[[d]])
   }
 
@@ -370,7 +399,8 @@ formulaGenerator <- function(namesList) {
   } else {
     form <- paste("te(", form, ")", sep = "")
   }
-  form
+
+  return(form)
 }
 
 # Generates the GAM model formulas from the list of parameter names
@@ -395,6 +425,7 @@ formulaGenerator_s <- function(namesList) {
     return(form)
   }
   form <- paste0("te(", form, ")")
+
   return(form)
 }
 
@@ -574,7 +605,6 @@ estimate.hyperparameters <- function(NB, inputs, .session = NULL) {
   }
 
   return(hyperparameters)
-
 }
 
 # calculate the GP
@@ -702,8 +732,12 @@ gpFunc <- function(.params, NB, sets, s = 1000, .session = NULL) {
   }
 
   for(d in 2:D) {
-    progress2$set(value = d)
-    tilde.g[[d]] <- mvrnorm(s, g.hat[[d]][1:(min(N, 1000))], V[[d]][1:(min(N, 1000)), 1:(min(N, 1000))])
+    if(!is.null(.session)) {
+      progress2$set(value = d)
+    }
+    tilde.g[[d]] <- MASS::mvrnorm(s,
+                                  g.hat[[d]][1:(min(N, 1000))],
+                                  V[[d]][1:(min(N, 1000)), 1:(min(N, 1000))])
   }
   if(!is.null(.session)) {
     progress2$close()

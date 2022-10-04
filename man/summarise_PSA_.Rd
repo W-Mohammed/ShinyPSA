@@ -14,6 +14,7 @@ summarise_PSA_(
   .wtp = NULL,
   .max_Kpoints = 100,
   .lambda = 30000,
+  .evppi = FALSE,
   .plot = FALSE
 )
 }
@@ -27,7 +28,8 @@ summarise_PSA_(
 \code{rows} is equal to the number of PSA simulations to be summarised.}
 
 \item{.params}{A matrix containing parameters' configurations used in
-the PSA.}
+the PSA. The Number of \code{rows} is equal to the number of PSA simulations
+to be summarised.}
 
 \item{.interventions}{A vector containing the names of all
 interventions. If not provided or less names than needed is provided,
@@ -50,6 +52,9 @@ willingness-to-pay (WTP) values to use in the analysis. If \code{NULL}
 
 \item{.lambda}{Maximum acceptable ICER, default is 30,000.}
 
+\item{.evppi}{A boolean, FALSE (default), for whether to estimate Expected
+Value of Partial Perfect Information (EVPPI).}
+
 \item{.plot}{A boolean, FALSE (default), for whether to generate plots.}
 }
 \value{
@@ -67,6 +72,7 @@ PSA_summary = summarise_PSA_(
   .costs = ShinyPSA::Brennan_1K_PSA$c,
   .params = ShinyPSA::Brennan_1K_PSA$p,
   .interventions = ShinyPSA::Brennan_1K_PSA$treats,
+  .evppi = TRUE,
   .plot = TRUE)
 }
 }

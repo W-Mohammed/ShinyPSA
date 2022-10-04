@@ -17,7 +17,8 @@
 #'  \code{columns} is equal to the interventions while the number of
 #'  \code{rows} is equal to the number of PSA simulations to be summarised.
 #' @param .params A matrix containing parameters' configurations used in
-#' the PSA.
+#' the PSA. The Number of \code{rows} is equal to the number of PSA simulations
+#' to be summarised.
 #' @param .interventions A vector containing the names of all
 #' interventions. If not provided or less names than needed is provided,
 #' the function will generate generic names, for example
@@ -33,6 +34,8 @@
 #' @param .max_Kpoints Maximum number of willingness-to-pay values (default
 #' 100) to use in the analysis.
 #' @param .lambda Maximum acceptable ICER, default is 30,000.
+#' @param .evppi A boolean, FALSE (default), for whether to estimate Expected
+#' Value of Partial Perfect Information (EVPPI).
 #' @param .plot A boolean, FALSE (default), for whether to generate plots.
 #'
 #' @return A list of class \code{psa} containing several objects.
@@ -47,11 +50,13 @@
 #'   .costs = ShinyPSA::Brennan_1K_PSA$c,
 #'   .params = ShinyPSA::Brennan_1K_PSA$p,
 #'   .interventions = ShinyPSA::Brennan_1K_PSA$treats,
+#'   .evppi = TRUE,
 #'   .plot = TRUE)
 #' }
 summarise_PSA_ <- function(.effs, .costs, .params, .interventions = NULL,
                            .ref = NULL, .Kmax = 100000, .wtp = NULL,
-                           .max_Kpoints = 100, .lambda = 30000, .plot = FALSE) {
+                           .max_Kpoints = 100, .lambda = 30000, .evppi = FALSE,
+                           .plot = FALSE) {
 
   # Stop if .effs & .costs have different dimensions:
   stopifnot('Unequal dimensions in .effs and .costs' =
@@ -191,6 +196,18 @@ summarise_PSA_ <- function(.effs, .costs, .params, .interventions = NULL,
 
   class(results) <- "psa"
 
+  # If requested, compute EVPPI:
+  if(.evppi) {
+    # Compute EVPPI:
+    EVPPI <- ShinyPSA::compute_EVPPIs_(
+      .PSA_data = results,
+      .MAICER_ = .lambda)
+
+    # Save EVPPI results table to the final results object:
+    results <- c(results,
+                 'EVPPI' = list(EVPPI))
+  }
+
   # If requested, develop and save plots and table:
   if(.plot == TRUE) {
     Summary_table <- ShinyPSA::draw_summary_table_(
@@ -213,6 +230,11 @@ summarise_PSA_ <- function(.effs, .costs, .params, .interventions = NULL,
     eNMB_plot <- ShinyPSA::plot_eNMB_(
       .PSA_data = results
     )
+    EVPPI_plot <- if(.evppi) {
+      ShinyPSA::plot_EVPPI_(
+        EVPPI_res = EVPPI
+      )
+    }
     stability_plots <- ShinyPSA::check_PSA_stability(
       .PSA_data = results
     )
@@ -225,6 +247,7 @@ summarise_PSA_ <- function(.effs, .costs, .params, .interventions = NULL,
                  'CEAF_plot' = list(CEAF_plot),
                  'EVPI_plot' = list(EVPI_plot),
                  'eNMB_plot' = list(eNMB_plot),
+                 'EVPPI_plot' = list(EVPPI_plot),
                  'Stability_plots' = list(stability_plots))
   }
 

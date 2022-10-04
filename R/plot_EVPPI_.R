@@ -108,7 +108,15 @@ plot_EVPPI_ <- function(EVPPI_res, .show_percent = TRUE, .min_percent = 1,
       # panel.border = element_blank()) +
     ggplot2::labs(
       title = "Per Person EVPPI",
-      caption = EVPPI_res[['Plot caption']],
+      caption = if(!is.null(.min_percent)) {
+        if(is.numeric(.min_percent)) {
+          paste0(EVPPI_res[['Plot caption']], "
+                 Parameters with EVPPI less than ", .min_percent,
+                 "% of overall EVPI are excluded from plot.")
+        }
+      } else {
+        EVPPI_res[['Plot caption']]
+      },
       x = "EVPPI (\u00A3)",
       y = "Parameters")
 

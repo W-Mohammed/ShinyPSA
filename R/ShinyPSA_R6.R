@@ -25,19 +25,22 @@ NULL
 #' \dontrun{
 #' library(ShinyPSA)
 #'
-#' PSA_summary <- ShinyPSA$new(
-#'   .effs = ShinyPSA::Smoking_PSA$e,
-#'   .costs = ShinyPSA::Smoking_PSA$c,
-#'   .interventions = ShinyPSA::Smoking_PSA$treats
-#'   )
+#' PSA_outputs <- ShinyPSA$new(
+#'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+#'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+#'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+#'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats,
+#'                   .evppi = TRUE,
+#'                   .plot = TRUE)
 #' }
 #'
 ShinyPSA <- R6::R6Class(
-  # Object name:
+  # Object name:----
   classname = "ShinyPSA",
-  # Public elements:
+  # Public elements:----
   public = list(
-    #' @field Summary_table a summary table with differentials, ICER(s), net benefits and probability being cost-effective.
+    #' @field Summary_table a summary table with differentials, ICER(s), net
+    #' benefits and probability being cost-effective.
     Summary_table = NULL,
     #' @field CEP_plot the Cost-Effectiveness plane.
     CEP_plot = NULL,
@@ -51,9 +54,17 @@ ShinyPSA <- R6::R6Class(
     eNMB_plot = NULL,
     #' @field stability_plots PSA outputs' values' stability plots.
     stability_plots = NULL,
+    #' @field  EVPPI_results the Expected Value of Partial Perfect Information
+    #' (EVPPI) results.
+    EVPPI_results = NULL,
+    #' @field  EVPPI_plot the EVPPI results plot.
+    EVPPI_plot = NULL,
+    #' @field  EVPPI_Sub_results the subset EVPPI results table.
+    EVPPI_Sub_results = NULL,
     #' @field app a list to store shiny app elements
     app = NULL,
 
+    ## Initialize:----
     #' @description
     #' Initialisation method (triggered when a new object is created).
     #' Summary plots and table(s) are created alongside the construction
@@ -67,10 +78,14 @@ ShinyPSA <- R6::R6Class(
     #' Number of \code{columns} is equal to the interventions while the
     #' number of \code{rows} is equal to the number of PSA simulations to
     #' be summarised.
+    #' @param .params A matrix containing parameters' configurations used in
+    #' the PSA. The Number of \code{rows} is equal to the number of PSA
+    #' simulations to be summarised.
     #' @param .interventions A vector containing the names of all
     #' interventions. If not provided or less names than needed is
     #' provided, the function will generate generic names, for example
     #' \code{intervention 1}.
+    #' @param .lambda Maximum acceptable ICER, default is 30,000.
     #' @param .ref An integer indicating the index of the reference
     #' intervention. This parameter is ignored if more than two
     #' \code{interventions} are under analysis.
@@ -80,6 +95,8 @@ ShinyPSA <- R6::R6Class(
     #' willingness-to-pay (WTP) values to use in the analysis. If
     #' \code{NULL} (default) a range of WTP values (up to \code{.Kmax}
     #' will be used.
+    #' @param .evppi A boolean, FALSE (default), for whether to estimate
+    #' Expected Value of Partial Perfect Information (EVPPI).
     #' @param .plot A boolean, FALSE (default), for whether to generate
     #' plots.
     #'
@@ -90,22 +107,28 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p)
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats,
+    #'                   .evppi = TRUE)
     #' }
-    initialize = function(.effs, .costs, .interventions = NULL,
-                          .ref = NULL, .Kmax = 100000, .wtp = NULL,
-                          .plot = TRUE) {
+    initialize = function(.effs, .costs, .params, .interventions = NULL,
+                          .lambda = 30000, .ref = NULL, .Kmax = 100000,
+                          .wtp = NULL, .evppi = FALSE, .plot = TRUE) {
       private$effects <- dplyr::as_tibble(.effs)
       private$costs <- dplyr::as_tibble(.costs)
+      private$params <- dplyr::as_tibble(.params)
       private$PSA_summary <- private$summarise_PSA_(
         .effs = .effs,
         .costs = .costs,
+        .params = .params,
         .interventions = .interventions,
         .ref = .ref,
         .Kmax = .Kmax,
         .wtp = .wtp,
+        .lambda = .lambda,
+        .evppi = .evppi,
         .plot = .plot
       )
 
@@ -113,6 +136,7 @@ ShinyPSA <- R6::R6Class(
 
     },
 
+    ## Get the results summary table:----
     #' @description
     #' Get the results summary table
     #'
@@ -140,6 +164,7 @@ ShinyPSA <- R6::R6Class(
     #' PSA_outputs <- ShinyPSA$new(
     #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
     #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
     #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
     #'
     #' PSA_outputs$get_Summary_table()
@@ -157,6 +182,7 @@ ShinyPSA <- R6::R6Class(
       return(self$Summary_table)
     },
 
+    ## Get the Cost-Effectiveness plane:----
     #' @description
     #' Get the Cost-Effectiveness plane
     #'
@@ -171,7 +197,9 @@ ShinyPSA <- R6::R6Class(
     #' PSA_outputs <- ShinyPSA$new(
     #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
     #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
     #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'
     #' # Get default plot:
     #' PSA_outputs$get_CEP()
     #'
@@ -199,6 +227,7 @@ ShinyPSA <- R6::R6Class(
       return(self$CEP_plot)
     },
 
+    ## Get the Cost-Effectiveness Acceptability Curve:----
     #' @description
     #' Get the Cost-Effectiveness Acceptability Curve
     #'
@@ -211,9 +240,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
-    #'                   .interventions = ShinyPSA::Smoking_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
+    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
     #'
     #' PSA_outputs$get_CEAC()
     #' }
@@ -230,6 +260,7 @@ ShinyPSA <- R6::R6Class(
       return(self$CEAC_plot)
     },
 
+    ## Get the Cost-Effectiveness Acceptability Frontier:----
     #' @description
     #' Get the Cost-Effectiveness Acceptability Frontier
     #'
@@ -242,9 +273,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
-    #'                   .interventions = ShinyPSA::Smoking_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
+    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
     #'
     #' PSA_outputs$get_CEAF()
     #' }
@@ -261,6 +293,7 @@ ShinyPSA <- R6::R6Class(
       return(self$CEAF_plot)
     },
 
+    ## Get the expected Net Monitory Benefit:----
     #' @description
     #' Get the expected Net Monitory Benefit
     #'
@@ -273,9 +306,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
-    #'                   .interventions = ShinyPSA::Smoking_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
+    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
     #'
     #' PSA_outputs$get_eNMB()
     #' }
@@ -292,6 +326,7 @@ ShinyPSA <- R6::R6Class(
       return(self$eNMB_plot)
     },
 
+    ## Get the Expected Value of Perfect Information:----
     #' @description
     #' Get the Expected Value of Perfect Information
     #'
@@ -304,9 +339,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
-    #'                   .interventions = ShinyPSA::Smoking_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
+    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
     #'
     #' PSA_outputs$get_EVPI()
     #' }
@@ -323,6 +359,132 @@ ShinyPSA <- R6::R6Class(
       return(self$EVPI_plot)
     },
 
+    ## Get the EVPPI results table:----
+    #' @description
+    #' Get the EVPPI results table
+    #'
+    #' @param ... Extra arguments passed to the plotting functions
+    #'
+    #' @return A list containing EVPPI results
+    #' @export
+    #'
+    #' @examples
+    #' \dontrun{
+    #' # Instantiate a copy of class ShinyPSA:
+    #' PSA_outputs <- ShinyPSA$new(
+    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
+    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'
+    #' PSA_outputs$get_EVPPI_results()
+    #' }
+    get_EVPPI_results = function(...) {
+      dots_ <- list(...)
+      self$EVPPI_results <- if(length(dots_) == 0) {
+        if(is.null(private$PSA_summary[["EVPPI"]])) {
+          # create object is missing:
+          dots_$.PSA_data <- private$PSA_summary
+          private$PSA_summary[["EVPPI"]] <- do.call(
+            private$compute_EVPPIs_, dots_)
+        }
+        # return default object if no arguments were passed to the function:
+        private$PSA_summary[["EVPPI"]]
+      } else {
+        # pass arguments to the plotting function:
+        dots_$.PSA_data <- private$PSA_summary
+        do.call(private$compute_EVPPIs_, dots_)
+      }
+
+      return(self$EVPPI_results)
+    },
+
+    ## Get the Subset EVPPI results table:----
+    #' @description
+    #' Get the Subset EVPPI results table
+    #'
+    #' @param ... Extra arguments passed to the plotting functions
+    #'
+    #' @return A list containing Subset EVPPI results
+    #' @export
+    #'
+    #' @examples
+    #' \dontrun{
+    #' # Instantiate a copy of class ShinyPSA:
+    #' PSA_outputs <- ShinyPSA$new(
+    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
+    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'
+    #' PSA_outputs$get_Sub_EVPPI_results()
+    #' }
+    get_Sub_EVPPI_results = function(...) {
+      dots_ <- list(...)
+      # sanity checks:
+      if(is.null(dots_$.set_names) & is.null(dots_$.set)) {
+        print(
+          paste("Unable to estimate EVPPI for a subset of parameters.",
+                "Please pass parameters indexes via the argument '.set'",
+                "or parameters names via the argument '.set_names'."))
+      }
+
+      # hard-code key arguments:
+      dots_$.PSA_data <- private$PSA_summary
+      dots_$.subset_ <- TRUE
+
+      # compute EVPPI for the parameters subsets:
+      self$EVPPI_Sub_results <- if(is.null(self$EVPPI_Sub_results)) {
+        do.call(private$compute_EVPPIs_, dots_)
+      } else {
+        self$EVPPI_Sub_results %>%
+          dplyr::bind_rows(
+            do.call(private$compute_EVPPIs_, dots_))
+      }
+
+      return(self$EVPPI_Sub_results)
+    },
+
+    ## Get the EVPPI plot:----
+    #' @description
+    #' Get the EVPPI plot
+    #'
+    #' @param ... Extra arguments passed to the plotting functions
+    #'
+    #' @return A ggplot2 object
+    #' @export
+    #'
+    #' @examples
+    #' \dontrun{
+    #' # Instantiate a copy of class ShinyPSA:
+    #' PSA_outputs <- ShinyPSA$new(
+    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
+    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'
+    #' PSA_outputs$get_EVPPI_plot()
+    #' }
+    get_EVPPI_plot = function(...) {
+      dots_ <- list(...)
+      self$EVPPI_plot <- if(length(dots_) == 0 &
+                            !is.null(private$PSA_summary[["EVPPI_plot"]])) {
+        # return default object if no arguments were passed to the function:
+        private$PSA_summary[["EVPPI_plot"]]
+      } else {
+        if(is.null(private$PSA_summary[["EVPPI"]])) {
+          # create EVPPIs results object if it does not exist:
+          private$PSA_summary[["EVPPI"]] <- self$get_EVPPI_results()
+        }
+        # pass arguments to the plotting function:
+        dots_$EVPPI_res <- private$PSA_summary[["EVPPI"]]
+        do.call(private$plot_EVPPI_, dots_)
+      }
+
+      return(self$EVPPI_plot)
+    },
+
+    ## Get the PSA outputs stability plots:----
     #' @description
     #' Get the PSA outputs stability plots
     #'
@@ -335,9 +497,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
-    #'                   .interventions = ShinyPSA::Smoking_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
+    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
     #'
     #' PSA_outputs$get_PSA_stabl_plots()
     #' }
@@ -354,19 +517,21 @@ ShinyPSA <- R6::R6Class(
       return(self$stability_plots)
     },
 
+    ## Get the willingness-to-pay values used in the analysis:----
     #' @description
     #' Get the willingness-to-pay values used in the analysis
     #'
-    #' @return An integer
+    #' @return A numerical vector.
     #' @export
     #'
     #' @examples
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Smoking_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Smoking_PSA$c),
-    #'                   .interventions = ShinyPSA::Smoking_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
+    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
     #'
     #' PSA_outputs$get_WTP()
     #' }
@@ -377,46 +542,62 @@ ShinyPSA <- R6::R6Class(
 
   ),
 
-  # Private elements:
+  # Private elements:----
   private = list(
 
     effects = NULL,
     costs = NULL,
+    params = NULL,
     PSA_summary = NULL,
 
-    # Summarise PSA outputs and report results
+    ## Summarise PSA outputs and report results:----
     #
-    # .effs A matrix containing the \code{effects} from PSA. Number of
+    # @param .effs A matrix containing the \code{effects} from PSA. Number of
     # \code{columns} is equal to the interventions while the number of
-    # \code{rows} is equal to the number of PSA simulations to be
-    # summarised.
-    # .costs A matrix containing the \code{costs} from PSA. Number of
+    # \code{rows} is equal to the number of PSA simulations to be summarised.
+    # @param .costs A matrix containing the \code{costs} from PSA. Number of
     # \code{columns} is equal to the interventions while the number of
-    # \code{rows} is equal to the number of PSA simulations to be
-    # summarised.
-    # .interventions A vector containing the names of all
-    # interventions. If not provided or less names than needed are
-    # provided, the function will generate generic names, for example
+    # \code{rows} is equal to the number of PSA simulations to be summarised.
+    # @param .params A matrix containing parameters' configurations used in
+    # the PSA. The Number of \code{rows} is equal to the number of PSA simulations
+    # to be summarised.
+    # @param .interventions A vector containing the names of all
+    # interventions. If not provided or less names than needed is provided,
+    # the function will generate generic names, for example
     # \code{intervention 1}.
-    # .ref An integer indicating the index of the reference
+    # @param .ref An integer indicating the index of the reference
     # intervention. This parameter is ignored if more than two
     # \code{interventions} are under analysis.
-    # .Kmax The maximum willingness-to-pay threshold to use in the
+    # @param .Kmax The maximum willingness-to-pay threshold to use in the
     # analysis. This parameter is ignored if \code{wtp} is provided.
-    # .wtp A vector of numerical values declaring the
-    # willingness-to-pay (WTP) values to use in the analysis. If
-    # \code{NULL} (default) a range of WTP values (up to \code{.Kmax} will
-    # be used.
-    # .max_Kpoints Maximum number of willingness-to-pay values (default
+    # @param .wtp A vector of numerical values declaring the
+    # willingness-to-pay (WTP) values to use in the analysis. If \code{NULL}
+    # (default) a range of WTP values (up to \code{.Kmax} will be used.
+    # @param .max_Kpoints Maximum number of willingness-to-pay values (default
     # 100) to use in the analysis.
-    # .plot A boolean, FALSE (default), for whether to generate plots.
+    # @param .lambda Maximum acceptable ICER, default is 30,000.
+    # @param .evppi A boolean, FALSE (default), for whether to estimate Expected
+    # Value of Partial Perfect Information (EVPPI).
+    # @param .plot A boolean, FALSE (default), for whether to generate plots.
     #
-    # A list of class \code{psa} with \code{24} elements.
+    # @return A list of class \code{psa} containing several objects.
     #
-    # \dontrun{}
-    summarise_PSA_ = function(.effs, .costs, .interventions = NULL,
-                               .ref = NULL, .Kmax = 100000, .wtp = NULL,
-                               .max_Kpoints = 100, .plot = FALSE) {
+    # @examples
+    # \dontrun{
+    # library(ShinyPSA)
+    #
+    # PSA_summary = summarise_PSA_(
+    #   .effs = ShinyPSA::Brennan_1K_PSA$e,
+    #   .costs = ShinyPSA::Brennan_1K_PSA$c,
+    #   .params = ShinyPSA::Brennan_1K_PSA$p,
+    #   .interventions = ShinyPSA::Brennan_1K_PSA$treats,
+    #   .evppi = TRUE,
+    #   .plot = TRUE)
+    # }
+    summarise_PSA_ = function(.effs, .costs, .params, .interventions = NULL,
+                              .ref = NULL, .Kmax = 100000, .wtp = NULL,
+                              .max_Kpoints = 100, .lambda = 30000,
+                              .evppi = FALSE, .plot = FALSE) {
 
       # Stop if .effs & .costs have different dimensions:
       stopifnot('Unequal dimensions in .effs and .costs' =
@@ -443,8 +624,11 @@ ShinyPSA <- R6::R6Class(
         # If no reference was provided in a non-incremental analysis:
         if(is.null(.ref)){
           .ref <- 1
-          message(paste0("You did not select a reference intervention. [",
-                         .interventions[.ref], "] will be used as reference for differential values and plots."))
+          message(
+            paste0(
+              "You did not select a reference intervention. [",
+              .interventions[.ref],
+              "] will be used as reference for differential values and plots."))
         }
         comp <- v.ints[-.ref]
       } else {
@@ -483,21 +667,31 @@ ShinyPSA <- R6::R6Class(
 
       # Compute effects and costs differentials:
       if(n.comparators == 2) {
-        delta.effs <- private$calculate_differentials_(.data = .effs, .ref = .ref)
-        delta.costs <- private$calculate_differentials_(.data = .costs, .ref = .ref)
+        delta.effs <- private$calculate_differentials_(
+          .data = .effs,
+          .ref = .ref)
+        delta.costs <- private$calculate_differentials_(
+          .data = .costs,
+          .ref = .ref)
       } else {
         delta.effs <- NULL
         delta.costs <- NULL
       }
 
       # Compute ICER(s):
-      ICER <- private$compute_ICERs_(.icer_data = NULL, .effs = .effs, .costs = .costs,
-                                     .interventions = .interventions)
+      ICER <- private$compute_ICERs_(
+        .icer_data = NULL,
+        .effs = .effs,
+        .costs = .costs,
+        .interventions = .interventions)
 
       # Compute NMB or iNMB, e.NMB or e.iNMB and best option for each k:
-      nmbs <- private$compute_NMBs_(.effs = .effs, .costs = .costs,
-                                    .interventions = .interventions, .Kmax = .Kmax,
-                                    .wtp = .wtp)
+      nmbs <- private$compute_NMBs_(
+        .effs = .effs,
+        .costs = .costs,
+        .interventions = .interventions,
+        .Kmax = .Kmax,
+        .wtp = .wtp)
       NMB <- nmbs$nmb
       e.NMB <- nmbs$e.nmb
       best <- nmbs$best_interv
@@ -506,14 +700,20 @@ ShinyPSA <- R6::R6Class(
       kstar <- nmbs$wtp_star
 
       # Compute CEAC:
-      CEAC <- private$compute_CEACs_(.nmb = NMB)
+      CEAC <- private$compute_CEACs_(
+        .nmb = NMB)
 
       # Compute CEAF:
-      CEAF <- private$compute_CEAFs_(.ceac = CEAC)
+      CEAF <- private$compute_CEAFs_(
+        .ceac = CEAC)
 
       # Compute EVPI:
-      EVPIs <- private$compute_EVPIs_(.effs = .effs, .costs = .costs, .Kmax = .Kmax,
-                                      .interventions = .interventions, .wtp = .wtp)
+      EVPIs <- private$compute_EVPIs_(
+        .effs = .effs,
+        .costs = .costs,
+        .Kmax = .Kmax,
+        .interventions = .interventions,
+        .wtp = .wtp)
       U <- EVPIs$U
       Ustar <- EVPIs$Ustar
       ol <- EVPIs$ol
@@ -523,25 +723,58 @@ ShinyPSA <- R6::R6Class(
       ## Outputs of the function:
       results <- list(
 
-        interventions = .interventions, ref = .ref, comp = comp,
-        ICER = ICER, NMB = NMB, e.NMB = e.NMB, CEAC = CEAC, CEAF = CEAF,
-        EVPI = EVPI, best_id = best, best_name = best_name, WTPs = v.k,
+        interventions = .interventions, ref = .ref, comp = comp, ICER = ICER,
+        NMB = NMB, e.NMB = e.NMB, CEAC = CEAC, CEAF = CEAF, EVPI = EVPI,
+        best_id = best, best_name = best_name, WTPs = v.k,
         WTPstar = kstar, U = U, Ustar = Ustar, vi = vi, ol = ol, e = .effs,
-        c = .costs, delta.e = delta.effs, delta.c = delta.costs, n.sim = n.sim,
-        n.comparators = n.comparators, step = n.k, Kmax = .Kmax
+        c = .costs, p = .params, delta.e = delta.effs, delta.c = delta.costs,
+        n.sim = n.sim, n.comparators = n.comparators, step = n.k, Kmax = .Kmax
       )
 
       class(results) <- "psa"
 
+      # If requested, compute EVPPI:
+      if(.evppi) {
+        # Compute EVPPI:
+        EVPPI <- private$compute_EVPPIs_(
+          .PSA_data = results,
+          .MAICER_ = .lambda)
+
+        # Save EVPPI results table to the final results object:
+        results <- c(results,
+                     'EVPPI' = list(EVPPI))
+      }
+
       # If requested, develop and save plots and table:
       if(.plot == TRUE) {
-        Summary_table <- private$draw_summary_table_(.PSA_data = results)
-        CEP_plot <- private$plot_CEplane_(.PSA_data = results, .ref = .ref)
-        CEAC_plot <- private$plot_CEAC_(.PSA_data = results, .ref = .ref)
-        CEAF_plot <- private$plot_CEAF_(.PSA_data = results)
-        EVPI_plot <- private$plot_EVPI_(.PSA_data = results)
-        eNMB_plot <- private$plot_eNMB_(.PSA_data = results)
-        stability_plots <- private$check_PSA_stability(.PSA_data = results)
+        Summary_table <- private$draw_summary_table_(
+          .PSA_data = results
+        )
+        CEP_plot <- private$plot_CEplane_(
+          .PSA_data = results,
+          .ref = .ref
+        )
+        CEAC_plot <- private$plot_CEAC_(
+          .PSA_data = results,
+          .ref = .ref
+        )
+        CEAF_plot <- private$plot_CEAF_(
+          .PSA_data = results
+        )
+        EVPI_plot <- private$plot_EVPI_(
+          .PSA_data = results
+        )
+        eNMB_plot <- private$plot_eNMB_(
+          .PSA_data = results
+        )
+        EVPPI_plot <- if(.evppi) {
+          private$plot_EVPPI_(
+            EVPPI_res = EVPPI
+          )
+        }
+        stability_plots <- private$check_PSA_stability(
+          .PSA_data = results
+        )
 
         results <- c(results,
                      'Summary_table' = list(Summary_table),
@@ -550,197 +783,14 @@ ShinyPSA <- R6::R6Class(
                      'CEAF_plot' = list(CEAF_plot),
                      'EVPI_plot' = list(EVPI_plot),
                      'eNMB_plot' = list(eNMB_plot),
+                     'EVPPI_plot' = list(EVPPI_plot),
                      'Stability_plots' = list(stability_plots))
       }
 
       return(results)
     },
 
-    # Identify dominated interventions
-    #
-    # .icer_data A table containing average costs and QALYs data
-    # .qalys Character indicating the name of the column containing
-    # Quality Adjusted Life Years (QALYs) in \code{.icer_data}
-    # .costs Character indicating the name of the column
-    # containing cost data in \code{.icer_data}
-    #
-    # A table containing \code{.icer_data} in addition to identified
-    # dominance
-    #
-    # \dontrun{}
-    identify_dominance_ = function(.icer_data, .qalys = qalys,
-                                   .costs = costs) {
-      # Check if missing key columns and create them if so:
-      .icer_data <- .icer_data %>%
-        private$add_missing_columns_(
-          .x = .,
-          .characters = c("dominance", "icer_label"),
-          .numerics = c(".id", "delta.e", "delta.c", "icer"))
-
-      # Identify dominated interventions:
-      .icer_data <- .icer_data %>%
-        dplyr::arrange({{.qalys}}) %>%
-        dplyr::group_by(dominance) %>%
-        dplyr::mutate(
-          icer_label = dplyr::case_when(
-            is.na(dominance) ~ dplyr::case_when(
-              dplyr::lead({{.costs}}) < {{.costs}} ~ "SD"),
-            TRUE ~ icer_label),
-          dominance = dplyr::case_when(
-            is.na(dominance) ~ dplyr::case_when(
-              dplyr::lead({{.costs}}) < {{.costs}} ~ "SD"),
-            TRUE ~ dominance)) %>%
-        dplyr::ungroup()
-
-      return(.icer_data)
-    },
-
-    # Identify extendedly dominated interventions
-    #
-    # .icer_data A table containing average costs and QALYs data
-    # .qalys Character indicating the name of the column containing
-    # Quality Adjusted Life Years (QALYs) in \code{.icer_data}
-    #
-    # A vector stating whether any of the included interventions were
-    # e.dominated
-    #
-    # \dontrun{}
-    identify_e.dominance_ = function(.icer_data, .qalys = qalys) {
-      # Check if missing key columns and create them if so:
-      .icer_data <- .icer_data %>%
-        private$add_missing_columns_(
-          .x = .,
-          .characters = c("dominance", "icer_label"),
-          .numerics = c(".id", "delta.e", "delta.c", "icer"))
-
-      # Identify extendedly dominated interventions:
-      .icer_data <- .icer_data %>%
-        dplyr::arrange({{.qalys}}) %>%
-        dplyr::group_by(dominance) %>%
-        dplyr::mutate(
-          icer_label = dplyr::case_when(
-            is.na(dominance) ~ dplyr::case_when(
-              dplyr::lead(icer) < icer ~ "ED"),
-            TRUE ~ icer_label),
-          dominance = dplyr::case_when(
-            is.na(dominance) ~ dplyr::case_when(
-              dplyr::lead(icer) < icer ~ "ED"),
-            TRUE ~ dominance)) %>%
-        dplyr::ungroup()
-
-      return(.icer_data)
-    },
-
-    # Calculate ICER(s) and effects and costs differentials
-    #
-    # .icer_data A table containing average costs and QALYs data
-    # .qalys Character indicating the name of the column containing
-    # Quality Adjusted Life Years (QALYs) data in .icer_data
-    # .costs Character indicating the name of the column containing
-    # cost data in .icer_data
-    #
-    # A table of \code{effects diffrentials}, \code{costs
-    # differentials} & \code{icers}
-    #
-    # \dontrun{}
-    calculate_ICERs_ = function(.icer_data, .qalys = qalys,
-                                .costs = costs) {
-      # Check if missing key columns and create them if so:
-      .icer_data <- .icer_data %>%
-        private$add_missing_columns_(
-          .x = .,
-          .characters = c("dominance", "icer_label"),
-          .numerics = c(".id", "delta.e", "delta.c", "icer"))
-
-      # Compute Incremental Cost-Effectiveness Ratio (ICER):
-      .icer_data <- .icer_data %>%
-        dplyr::arrange({{.qalys}}) %>%
-        dplyr::group_by(dominance) %>%
-        dplyr::mutate(
-          delta.e = dplyr::case_when(
-            is.na(dominance) ~ c(NA, diff({{.qalys}}))),
-          delta.c = dplyr::case_when(
-            is.na(dominance) ~ c(NA, diff({{.costs}}))),
-          icer = dplyr::case_when(
-            is.na(dominance) ~ delta.c / delta.e),
-          icer_label = dplyr::case_when(
-            is.na(dominance) & !is.na(icer) ~ paste0(
-              "ICER = ", scales::dollar(
-                x = icer,
-                prefix = "\u00A3"
-              )
-            ),
-            is.na(dominance) & is.na(icer) ~ dplyr::case_when(
-              dplyr::n() > 1 ~ paste0("reference"),
-              TRUE ~ icer_label),
-            TRUE ~ icer_label)) %>%
-        dplyr::ungroup()
-
-      return(.icer_data)
-    },
-
-    # Identify, iteratively, all dominated interventions
-    #
-    # .x A table containing average costs and QALYs data
-    #
-    # A dataframe with data from .x in addition to dominance
-    # information, if any
-    #
-    # \dontrun{}
-    dominance_wraper_ = function(.x) {
-      # Check if missing key columns and create them if so:
-      .x <- .x %>%
-        private$add_missing_columns_(
-          .x = .,
-          .characters = c("dominance", "icer_label"),
-          .numerics = c(".id", "delta.e", "delta.c", "icer"))
-
-      # Check for unidentified dominance
-      while (any("SD" %in%
-                 (.x %>%
-                  dplyr::filter(dplyr::if_any(dominance, ~ is.na(.))) %>%
-                  private$identify_dominance_() %>%
-                  dplyr::pull(dominance)))) {
-        # Do until all dominated are identified
-        .x <- .x %>%
-          private$identify_dominance_()
-      }
-
-      return(.x)
-    },
-
-    # Identify, iteratively, all extendedly dominated interventions
-    #
-    # .x A table containing average costs and QALYs data
-    #
-    # A dataframe with data from \code{.x} in addition to extended
-    # dominance information, if any
-    #
-    # \dontrun{}
-    e.dominance_wraper_ = function(.x) {
-      # Check if missing key columns and create them if so:
-      .x <- .x %>%
-        private$add_missing_columns_(
-          .x = .,
-          .characters = c("dominance", "icer_label"),
-          .numerics = c(".id", "delta.e", "delta.c", "icer"))
-
-      # Check for any remaining e.dominance
-      while (any("ED" %in%
-                 (.x %>%
-                  dplyr::filter(dplyr::if_any(dominance, ~ is.na(.))) %>%
-                  private$identify_e.dominance_() %>%
-                  dplyr::pull(dominance)))) {
-        # Do until all extendedly dominated are identified:
-        .x <- .x %>%
-          private$identify_e.dominance_() %>%
-          private$calculate_ICERs_() # ICER(s) for un-dominated/e.dominated
-      }
-
-      return(.x)
-    },
-
-    # Compute ICER(s)
+    ## Compute ICER(s):----
     #
     # .icer_data A table containing average costs and QALYs data
     # .effs A tibble containing the \code{effects} from PSA.
@@ -824,7 +874,189 @@ ShinyPSA <- R6::R6Class(
       return(icer_tmp)
     },
 
-    # Compute Monetary Net-Benefit (NMB) or incremental NMB (iNMB)
+    ### Identify dominated interventions:----
+    #
+    # .icer_data A table containing average costs and QALYs data
+    # .qalys Character indicating the name of the column containing
+    # Quality Adjusted Life Years (QALYs) in \code{.icer_data}
+    # .costs Character indicating the name of the column
+    # containing cost data in \code{.icer_data}
+    #
+    # A table containing \code{.icer_data} in addition to identified
+    # dominance
+    #
+    # \dontrun{}
+    identify_dominance_ = function(.icer_data, .qalys = qalys, .costs = costs) {
+      # Check if missing key columns and create them if so:
+      .icer_data <- .icer_data %>%
+        private$add_missing_columns_(
+          .x = .,
+          .characters = c("dominance", "icer_label"),
+          .numerics = c(".id", "delta.e", "delta.c", "icer"))
+
+      # Identify dominated interventions:
+      .icer_data <- .icer_data %>%
+        dplyr::arrange({{.qalys}}) %>%
+        dplyr::group_by(dominance) %>%
+        dplyr::mutate(
+          icer_label = dplyr::case_when(
+            is.na(dominance) ~ dplyr::case_when(
+              dplyr::lead({{.costs}}) < {{.costs}} ~ "SD"),
+            TRUE ~ icer_label),
+          dominance = dplyr::case_when(
+            is.na(dominance) ~ dplyr::case_when(
+              dplyr::lead({{.costs}}) < {{.costs}} ~ "SD"),
+            TRUE ~ dominance)) %>%
+        dplyr::ungroup()
+
+      return(.icer_data)
+    },
+
+    ### Identify extendedly dominated interventions:----
+    #
+    # .icer_data A table containing average costs and QALYs data
+    # .qalys Character indicating the name of the column containing
+    # Quality Adjusted Life Years (QALYs) in \code{.icer_data}
+    #
+    # A vector stating whether any of the included interventions were
+    # e.dominated
+    #
+    # \dontrun{}
+    identify_e.dominance_ = function(.icer_data, .qalys = qalys) {
+      # Check if missing key columns and create them if so:
+      .icer_data <- .icer_data %>%
+        private$add_missing_columns_(
+          .x = .,
+          .characters = c("dominance", "icer_label"),
+          .numerics = c(".id", "delta.e", "delta.c", "icer"))
+
+      # Identify extendedly dominated interventions:
+      .icer_data <- .icer_data %>%
+        dplyr::arrange({{.qalys}}) %>%
+        dplyr::group_by(dominance) %>%
+        dplyr::mutate(
+          icer_label = dplyr::case_when(
+            is.na(dominance) ~ dplyr::case_when(
+              dplyr::lead(icer) < icer ~ "ED"),
+            TRUE ~ icer_label),
+          dominance = dplyr::case_when(
+            is.na(dominance) ~ dplyr::case_when(
+              dplyr::lead(icer) < icer ~ "ED"),
+            TRUE ~ dominance)) %>%
+        dplyr::ungroup()
+
+      return(.icer_data)
+    },
+
+    ### Identify, iteratively, all dominated interventions:----
+    #
+    # .x A table containing average costs and QALYs data
+    #
+    # A dataframe with data from .x in addition to dominance
+    # information, if any
+    #
+    # \dontrun{}
+    dominance_wraper_ = function(.x) {
+      # Check if missing key columns and create them if so:
+      .x <- .x %>%
+        private$add_missing_columns_(
+          .x = .,
+          .characters = c("dominance", "icer_label"),
+          .numerics = c(".id", "delta.e", "delta.c", "icer"))
+
+      # Check for unidentified dominance
+      while (any("SD" %in%
+                 (.x %>%
+                  dplyr::filter(dplyr::if_any(dominance, ~ is.na(.))) %>%
+                  private$identify_dominance_() %>%
+                  dplyr::pull(dominance)))) {
+        # Do until all dominated are identified
+        .x <- .x %>%
+          private$identify_dominance_()
+      }
+
+      return(.x)
+    },
+
+    ### Identify, iteratively, all extendedly dominated interventions:----
+    #
+    # .x A table containing average costs and QALYs data
+    #
+    # A dataframe with data from \code{.x} in addition to extended
+    # dominance information, if any
+    #
+    # \dontrun{}
+    e.dominance_wraper_ = function(.x) {
+      # Check if missing key columns and create them if so:
+      .x <- .x %>%
+        private$add_missing_columns_(
+          .x = .,
+          .characters = c("dominance", "icer_label"),
+          .numerics = c(".id", "delta.e", "delta.c", "icer"))
+
+      # Check for any remaining e.dominance
+      while (any("ED" %in%
+                 (.x %>%
+                  dplyr::filter(dplyr::if_any(dominance, ~ is.na(.))) %>%
+                  private$identify_e.dominance_() %>%
+                  dplyr::pull(dominance)))) {
+        # Do until all extendedly dominated are identified:
+        .x <- .x %>%
+          private$identify_e.dominance_() %>%
+          private$calculate_ICERs_() # ICER(s) for un-dominated/e.dominated
+      }
+
+      return(.x)
+    },
+
+    ### Calculate ICER(s) and effects and costs differentials:----
+    #
+    # .icer_data A table containing average costs and QALYs data
+    # .qalys Character indicating the name of the column containing
+    # Quality Adjusted Life Years (QALYs) data in .icer_data
+    # .costs Character indicating the name of the column containing
+    # cost data in .icer_data
+    #
+    # A table of \code{effects diffrentials}, \code{costs
+    # differentials} & \code{icers}
+    #
+    # \dontrun{}
+    calculate_ICERs_ = function(.icer_data, .qalys = qalys, .costs = costs) {
+      # Check if missing key columns and create them if so:
+      .icer_data <- .icer_data %>%
+        private$add_missing_columns_(
+          .x = .,
+          .characters = c("dominance", "icer_label"),
+          .numerics = c(".id", "delta.e", "delta.c", "icer"))
+
+      # Compute Incremental Cost-Effectiveness Ratio (ICER):
+      .icer_data <- .icer_data %>%
+        dplyr::arrange({{.qalys}}) %>%
+        dplyr::group_by(dominance) %>%
+        dplyr::mutate(
+          delta.e = dplyr::case_when(
+            is.na(dominance) ~ c(NA, diff({{.qalys}}))),
+          delta.c = dplyr::case_when(
+            is.na(dominance) ~ c(NA, diff({{.costs}}))),
+          icer = dplyr::case_when(
+            is.na(dominance) ~ delta.c / delta.e),
+          icer_label = dplyr::case_when(
+            is.na(dominance) & !is.na(icer) ~ paste0(
+              "ICER = ", scales::dollar(
+                x = icer,
+                prefix = "\u00A3"
+              )
+            ),
+            is.na(dominance) & is.na(icer) ~ dplyr::case_when(
+              dplyr::n() > 1 ~ paste0("reference"),
+              TRUE ~ icer_label),
+            TRUE ~ icer_label)) %>%
+        dplyr::ungroup()
+
+      return(.icer_data)
+    },
+
+    ## Compute Monetary Net-Benefit (NMB) or incremental NMB (iNMB):----
     #
     # .effs A tibble containing the \code{effects} from PSA. Number of
     # \code{columns} is equal to the interventions while the number of
@@ -929,7 +1161,7 @@ ShinyPSA <- R6::R6Class(
                   best_interv_name = best_interv_name))
     },
 
-    # Compute Cost-Effectiveness Acceptability Curve (CEAC)
+    ## Compute Cost-Effectiveness Acceptability Curve (CEAC):----
     #
     # .nmb A list (with similar features to a 3D-array) containing the
     # Net Monetary Benefits from each probabilistic sensitivity analysis
@@ -988,7 +1220,7 @@ ShinyPSA <- R6::R6Class(
       return(ceac)
     },
 
-    # Compute Cost-Effectiveness Acceptability Frontier
+    ## Compute Cost-Effectiveness Acceptability Frontier:----
     #
     # .ceac A tibble containing the probability of being cost-effective
     # for all interventions.
@@ -1019,7 +1251,7 @@ ShinyPSA <- R6::R6Class(
       return(ceaf)
     },
 
-    # Compute the Expected Value of Perfect Information (EVPI)
+    ## Compute the Expected Value of Perfect Information (EVPI):----
     #
     # .effs A tibble containing the \code{effects} from PSA. Number of
     # \code{columns} is equal to the interventions while the number of
@@ -1138,7 +1370,7 @@ ShinyPSA <- R6::R6Class(
       return(list(U = nmb, Ustar = max_nmb_iter, vi = vi, ol = ol, evi = evi))
     },
 
-    # Draw results summary table
+    ## Draw results summary table:----
     #
     # @param .PSA_data A list of class shinyPSA that contains summary PSA
     # results.
@@ -1585,7 +1817,7 @@ ShinyPSA <- R6::R6Class(
       return(Summary_tbl)
     },
 
-    # Plot Cost Effectiveness Acceptability Curve (CEAC)
+    ## Plot Cost Effectiveness Acceptability Curve (CEAC):----
     #
     # .PSA_data A list of class shinyPSA that contains summary PSA
     # results.
@@ -1838,7 +2070,7 @@ ShinyPSA <- R6::R6Class(
       return(p)
     },
 
-    # Plot Cost Effectiveness Acceptability Frontier (CEAF)
+    ## Plot Cost Effectiveness Acceptability Frontier (CEAF):----
     #
     # .PSA_data A list of class shinyPSA that contains summary PSA
     # results.
@@ -2033,7 +2265,7 @@ ShinyPSA <- R6::R6Class(
       return(p)
     },
 
-    # Plot Cost Effectiveness Plane (CEP).
+    ## Plot Cost Effectiveness Plane (CEP):----
     #
     # .PSA_data A list of class shinyPSA that contains summary PSA
     # results.
@@ -2359,7 +2591,7 @@ ShinyPSA <- R6::R6Class(
       return(p)
     },
 
-    # Plot the Expected Value of Perfect Information (EVPI)
+    ## Plot the Expected Value of Perfect Information (EVPI):----
     #
     # .PSA_data A list of class shinyPSA that contains summary PSA
     # results.
@@ -2551,7 +2783,7 @@ ShinyPSA <- R6::R6Class(
       return(p)
     },
 
-    # Plot Expected Net Monetary Benefit (eNMB)
+    ## Plot Expected Net Monetary Benefit (eNMB):----
     #
     # .PSA_data A list of class shinyPSA that contains summary PSA
     # results.
@@ -2725,7 +2957,7 @@ ShinyPSA <- R6::R6Class(
       return(p)
     },
 
-    # Check stability of PSA outputs
+    ## Check stability of PSA outputs:----
     # This function produces a set of plots to allow modellers to investigate if
     # the number of PSA runs were sufficient or not!
     #
@@ -2919,7 +3151,7 @@ ShinyPSA <- R6::R6Class(
       return(grouped_plots)
     },
 
-    # Plot PSA stability graphs
+    ## Plot PSA stability graphs:----
     #
     # @param df Long format PSA cumulative output dataset
     # @param x_var Name of x-axis variable, expects \code{"PSA run"}.
@@ -3035,7 +3267,7 @@ ShinyPSA <- R6::R6Class(
       return(p)
     },
 
-    # Check and add any missing columns expected by ICER computation
+    ## Check and add any missing columns expected by ICER computation:----
     # functions
     #
     # .characters the columns to ensure in returned data table that are
@@ -3070,7 +3302,7 @@ ShinyPSA <- R6::R6Class(
       return(.x)
     },
 
-    # Calculate differential costs and QALYs
+    ## Calculate differential costs and QALYs:----
     #
     # .data_ A dataframe containing costs or QALYs data for which the
     # function is to estimate differential values
@@ -3089,7 +3321,7 @@ ShinyPSA <- R6::R6Class(
       return(differentials_data)
     },
 
-    # Assign extra arguments/parameters in parent function
+    ## Assign extra arguments/parameters in parent function:----
     #
     # .default_args_ # A list containing default arguments names and
     # their values.
@@ -3129,6 +3361,954 @@ ShinyPSA <- R6::R6Class(
                    .args_[[.arg]]
                  }, envir = .env_)
         })
+    },
+
+    ## Compute the Expected Value of Perfect Partial Information (EVPPI):----
+    #
+    # @param .PSA_data A list of class shinyPSA that contains summary PSA
+    # results.
+    # @param .effs A matrix containing the \code{effects} from PSA. Number of
+    # \code{columns} is equal to the interventions while the number of
+    # \code{rows} is equal to the number of PSA simulations to be summarised.
+    # @param .costs A matrix containing the \code{costs} from PSA. Number of
+    # \code{columns} is equal to the interventions while the number of
+    # \code{rows} is equal to the number of PSA simulations to be summarised.
+    # @param .EVPI A data table containing EVPI data.
+    # @param .WTPs A vector containing the Willingness-to-pay values over which
+    # EVPI values were estimated.
+    # @param .params A matrix containing parameters' configurations used in
+    # the PSA.
+    # @param .set A vector of parameters' names for conditional EVPPI.
+    # @param .set_names A vector of parameter-names to be used for EVPPI.
+    # @param .subset_ Boolean for whether to estimate conditional EVPPI for a
+    # subset of parameters.
+    # @param .MAICER_ The Maximum acceptable incremental cost-effectiveness
+    # ratio (MAICER) to be considered in the summary table. Default value is
+    # \code{30,000}.
+    # @param .units_ A character, the units to associate with the
+    # monitory values in the summary table. Default is sterling pounds
+    # (GBP) \code{"\u00A3"}.
+    # @param .individual_evppi_ Logical (default \code{TRUE}) to return per person
+    # EVPPI, otherwise population EVPPI will be reported.
+    # @param .discount_rate_ The discount rate used to discount future affected
+    # populations.
+    # @param .evppi_population_ The size of the population that is annually
+    # affected by the competing health technologies under evaluation.
+    # @param .time_horion_ The time expected to pass (in years) before the
+    # interventions under consideration change (how long before the decision
+    # under consideration become obsolete or requires updating).
+    # @param .session Shiny app session.
+    #
+    # @return A list containing the EVPPI results table and caption information.
+    #
+    # @examples
+    # \dontrun{
+    # library(ShinyPSA)
+    #
+    # # Summarise PSA results:
+    # PSA_summary = summarise_PSA_(
+    #   .effs = ShinyPSA::Brennan_1K_PSA$e,
+    #   .costs = ShinyPSA::Brennan_1K_PSA$c,
+    #   .params = ShinyPSA::Brennan_1K_PSA$p,
+    #   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
+    #
+    # # Estimate EVPPI:
+    # EVPPI_ind_res <- compute_EVPPIs_(
+    #     .PSA_data = PSA_summary,
+    #     .MAICER_ = 30000)
+    #
+    # EVPPI_pop_res <- compute_EVPPIs_(
+    #     .PSA_data = PSA_summary,
+    #     .MAICER_ = 20000,
+    #     .individual_evppi_ = FALSE,
+    #     .evppi_population_ = 1000,
+    #     .time_horion_ = 5)
+    #
+    # # Estimate Conditional EVPPI:
+    # cEVPPI_ind_res <- compute_EVPPIs_(
+    #     .PSA_data = PSA_summary,
+    #     .set = c(6, 14, 15, 16),
+    #     .subset_ = TRUE,
+    #     .MAICER_ = 30000)
+    #
+    # cEVPPI_pop_res <- compute_EVPPIs_(
+    #     .PSA_data = PSA_summary,
+    #     .set_names = c("theta6", "theta14", "theta15", "theta16"),
+    #     .subset_ = TRUE,
+    #     .MAICER_ = 20000,
+    #     .individual_evppi_ = FALSE,
+    #     .evppi_population_ = 1000,
+    #     .time_horion_ = 5)
+    # }
+    compute_EVPPIs_ = function(.PSA_data,
+                               .effs = NULL, .costs = NULL,
+                               .EVPI = NULL, .WTPs = NULL, .params = NULL,
+                               .set = NULL, .set_names = NULL, .subset_ = FALSE,
+                               .MAICER_ = 30000, .units_ = "\u00A3",
+                               .individual_evppi_ = TRUE, .discount_rate_ = 0.035,
+                               .evppi_population_ = NULL, .time_horion_ = NULL,
+                               .session = NULL) {
+
+      # Sanity checks:----
+      stopifnot(
+        'Please pass necessary data for EVPPI estimation' =
+          !is.null(.PSA_data) |
+          !is.null(.effs) |
+          !is.null(.costs) |
+          !is.null(.params),
+        'Please pass necessary data for EVPI estimation' =
+          !is.null(.PSA_data) |
+          !is.null(.EVPI) |
+          !is.null(.WTPs)
+      )
+      if(is.null(.effs) | is.null(.costs) | is.null(.params)) {
+        .effs = .PSA_data$e
+        .costs = .PSA_data$c
+        .params = .PSA_data$p
+      }
+      stopifnot(
+        'Unequal dimensions in .effs and .costs' =
+          dim(.effs) == dim(.costs)
+      )
+      if(is.null(.set) & is.null(.set_names)) {
+        .subset_ <- FALSE
+      }
+      if(!is.null(.set) & is.null(.set_names)) {
+        .set_names <- colnames(.params)[.set]
+      }
+      if(is.null(.set) & !is.null(.set_names)) {
+        .set <- which(colnames(.params) %in% .set_names)
+      }
+
+      # Estimate individual EVPPI:----
+      ## Calculate incremental net benefit (INB):----
+      inb <- private$createInb( # Strong et al. function
+        costs.int = .costs,
+        effects.int = .effs,
+        lambda = .MAICER_)
+      ## Calculate per parameter or conditional EVPPI:----
+      EVPPI <- if(!isTRUE(.subset_)) {
+        private$applyCalcSingleParamGam( # Strong et al. function
+          .params = .params,
+          nb = inb,
+          .session = .session)
+      } else {
+        t(
+          as.matrix(
+            unlist(
+              private$calSubsetEvpi( # Strong et al. function
+                .nb = inb,
+                .effs = .effs,
+                .costs = .costs,
+                .params = .params,
+                sets = .set,
+                .sets_names = .set_names,
+                lambda = .MAICER_,
+                .session = .session))))}
+
+      # Estimate population EVPPI if user provided necessary data:----
+      discounted_population <- 1
+      plot_caption <- table_caption <- paste0(
+        "Per Individual EVPPI (", .units_, ") estimated at a ",
+        scales::dollar(
+          x = .MAICER_,
+          prefix = .units_),
+        " MAICER.
+    Percentage values represent EVPPI values indexed to overall EVPI.")
+
+      if(!.individual_evppi_) {
+        if(is.null(.evppi_population_) | is.null(.time_horion_)) {
+          .individual_evppi_ <- TRUE
+          message("Population EVPPI or decision time horizon were not supplied.
+              The function will calculate individual EVPPI")
+        }
+      }
+      if(!.individual_evppi_) {
+        ## Re-estimate discounted population for population EVPPI:----
+        discounted_population <- sum(
+          .evppi_population_ / ((1 + .discount_rate_)^(1:.time_horion_)))
+        table_caption = paste0("Population EVPPI (", .units_, ") estimated for ",
+                               .evppi_population_, " individuals over ",
+                               .time_horion_, " year(s) at ", .discount_rate_ * 100,
+                               "% annual discount rate.")
+      }
+
+      # Prepare EVPI:----
+      EVPI <- if(!is.null(.PSA_data[["EVPI"]])) {
+        ## Get EVPI data from the PSA_data object:----
+        dplyr::tibble(
+          'EVPI_values' = .PSA_data[["EVPI"]],
+          ## put WTP in a column next to EVPI:----
+          'WTP_values' = .PSA_data[["WTPs"]]) %>%
+          ## filter and keep values corresponding to ones the in .MAICER_ vector:----
+        dplyr::filter(WTP_values %in% .MAICER_) %>%
+          ## rename WTP values to use as column names later:----
+        dplyr::pull(var = EVPI_values)
+      } else if(!is.null(.EVPI) & !is.null(.WTPs)) {
+        dplyr::tibble(
+          'EVPI_values' = .EVPI,
+          ## put WTP in a column next to EVPI:----
+          'WTP_values' = .WTPs) %>%
+          ## filter and keep values corresponding to ones the in .MAICER_ vector:----
+        dplyr::filter(WTP_values %in% .MAICER_) %>%
+          ## rename WTP values to use as column names later:----
+        dplyr::pull(var = EVPI_values)
+      } else {
+        ## Calculate EVPI from inputs if PSA_data object was not provided:----
+        private$compute_EVPIs_(
+          .effs = .effs,
+          .costs = .costs)
+      }
+
+      # Prepare EVPPI results table:----
+      ## Build the individual EVPPI results table:----
+      tmp_name <- paste0("Per Person EVPPI (", .units_, "). MAICER = ",
+                         scales::dollar(
+                           x = .MAICER_,
+                           prefix = .units_))
+      ind_evppi <- dplyr::tibble(
+        "Parameters" = if(isTRUE(.subset_)) {
+          paste(.set_names, collapse = " + ")
+        } else {
+          colnames(.params)},
+        {{tmp_name}} :=
+          round(EVPPI[, 1], 2),
+        "Standard Error" =
+          round(EVPPI[, 2], 2),
+        "Indexed to Overall EVPI (%)" =
+          scales::percent(round((EVPPI[, 1] / EVPI), 2)))
+      ## Build the population EVPPI results table:----
+      pop_evppi <- NULL
+      if(!isTRUE(.individual_evppi_)) {
+        tmp_name <- paste0("Population EVPPI over ", .time_horion_,
+                           " years (", .units_, ")")
+        pop_evppi <- ind_evppi %>%
+          dplyr::mutate(
+            {{tmp_name}} :=
+              signif(EVPPI[, 1] * discounted_population, 4))
+      }
+
+      # Prepare results list:----
+      if(!is.null(pop_evppi)) {
+        return(
+          list('Population EVPPI' = pop_evppi,
+               'Table caption' = table_caption,
+               'Plot caption' = plot_caption))
+      } else {
+        return(
+          list('Individual EVPPI' = ind_evppi,
+               'Table caption' = table_caption,
+               'Plot caption' = plot_caption))
+      }
+    },
+
+    # The functions below were defined by Mark Strong, Penny Breeze, Chloe Thomas
+    # and Alan Brennan, the authors of SAVI - Sheffield Accelerated Value of
+    # Information. See [here](https://github.com/Sheffield-Accelerated-VoI/SAVI)!
+
+    ### GAM functions:----
+
+    # Calculating Incremental Net Benefits (INB)
+    #
+    # @param costs.int Costs data structure.
+    # @param effects.int Effects data structure.
+    # @param lambda Maximum Acceptable Incremental Cost-Effectiveness Ratio
+    # (MAICER).
+    #
+    # @return
+    #
+    # @examples
+    # \dontrun{
+    # inb <- createInb(costs, effects, lambda)
+    # }
+    createInb = function(costs.int, effects.int, lambda) {
+
+      inb <- as.matrix(effects.int) * lambda - as.matrix(costs.int)
+      inb <- inb - inb[, 1]
+
+      return(inb)
+    },
+
+    # Estimates EVPPI and SE via GAM
+    #
+    # @param .params A matrix containing parameters' configurations used in the
+    # PSA.
+    # @param NB Data structure containing Net Benefit (NB).
+    # @param sets Column containing PSA samples of the parameter of interest.
+    # @param s Number of simulations for the Monte Carlo computation of the SE.
+    # @param .session Shiny session.
+    #
+    # @return
+    #
+    # @examples
+    gamFunc = function(.params, NB, sets, s = 1000, .session = NULL) {
+
+      if(!is.null(dim(NB))) {
+        NB <- NB - NB[, 1]
+      } else {
+        NB <- cbind(0, NB)
+      }
+
+      D <- ncol(NB)
+      N <- nrow(NB)
+      g.hat <- beta.hat <- Xstar <- V <- tilde.g <- vector("list", D)
+      g.hat[[1]] <- 0
+
+      input.parameters <- .params
+      paramSet <- cbind(cbind(input.parameters)[, sets, drop=FALSE])
+
+      constantParams <- (apply(paramSet, 2, var) == 0)
+
+      if (sum(constantParams) == length(sets)) return(list(EVPI=0, SE=0)) # if all regressors are constant
+      if (sum(constantParams) > 0) sets <- sets[-which(constantParams)] # remove constants
+
+      # check for linear dependence and remove
+      paramSet <- cbind(cbind(input.parameters)[, sets, drop=FALSE]) # now with constants removed
+
+      rankifremoved <- sapply(1:NCOL(paramSet), function (x) qr(paramSet[,-x])$rank)
+
+      while(length(unique(rankifremoved)) > 1) {
+        linearCombs <- which(rankifremoved == max(rankifremoved))
+        print(paste("Linear dependence: removing column", colnames(paramSet)[max(linearCombs)]))
+        paramSet <- cbind(paramSet[, -max(linearCombs), drop=FALSE])
+        sets <- sets[-max(linearCombs)]
+        rankifremoved <- sapply(1:NCOL(paramSet), function (x) qr(paramSet[,-x])$rank)
+      }
+
+      while(qr(paramSet)$rank == rankifremoved[1]) { # special case only lincomb left
+        print(paste("Linear dependence: removing column", colnames(paramSet)[1]))
+        paramSet <- cbind(paramSet[, -1, drop=FALSE])
+        sets <- sets[-1]
+        rankifremoved <- sapply(1:NCOL(paramSet), function (x)
+          qr(paramSet[,-x])$rank)
+      }
+
+      regression.model <- private$formulaGenerator(
+        colnames(input.parameters)[sets])
+
+
+      if(!is.null(.session)) {
+        progress <- shiny::Progress$new(session, min=1, max=D-1)
+        on.exit(progress$close())
+        progress$set(message = 'Calculating conditional expected net benefits',
+                     detail = 'Please wait...')
+      }
+
+      for (d in 2:D) {
+
+        if(!is.null(.session)) {
+          progress$set(value = d - 1)
+        }
+
+        print(paste("estimating g.hat for incremental NB for option", d ,
+                    "versus 1"))
+        dependent <- NB[, d]
+        f <- update(formula(dependent~.), formula(paste(".~", regression.model)))
+        try_model <- try(model <- mgcv::gam(f,
+                                            data = data.frame(input.parameters)))
+        if (inherits(try_model, "try-error")) {
+          regression.model <- private$formulaGenerator_s(
+            colnames(input.parameters)[sets])
+          f <- update(formula(dependent~.), formula(
+            paste(".~", regression.model)))
+          model <- mgcv::gam(f, data = data.frame(input.parameters))
+        }
+        g.hat[[d]] <- model$fitted
+        beta.hat[[d]] <- model$coef
+        Xstar[[d]] <- predict(model,type = "lpmatrix")
+        V[[d]] <- model$Vp
+      }
+
+      perfect.info <- mean(do.call(pmax, g.hat))
+      baseline <- max(unlist(lapply(g.hat, mean)))
+      partial.evpi <- perfect.info - baseline ## estimate EVPI
+      rm(g.hat); gc()
+
+      print("computing standard error via Monte Carlo ...")
+
+      for(d in 2:D) {
+        sampled.coef <- MASS::mvrnorm(s, beta.hat[[d]], V[[d]])
+        tilde.g[[d]] <- sampled.coef%*%t(Xstar[[d]])
+      }
+
+      tilde.g[[1]] <- matrix(0, nrow=s, ncol=N)
+      rm(V, beta.hat, Xstar, sampled.coef);gc()
+
+      sampled.perfect.info <- rowMeans(do.call(pmax, tilde.g))
+      sampled.baseline <- do.call(pmax, lapply(tilde.g, rowMeans))
+      rm(tilde.g); gc()
+
+      sampled.partial.evpi <- sampled.perfect.info - sampled.baseline
+      SE <- sd(sampled.partial.evpi)
+
+      return(list(EVPI=partial.evpi, SE=SE))
+    },
+
+    # Generates the GAM model formulas from the list of parameter names
+    #
+    # @param namesList List of parameter names.
+    #
+    # @return
+    #
+    # @examples
+    # \dontrun{
+    # regression.model <- formulaGenerator(colnames(input.parameters)[sets])
+    # }
+    formulaGenerator = function(namesList) {
+      form <- paste(namesList, ",", sep = "", collapse = "")
+      form <- substr(form, 1, nchar(form) - 1)
+      if (length(namesList) == 4) {
+        form <- paste("te(", form, ", k = 4)", sep = "") # restrict to 4 knots if 4 params
+      } else {
+        form <- paste("te(", form, ")", sep = "")
+      }
+
+      return(form)
+    },
+
+    # Generates the GAM model formulas from the list of parameter names
+    #
+    # @param namesList List of parameter names.
+    #
+    # @return
+    #
+    # \dontrun{
+    # regression.model <- formulaGenerator_s(colnames(input.parameters)[sets])
+    # }
+    formulaGenerator_s = function(namesList) {
+      form <- paste0(namesList, ",", collapse = "")
+      form <- substr(form, 1, nchar(form) - 1)
+      if (length(namesList) == 4) {
+        form <- paste0("te(", form, ", k = 4)") # restrict to 4 knots if 4 params
+        return(form)
+      }
+      if (length(namesList) == 1) {
+        form <- paste0("s(", form, ")") # if single GAM and try error
+        print(form)
+        return(form)
+      }
+      form <- paste0("te(", form, ")")
+      return(form)
+    },
+
+    # Employ single GAM over supplied parameters
+    #
+    # @param .params A matrix containing parameters' configurations used in the
+    # PSA.
+    # @param nb Data structure containing Net Benefit (NB) or Incremental NB
+    # (INB).
+    # @param session Shiny session.
+    #
+    # @return
+    #
+    # @examples
+    # \dontrun{
+    # pEVPI <- applyCalcSingleParamGam(.params, inb, .session)
+    # }
+    applyCalcSingleParamGam = function(.params, nb, .session = NULL) {
+
+      .params <- as.matrix(.params)
+
+      numVar <- NCOL(.params)
+
+      if(!is.null(.session)) {
+        progress <- shiny::Progress$new(session, min=1, max=sum(numVar))
+        on.exit(progress$close())
+        progress$set(message = 'Calculation in progress',
+                     detail = 'Please wait...')
+      }
+
+      res <- matrix(ncol = 2, nrow = NCOL(.params))
+
+      for (i in 1:NCOL(.params)) {
+        if(!is.null(.session)) {
+          progress$set(i)
+        }
+        cat("evppi before gamFunc")
+
+        result <- private$gamFunc(NB = nb, sets = i, s = 1000,
+                                  .params = .params,
+                                  .session = .session)
+
+        res[i, ] <- unlist(result)
+      }
+
+      return(res)
+    },
+
+    ### GP functions:----
+    ## Bug fix 25th Jan 2019
+
+    # Inverse gamma distribution density function
+    #
+    # @param x
+    # @param alpha
+    # @param beta
+    #
+    # @return
+    #
+    # @examples
+    dinvgamma = function(x, alpha, beta) {
+      (beta ^ alpha) / gamma(alpha) * x ^ (-alpha - 1) * exp(-beta / x)
+    },
+
+    # Gaussian Correlation function?
+    #
+    # @param X
+    # @param phi
+    # @param m
+    #
+    # @return
+    #
+    # @examples
+    cor.Gaussian = function(X, phi, m) {
+      txbuild1 <- function(h) exp(-rowSums(t((t(X) - h) / phi) ^ 2))
+      apply(as.matrix(as.matrix(X)[1:m, ]), 1, txbuild1)
+    },
+
+    # Make a matrix with the Gaussian correlation function
+    #
+    # @param X
+    # @param phi
+    #
+    # @return
+    #
+    # @examples
+    makeA.Gaussian = function(X, phi) {
+      n <- NROW(X)
+      if(length(phi) > 1) {
+        b <- diag(phi ^ (-2))
+      } else {
+        b <- phi ^ (-2) }
+      R <- X %*% as.matrix(b) %*% t(X)
+
+      S <- matrix(diag(R), nrow = n, ncol = n)
+      exp(2 * R - S - t(S))
+    },
+
+    # Calculate posterior density
+    #
+    # @param hyperparams
+    # @param NB Net Benefits (NB) matrix.
+    # @param input.m
+    #
+    # @return
+    #
+    # @examples
+    post.density = function(hyperparams, NB, input.m) {
+
+      input.m <- as.matrix(input.m, drop = FALSE)
+
+      N <- nrow(input.m)
+      p <- NCOL(input.m)
+      H <- cbind(1, input.m)
+      q <- ncol(H)
+
+      a.sigma <- 0.001; b.sigma <- 0.001  ##  hyperparameters for IG prior for sigma^2
+      a.nu <- 0.001; b.nu <- 1            ##  hyperparameters for IG prior for nu
+      delta <- exp(hyperparams)[1:p]
+      nu <- exp(hyperparams)[p + 1]
+
+      A <- private$makeA.Gaussian(input.m, delta)
+      Astar <- A + nu * diag(N)
+      T <- chol(Astar)
+      y <- backsolve(t(T), NB, upper.tri = FALSE)
+      x <- backsolve(t(T), H, upper.tri = FALSE)
+      tHAstarinvH <- t(x) %*% (x) + 1e-7* diag(q)
+      betahat <- solve(tHAstarinvH) %*% t(x) %*% y
+      residSS <- y %*% y -t(y) %*% x %*% betahat - t(betahat) %*% t(x) %*% y +
+        t(betahat) %*% tHAstarinvH %*% betahat
+      prior <- prod(dnorm(log(delta), 0, sqrt(1e5))) * dinvgamma(nu, a.nu, b.nu)
+      l <- -sum(log(diag(T))) - 1 / 2 * log(det(tHAstarinvH)) -
+        (N - q + 2 * a.sigma) / 2 * log(residSS / 2 + b.sigma) + log(prior)
+
+      return(l)
+    },
+
+    # Estimate Hyper-parameters
+    #
+    # @param NB Net Benefits (NB) matrix.
+    # @param inputs
+    # @param .session Shiny app session.
+    #
+    # @return
+    #
+    # @examples
+    estimate.hyperparameters = function(NB, inputs, .session = NULL) {
+
+      p <- NCOL(inputs)
+      D <- ncol(NB)
+
+      hyperparameters <- vector("list", D)
+      hyperparameters[[1]] <- NA
+
+      if(!is.null(.session)){
+        progress1 <- shiny::Progress$new(session, min=1, max=D)
+        on.exit(progress1$close())
+        progress1$set(message = 'Estimating GP hyperparameters',
+                      detail = 'Please wait...')
+        progress1$set(value = 1)
+      }
+
+      for(d in 2:D) {
+        if(!is.null(.session)) {
+          progress1$set(value = d)
+        }
+
+        initial.values <- rep(0, p + 1)
+        repeat {
+          print(paste("calling optim function for net benefit", d))
+          log.hyperparameters <- optim(initial.values, fn=post.density,
+                                       NB=NB[, d], input.m=inputs,
+                                       method="Nelder-Mead",
+                                       control=list(fnscale=-1, maxit=10000,
+                                                    trace=0))$par
+          if (sum(abs(initial.values - log.hyperparameters)) < 0.05) {
+            hyperparameters[[d]] <- exp(log.hyperparameters)
+            break
+          }
+          initial.values <- log.hyperparameters
+        }
+      }
+
+      return(hyperparameters)
+    },
+
+    # calculate the GP
+    #
+    # @param .params Parameters matrix.
+    # @param NB Net Benefits (NB) matrix.
+    # @param sets A vector of parameter-indexes
+    # @param s Number of simulations for the Monte Carlo computation of the SE.
+    # @param .session Shiny app session.
+    #
+    # @return
+    #
+    # @examples
+    gpFunc = function(.params, NB, sets, s = 1000, .session = NULL) {
+
+      input.parameters <- .params
+      paramSet <- cbind(input.parameters[, sets])
+      constantParams <- (apply(paramSet, 2, var) == 0)
+
+      #remove constants
+      if (sum(constantParams) == length(sets))
+        return(list(EVPI=0, SE=0)) # if all regressors are constant
+      if (sum(constantParams) > 0)
+        sets <- sets[-which(constantParams)] # remove constants
+
+      # check for linear dependence and remove
+      paramSet <- cbind(cbind(input.parameters)[, sets]) # now with constants removed
+      rankifremoved <- sapply(1:NCOL(paramSet), function (x) qr(paramSet[, -x])$rank)
+      while(length(unique(rankifremoved)) > 1) {
+        linearCombs <- which(rankifremoved == max(rankifremoved))
+        # print(linearCombs)
+        print(paste("Linear dependence: removing column", colnames(paramSet)[max(linearCombs)]))
+        paramSet <- cbind(paramSet[, -max(linearCombs)])
+        sets <- sets[-max(linearCombs)]
+        rankifremoved <- sapply(1:NCOL(paramSet), function(x) qr(paramSet[, -x])$rank)
+      }
+      if(qr(paramSet)$rank == rankifremoved[1]) {
+        paramSet <- cbind(paramSet[, -1]) # special case only lincomb left
+        sets <- sets[-1]
+        print(paste("Linear dependence: removing column", colnames(paramSet)[1]))
+      }
+
+      inputs.of.interest <- sets
+      p <- length(inputs.of.interest)
+
+      if(!is.null(dim(NB))) {
+        NB <- NB - NB[, 1]
+      } else {
+        NB <- cbind(0, NB)
+      }
+
+      maxSample <- min(7500, nrow(NB)) # to avoid trying to invert huge matrix
+      NB <- as.matrix(NB[1:maxSample, ])
+      D <- ncol(NB)
+
+      input.matrix <- as.matrix(
+        input.parameters[1:maxSample, inputs.of.interest, drop=FALSE])
+      colmin <- apply(input.matrix, 2, min)
+      colmax <- apply(input.matrix, 2, max)
+      colrange <- colmax - colmin
+      input.matrix <- sweep(input.matrix, 2, colmin, "-")
+      input.matrix <- sweep(input.matrix, 2, colrange, "/")
+      N <- nrow(input.matrix)
+      p <- ncol(input.matrix)
+      H <- cbind(1, input.matrix)
+      q <- ncol(H)
+
+      m <- min(30 * p, 250)
+      m <- min(nrow(NB), m)
+      setForHyperparamEst <- 1:m # sample(1:N, m, replace=FALSE)
+      hyperparameters <- private$estimate.hyperparameters(
+        NB[setForHyperparamEst, ],
+        input.matrix[setForHyperparamEst, ],
+        .session = .session)
+
+      V <- g.hat <- vector("list", D)
+      g.hat[[1]] <- rep(0, N)
+
+      if(!is.null(.session)) {
+        progress1 <- shiny::Progress$new(.session, min=1, max=D)
+        on.exit(progress1$close())
+        progress1$set(message = 'Calculating conditional expected net benefits',
+                      detail = 'Please wait...')
+        progress1$set(value = 1)
+      }
+
+      for(d in 2:D)
+      {
+        if(!is.null(.session)) {
+          progress1$set(value = d)
+        }
+        print(paste("estimating g.hat for incremental NB for option", d,
+                    "versus 1"))
+        delta.hat <- hyperparameters[[d]][1:p]
+        nu.hat <- hyperparameters[[d]][p+1]
+        A <- private$makeA.Gaussian(input.matrix, delta.hat)
+        Astar <- A + nu.hat * diag(N)
+        Astarinv <- chol2inv(chol(Astar))
+        rm(Astar); gc()
+        AstarinvY <- Astarinv %*% NB[, d]
+        tHAstarinv <- t(H) %*% Astarinv
+        tHAHinv <- solve(tHAstarinv %*% H + 1e-7* diag(q))
+        betahat <- tHAHinv %*% (tHAstarinv %*% NB[, d])
+        Hbetahat <- H %*% betahat
+        resid <- NB[, d] - Hbetahat
+        g.hat[[d]] <- Hbetahat+A %*% (Astarinv %*% resid)
+        AAstarinvH <- A %*% t(tHAstarinv)
+        sigmasqhat <- as.numeric(t(resid) %*% Astarinv %*% resid)/(N - q - 2)
+        V[[d]] <- sigmasqhat*(nu.hat * diag(N) - nu.hat ^ 2 * Astarinv +
+                                (H - AAstarinvH) %*%
+                                (tHAHinv %*% t(H - AAstarinvH)))
+        rm(A, Astarinv, AstarinvY, tHAstarinv, tHAHinv, betahat, Hbetahat,
+           resid, sigmasqhat);gc()
+      }
+
+      perfect.info <- mean(do.call(pmax, g.hat))
+      baseline <- max(unlist(lapply(g.hat, mean)))
+
+      partial.evpi <- perfect.info - baseline
+
+      print("Computing standard error via Monte Carlo")
+      tilde.g <- vector("list", D)
+      tilde.g[[1]] <- matrix(0, nrow=s, ncol=min(N, 1000))   # bug fix 25.1.19
+
+      if(!is.null(.session)) {
+        progress2 <- shiny::Progress$new(session, min=1, max=D)
+        on.exit(progress2$close())
+        progress2$set(message = 'Calculating Standard Error',
+                      detail = 'Please wait...')
+        progress2$set(value = 1)
+      }
+
+      for(d in 2:D) {
+        if(!is.null(.session)) {
+          progress2$set(value = d)
+        }
+        tilde.g[[d]] <- MASS::mvrnorm(s, g.hat[[d]][1:(min(N, 1000))],
+                                      V[[d]][1:(min(N, 1000)),
+                                             1:(min(N, 1000))])
+      }
+      if(!is.null(.session)) {
+        progress2$close()
+      }
+
+      sampled.perfect.info <- rowMeans(do.call(pmax, tilde.g))
+      sampled.baseline <- do.call(pmax, lapply(tilde.g, rowMeans))
+      rm(tilde.g);gc()
+
+      sampled.partial.evpi <- sampled.perfect.info - sampled.baseline
+      SE <- sd(sampled.partial.evpi)
+      rm(V, g.hat);gc()
+
+      return(list(EVPI=partial.evpi, SE=SE))
+    },
+
+    ### Subset EVPPI:----
+    # Calculate Parameters' Subset EVPPI
+    #
+    # @param .nb Net Benefits (NB) matrix.
+    # @param .effs A matrix containing the \code{effects} from PSA. Number of
+    # \code{columns} is equal to the interventions while the number of
+    # \code{rows} is equal to the number of PSA simulations to be summarised.
+    # @param .costs A matrix containing the \code{costs} from PSA. Number of
+    # \code{columns} is equal to the interventions while the number of
+    # \code{rows} is equal to the number of PSA simulations to be summarised.
+    # @param .params A matrix containing parameters' configurations used in
+    # the PSA.
+    # @param sets A vector of parameter-indexes to be used for EVPPI.
+    # @param .sets_names A vector of parameter-names to be used for EVPPI.
+    # @param lambda Maximum Acceptable Incremental Cost-Effectiveness Ratio
+    # (MAICER).
+    # @param .session Shiny app session.
+    #
+    # @return
+    #
+    # @examples
+    calSubsetEvpi = function(.nb, .effs, .costs, .params, sets,
+                              .sets_names = NULL, lambda, .session = NULL) {
+      # grab parameter-indexes from the parameters dataset:
+      if(is.null(sets)) {
+        sets <- which(colnames(.params) %in% .sets_names)
+      }
+
+      numParams <- length(sets) # number of parameters in the set
+      # regressionFunction <- ifelse(numParams > 4, "private$gpFunc",
+      #                              "private$gamFunc") # change gp to ppr
+      f <- private$formulaGenerator(sets)
+
+      # calculate incremental net benefit (INB):
+      inb <- if(is.null(.nb)) {
+        private$createInb( # Strong et al. function
+          costs.int = .costs,
+          effects.int = .effs,
+          lambda = lambda)
+      } else {
+        .nb
+      }
+
+      # estimate conditional EVPPI:
+      # output <- get(regressionFunction)(.params, inb, sets, s = 1000, .session)
+      output <-
+        if(numParams > 4) {
+          private$gpFunc(.params, inb, sets, s = 1000, .session)
+        } else {
+          private$gamFunc(.params, inb, sets, s = 1000, .session)
+        }
+
+      return(output)
+    },
+
+    ## Plot the EVPPI results:----
+    # Plot the Expected Value of Perfect Partial Information (EVPPI) results.
+    #
+    # @param EVPPI_res A list containing EVPPI results.
+    # @param .show_percent Bolean for whether to show the percentage of overall
+    # EVPI on the bars.
+    # @param .min_percent Only parameters with percentage of overall EVPI equal to
+    # or higher than .min_percent will make it to the plot.
+    # @param .params_num The number of parameters to show in the bar plot.
+    #
+    # @return An Object of class ggplot2.
+    #
+    # @examples
+    # \dontrun{
+    # library(ShinyPSA)
+    #
+    # # Summarise PSA results:
+    # PSA_summary = summarise_PSA_(
+    #   .effs = ShinyPSA::Brennan_1K_PSA$e,
+    #   .costs = ShinyPSA::Brennan_1K_PSA$c,
+    #   .params = ShinyPSA::Brennan_1K_PSA$p,
+    #   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
+    #
+    # # Estimate EVPPI:
+    # EVPPI_ind_res <- compute_EVPPIs_(
+    #   .PSA_data = PSA_summary,
+    #   .MAICER_ = 30000)
+    #
+    # # Plot EVPPI results:
+    # plot_EVPPI_(
+    #   EVPPI_res = EVPPI_ind_res,
+    #   .params_num = 15,
+    #   .min_percent = NULL)
+    # }
+    plot_EVPPI_ = function(EVPPI_res, .show_percent = TRUE, .min_percent = 1,
+                           .params_num = NULL) {
+      # Prepare plot data:----
+      EVPPI_data <- EVPPI_res[[1]] %>%
+        ## subset data columns:----
+      `colnames<-`(c("Parameters", "Per Person EVPPI", colnames(.)[-c(1,2)])) %>%
+        ## create a numeric percentage EVPPI of overall EVPI:----
+      dplyr::mutate(
+        'percent' = as.numeric(
+          gsub(pattern = '%',
+               replacement = "",
+               x = EVPPI_res[[1]][[4]]))) %>%
+        ## rename exiting string percent variable to a usable name:----
+      dplyr::rename("Percent overall EVPI" = "Indexed to Overall EVPI (%)") %>%
+        ## sort EVPPI values in descending order:----
+      dplyr::arrange(dplyr::desc(`Per Person EVPPI`)) %>%
+        ## if a subset of EVPPI is requested:----
+      {if(is.null(.params_num)) {
+        .
+      } else {
+        if(is.numeric(.params_num)) {
+          dplyr::slice_head(.data = ., n = .params_num)
+        } else {
+          .}}} %>%
+        ## if a user wants :----
+      {if(is.null(.min_percent)) {
+        .
+      } else {
+        if(is.numeric(.min_percent)) {
+          dplyr::filter(.data = ., percent >= .min_percent)
+        } else {
+          .}}}
+
+      # Build EVPPI plot:----
+      p <- ggplot2::ggplot(data = EVPPI_data) +
+        ggplot2::coord_cartesian(xlim = c(0, NA)) +
+        ## add bar plot:----
+      ggplot2::geom_bar(
+        ggplot2::aes(
+          x = `Per Person EVPPI`,
+          y = forcats::fct_reorder(Parameters, `Per Person EVPPI`)),
+        fill = "#EFC00099", #"#EFC000FF"
+        stat = "identity",
+        position = ggplot2::position_dodge2()) +
+        ## add axis lines:----
+      ggplot2::geom_hline(
+        yintercept = 0,
+        color = 'grey',
+        size = 0.1) +
+        ggplot2::geom_vline(
+          xintercept = 0,
+          color = 'grey',
+          size = 0.1) +
+        ## fine tuning the plot:----
+      ggplot2::scale_x_continuous(labels = scales::dollar_format(
+        prefix = "\u00A3")) +
+        ggplot2::theme(
+          # axis.ticks.length.y = element_text(hjust = -2),
+          plot.title.position = "plot", # Start title from near the margin
+          ### Add a border and space around the plot:
+          # panel.border = ggplot2::element_rect(colour = 'black', fill = NA),
+          plot.margin = ggplot2::unit(c(5.5, 0.5, 5.5, 5.5), # more space LHS
+                                      c("points", "cm", "points", "points"))) +
+        # panel.grid = element_blank(),
+        # panel.border = element_blank()) +
+        ggplot2::labs(
+          title = "Per Person EVPPI",
+          caption = if(!is.null(.min_percent)) {
+            if(is.numeric(.min_percent)) {
+              paste0(EVPPI_res[['Plot caption']], "
+                 Parameters with EVPPI less than ", .min_percent,
+                     "% of overall EVPI are excluded from plot.")
+            }
+          } else {
+            EVPPI_res[['Plot caption']]
+          },
+          x = "EVPPI (\u00A3)",
+          y = "Parameters")
+
+      # If user wants to see percentages on bars:
+      if(isTRUE(.show_percent)) {
+        p <- p +
+          ggplot2::geom_text(
+            ggplot2::aes(
+              x = `Per Person EVPPI`,
+              y = forcats::fct_reorder(Parameters, `Per Person EVPPI`),
+              label = `Percent overall EVPI`),
+            ## reduce label size with large number of params
+            size = if(nrow(EVPPI_data) > 15) 2.5 else NA)
+      }
+
+      return(p)
+
     }
 
   )

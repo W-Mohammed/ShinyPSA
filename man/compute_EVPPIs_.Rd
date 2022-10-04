@@ -8,6 +8,8 @@ compute_EVPPIs_(
   .PSA_data,
   .effs = NULL,
   .costs = NULL,
+  .EVPI = NULL,
+  .WTPs = NULL,
   .params = NULL,
   .set = NULL,
   .set_names = NULL,
@@ -32,6 +34,11 @@ results.}
 \item{.costs}{A matrix containing the \code{costs} from PSA. Number of
 \code{columns} is equal to the interventions while the number of
 \code{rows} is equal to the number of PSA simulations to be summarised.}
+
+\item{.EVPI}{A data table containing EVPI data.}
+
+\item{.WTPs}{A vector containing the Willingness-to-pay values over which
+EVPI values were estimated.}
 
 \item{.params}{A matrix containing parameters' configurations used in
 the PSA.}
@@ -76,5 +83,39 @@ Compute the Expected Value of Perfect Partial Information (EVPPI).
 \dontrun{
 library(ShinyPSA)
 
+# Summarise PSA results:
+PSA_summary = summarise_PSA_(
+  .effs = ShinyPSA::Brennan_1K_PSA$e,
+  .costs = ShinyPSA::Brennan_1K_PSA$c,
+  .params = ShinyPSA::Brennan_1K_PSA$p,
+  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
+
+# Estimate EVPPI:
+EVPPI_ind_res <- compute_EVPPIs_(
+    .PSA_data = PSA_summary,
+    .MAICER_ = 30000)
+
+EVPPI_pop_res <- compute_EVPPIs_(
+    .PSA_data = PSA_summary,
+    .MAICER_ = 20000,
+    .individual_evppi_ = FALSE,
+    .evppi_population_ = 1000,
+    .time_horion_ = 5)
+
+# Estimate Conditional EVPPI:
+cEVPPI_ind_res <- compute_EVPPIs_(
+    .PSA_data = PSA_summary,
+    .set = c(6, 14, 15, 16),
+    .subset_ = TRUE,
+    .MAICER_ = 30000)
+
+cEVPPI_pop_res <- compute_EVPPIs_(
+    .PSA_data = PSA_summary,
+    .set_names = c("theta6", "theta14", "theta15", "theta16"),
+    .subset_ = TRUE,
+    .MAICER_ = 20000,
+    .individual_evppi_ = FALSE,
+    .evppi_population_ = 1000,
+    .time_horion_ = 5)
 }
 }
