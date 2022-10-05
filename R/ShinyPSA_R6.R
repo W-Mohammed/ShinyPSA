@@ -32,6 +32,14 @@ NULL
 #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats,
 #'                   .evppi = TRUE,
 #'                   .plot = TRUE)
+#'
+#' PSA_outputs <- ShinyPSA$new(
+#'                   .effs = as_tibble(ShinyPSA::Brennan_10K_PSA$e),
+#'                   .costs = as_tibble(ShinyPSA::Brennan_10K_PSA$c),
+#'                   .params = as_tibble(ShinyPSA::Brennan_10K_PSA$p),
+#'                   .interventions = ShinyPSA::Brennan_10K_PSA$treats,
+#'                   .evppi = FALSE,
+#'                   .plot = FALSE)
 #' }
 #'
 ShinyPSA <- R6::R6Class(
@@ -170,15 +178,29 @@ ShinyPSA <- R6::R6Class(
     #' PSA_outputs$get_Summary_table()
     #' }
     get_Summary_table = function(...) {
-      # pass arguments to the plotting function:
-      self$Summary_table <- private$draw_summary_table_(...)
-
-      # return default plot if no arguments were passed to the function:
+      # grab passed arguments, if any:
       dots_ <- list(...)
-      if(length(dots_) == 0)
-        return(private$PSA_summary[["Summary_table"]])
+      # depending on passed arguments:
+      self$Summary_table <-
+        if(length(dots_) == 0 &
+           !is.null(private$PSA_summary[["Summary_table"]])) {
+          # return default object if no arguments were passed to the function:
+          private$PSA_summary[["Summary_table"]]
+        } else {
+          if(is.null(private$PSA_summary[["Summary_table"]])) {
+            # pass arguments to the relevant function:
+            dots_$.PSA_data <- private$PSA_summary
+            private$PSA_summary[["Summary_table"]] <-
+              do.call(private$draw_summary_table_, dots_)
+            # return default object after creation:
+            private$PSA_summary[["Summary_table"]]
+          } else {
+            # pass arguments to the relevant function:
+            dots_$.PSA_data <- private$PSA_summary
+            do.call(private$draw_summary_table_, dots_)
+          }
+        }
 
-      # if any arguments exist, then return the new plot:
       return(self$Summary_table)
     },
 
@@ -215,15 +237,29 @@ ShinyPSA <- R6::R6Class(
     #'   )
     #' }
     get_CEP = function(...) {
-      # pass arguments to the plotting function:
-      self$CEP_plot <- private$plot_CEplane_(...)
-
-      # return default plot if no arguments were passed to the function:
+      # grab passed arguments, if any:
       dots_ <- list(...)
-      if(length(dots_) == 0)
-        return(private$PSA_summary[["CEP_plot"]])
+      # depending on passed arguments:
+      self$CEP_plot <-
+        if(length(dots_) == 0 &
+           !is.null(private$PSA_summary[["CEP_plot"]])) {
+          # return default object if no arguments were passed to the function:
+          private$PSA_summary[["CEP_plot"]]
+        } else {
+          if(is.null(private$PSA_summary[["CEP_plot"]])) {
+            # pass arguments to the relevant function:
+            dots_$.PSA_data <- private$PSA_summary
+            private$PSA_summary[["CEP_plot"]] <-
+              do.call(private$plot_CEplane_, dots_)
+            # return default object after creation:
+            private$PSA_summary[["CEP_plot"]]
+          } else {
+            # pass arguments to the relevant function:
+            dots_$.PSA_data <- private$PSA_summary
+            do.call(private$plot_CEplane_, dots_)
+          }
+        }
 
-      # if any arguments exist, then return the new plot:
       return(self$CEP_plot)
     },
 
@@ -248,15 +284,29 @@ ShinyPSA <- R6::R6Class(
     #' PSA_outputs$get_CEAC()
     #' }
     get_CEAC = function(...) {
-      # pass arguments to the plotting function:
-      self$CEAC_plot <- private$plot_CEAC_(...)
-
-      # return default plot if no arguments were passed to the function:
+      # grab passed arguments, if any:
       dots_ <- list(...)
-      if(length(dots_) == 0)
-        return(private$PSA_summary[["CEAC_plot"]])
+      # depending on passed arguments:
+      self$CEAC_plot <-
+        if(length(dots_) == 0 &
+           !is.null(private$PSA_summary[["CEAC_plot"]])) {
+          # return default object if no arguments were passed to the function:
+          private$PSA_summary[["CEAC_plot"]]
+        } else {
+          if(is.null(private$PSA_summary[["CEAC_plot"]])) {
+            # pass arguments to the relevant function:
+            dots_$.PSA_data <- private$PSA_summary
+            private$PSA_summary[["CEAC_plot"]] <-
+              do.call(private$plot_CEAC_, dots_)
+            # return default object after creation:
+            private$PSA_summary[["CEAC_plot"]]
+          } else {
+            # pass arguments to the relevant function:
+            dots_$.PSA_data <- private$PSA_summary
+            do.call(private$plot_CEAC_, dots_)
+          }
+        }
 
-      # if any arguments exist, then return the new plot:
       return(self$CEAC_plot)
     },
 
@@ -281,15 +331,29 @@ ShinyPSA <- R6::R6Class(
     #' PSA_outputs$get_CEAF()
     #' }
     get_CEAF = function(...) {
-      # pass arguments to the plotting function:
-      self$CEAF_plot <- private$plot_CEAF_(...)
-
-      # return default plot if no arguments were passed to the function:
+      # grab passed arguments, if any:
       dots_ <- list(...)
-      if(length(dots_) == 0)
-        return(private$PSA_summary[["CEAF_plot"]])
+      # depending on passed arguments:
+      self$CEAF_plot <-
+        if(length(dots_) == 0 &
+           !is.null(private$PSA_summary[["CEAF_plot"]])) {
+          # return default object if no arguments were passed to the function:
+          private$PSA_summary[["CEAF_plot"]]
+        } else {
+          if(is.null(private$PSA_summary[["CEAF_plot"]])) {
+            # pass arguments to the relevant function:
+            dots_$.PSA_data <- private$PSA_summary
+            private$PSA_summary[["CEAF_plot"]] <-
+              do.call(private$plot_CEAF_, dots_)
+            # return default object after creation:
+            private$PSA_summary[["CEAF_plot"]]
+          } else {
+            # pass arguments to the relevant function:
+            dots_$.PSA_data <- private$PSA_summary
+            do.call(private$plot_CEAF_, dots_)
+          }
+        }
 
-      # if any arguments exist, then return the new plot:
       return(self$CEAF_plot)
     },
 
@@ -314,15 +378,29 @@ ShinyPSA <- R6::R6Class(
     #' PSA_outputs$get_eNMB()
     #' }
     get_eNMB = function(...) {
-      # pass arguments to the plotting function:
-      self$eNMB_plot <- private$plot_eNMB_(...)
-
-      # return default plot if no arguments were passed to the function:
+      # grab passed arguments, if any:
       dots_ <- list(...)
-      if(length(dots_) == 0)
-        return(private$PSA_summary[["eNMB_plot"]])
+      # depending on passed arguments:
+      self$eNMB_plot <-
+        if(length(dots_) == 0 &
+           !is.null(private$PSA_summary[["eNMB_plot"]])) {
+          # return default object if no arguments were passed to the function:
+          private$PSA_summary[["eNMB_plot"]]
+        } else {
+          if(is.null(private$PSA_summary[["eNMB_plot"]])) {
+            # pass arguments to the relevant function:
+            dots_$.PSA_data <- private$PSA_summary
+            private$PSA_summary[["eNMB_plot"]] <-
+              do.call(private$plot_eNMB_, dots_)
+            # return default object after creation:
+            private$PSA_summary[["eNMB_plot"]]
+          } else {
+            # pass arguments to the relevant function:
+            dots_$.PSA_data <- private$PSA_summary
+            do.call(private$plot_eNMB_, dots_)
+          }
+        }
 
-      # if any arguments exist, then return the new plot:
       return(self$eNMB_plot)
     },
 
@@ -347,15 +425,29 @@ ShinyPSA <- R6::R6Class(
     #' PSA_outputs$get_EVPI()
     #' }
     get_EVPI = function(...) {
-      # pass arguments to the plotting function:
-      self$EVPI_plot <- private$plot_EVPI_(...)
-
-      # return default plot if no arguments were passed to the function:
+      # grab passed arguments, if any:
       dots_ <- list(...)
-      if(length(dots_) == 0)
-        return(private$PSA_summary[["EVPI_plot"]])
+      # depending on passed arguments:
+      self$EVPI_plot <-
+        if(length(dots_) == 0 &
+           !is.null(private$PSA_summary[["EVPI_plot"]])) {
+          # return default object if no arguments were passed to the function:
+          private$PSA_summary[["EVPI_plot"]]
+        } else {
+          if(is.null(private$PSA_summary[["EVPI_plot"]])) {
+            # pass arguments to the relevant function:
+            dots_$.PSA_data <- private$PSA_summary
+            private$PSA_summary[["EVPI_plot"]] <-
+              do.call(private$plot_EVPI_, dots_)
+            # return default object after creation:
+            private$PSA_summary[["EVPI_plot"]]
+          } else {
+            # pass arguments to the relevant function:
+            dots_$.PSA_data <- private$PSA_summary
+            do.call(private$plot_EVPI_, dots_)
+          }
+        }
 
-      # if any arguments exist, then return the new plot:
       return(self$EVPI_plot)
     },
 
@@ -380,21 +472,28 @@ ShinyPSA <- R6::R6Class(
     #' PSA_outputs$get_EVPPI_results()
     #' }
     get_EVPPI_results = function(...) {
+      # grab passed arguments, if any:
       dots_ <- list(...)
-      self$EVPPI_results <- if(length(dots_) == 0) {
-        if(is.null(private$PSA_summary[["EVPPI"]])) {
-          # create object is missing:
-          dots_$.PSA_data <- private$PSA_summary
-          private$PSA_summary[["EVPPI"]] <- do.call(
-            private$compute_EVPPIs_, dots_)
+      # depending on passed arguments:
+      self$EVPPI_results <-
+        if(length(dots_) == 0 &
+           !is.null(private$PSA_summary[["EVPPI"]])) {
+          # return default object if no arguments were passed to the function:
+          private$PSA_summary[["EVPPI"]]
+        } else {
+          if(is.null(private$PSA_summary[["EVPPI"]])) {
+            # create object is missing:
+            dots_$.PSA_data <- private$PSA_summary
+            private$PSA_summary[["EVPPI"]] <- do.call(
+              private$compute_EVPPIs_, dots_)
+            # return default object after creation:
+            private$PSA_summary[["EVPPI"]]
+          } else {
+            # pass arguments to the relevant function:
+            dots_$.PSA_data <- private$PSA_summary
+            do.call(private$compute_EVPPIs_, dots_)
+          }
         }
-        # return default object if no arguments were passed to the function:
-        private$PSA_summary[["EVPPI"]]
-      } else {
-        # pass arguments to the plotting function:
-        dots_$.PSA_data <- private$PSA_summary
-        do.call(private$compute_EVPPIs_, dots_)
-      }
 
       return(self$EVPPI_results)
     },
@@ -403,7 +502,10 @@ ShinyPSA <- R6::R6Class(
     #' @description
     #' Get the Subset EVPPI results table
     #'
-    #' @param ... Extra arguments passed to the plotting functions
+    #' @param ... Extra arguments passed to the plotting functions. Should at
+    #' least contain either:
+    #' \code{.set}: Parameters' indexes.
+    #' \code{.set_names}: Parameters' names.
     #'
     #' @return A list containing Subset EVPPI results
     #' @export
@@ -417,16 +519,66 @@ ShinyPSA <- R6::R6Class(
     #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
     #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
     #'
-    #' PSA_outputs$get_Sub_EVPPI_results()
+    #' PSA_outputs$get_Sub_EVPPI_results(
+    #'   .set = c(14, 16, 5))
+    #' PSA_outputs$get_Sub_EVPPI_results(
+    #'   .set_names = c("theta5", "theta14", "theta16"))
     #' }
     get_Sub_EVPPI_results = function(...) {
+      # grab passed arguments, if any:
       dots_ <- list(...)
       # sanity checks:
-      if(is.null(dots_$.set_names) & is.null(dots_$.set)) {
+      if(is.null(dots_[['.set_names']]) & is.null(dots_[['.set']])) {
         print(
           paste("Unable to estimate EVPPI for a subset of parameters.",
                 "Please pass parameters indexes via the argument '.set'",
                 "or parameters names via the argument '.set_names'."))
+      }
+
+      if(is.null(dots_[['.set']]) & !is.null(dots_[['.set_names']])) {
+        stopifnot(
+          "One or more of the passed parameters' names are incorrect." =
+            all(dots_[['.set_names']] %in% colnames(private$params)),
+          "Please pass characters (Parameters' names)" =
+            is.character(dots_[['.set_names']]))
+
+        dots_[['.set']] <- which(
+          colnames(private$params) %in% dots_[['.set_names']])
+      }
+
+      stopifnot(
+        'Please pass positive intergers to the ".set" argument.' =
+          is.numeric(dots_[['.set']]),
+        'One or more parameter index are out-of-bound.' =
+          max(dots_[['.set']]) <= length(colnames(private$params)),
+        'One or more parameter index are out-of-bound.' =
+          min(dots_[['.set']]) >= 1)
+
+      # check if current subset was not processed before:
+      EVPPI_subset_exists <- if(is.null(private$EVPPI_subsets)) {
+         FALSE
+      } else {
+        if(paste0(dots_[['.set']], collapse = '_') %in% private$EVPPI_subsets) {
+          TRUE
+        } else {
+          FALSE
+        }
+      }
+      # save of all permutations of passed parameter-subset for future calls:
+      if(!isTRUE(EVPPI_subset_exists)) {
+        # get the list of all permutations of parameters subset defined by user:
+        params_perm <- combinat::permn(dots_[['.set']])
+        # convert the permutations list to a matrix:
+        params_perm <- do.call(rbind, params_perm)
+        # take the unique permutations:
+        params_perm <- unique(params_perm)
+        # collapse permutations to help compare with existing/passed subsets:
+        params_perm <- params_perm %>%
+          dplyr::as_tibble(.name_repair = ~ make.names(., unique = TRUE)) %>%
+          tidyr::unite("combis", everything(), sep = "_") %>%
+          dplyr::pull("combis")
+        # add new permutations to previously processed ones:
+        private$EVPPI_subsets <- c(private$EVPPI_subsets, params_perm)
       }
 
       # hard-code key arguments:
@@ -434,12 +586,19 @@ ShinyPSA <- R6::R6Class(
       dots_$.subset_ <- TRUE
 
       # compute EVPPI for the parameters subsets:
-      self$EVPPI_Sub_results <- if(is.null(self$EVPPI_Sub_results)) {
-        do.call(private$compute_EVPPIs_, dots_)
+      self$EVPPI_Sub_results <- if(!isTRUE(EVPPI_subset_exists)) {
+        print("Processing a new EVPPI parameter-subset")
+        if(!is.null(self$EVPPI_Sub_results)) {
+          self$EVPPI_Sub_results %>%
+            dplyr::bind_rows(
+              do.call(private$compute_EVPPIs_, dots_))
+        } else {
+          do.call(private$compute_EVPPIs_, dots_)
+        }
       } else {
-        self$EVPPI_Sub_results %>%
-          dplyr::bind_rows(
-            do.call(private$compute_EVPPIs_, dots_))
+        print(
+          "This parameter-subset (or its permutation) was processed before.")
+        self$EVPPI_Sub_results
       }
 
       return(self$EVPPI_Sub_results)
@@ -466,7 +625,9 @@ ShinyPSA <- R6::R6Class(
     #' PSA_outputs$get_EVPPI_plot()
     #' }
     get_EVPPI_plot = function(...) {
+      # grab passed arguments, if any:
       dots_ <- list(...)
+      # depending on passed arguments:
       self$EVPPI_plot <- if(length(dots_) == 0 &
                             !is.null(private$PSA_summary[["EVPPI_plot"]])) {
         # return default object if no arguments were passed to the function:
@@ -474,11 +635,18 @@ ShinyPSA <- R6::R6Class(
       } else {
         if(is.null(private$PSA_summary[["EVPPI"]])) {
           # create EVPPIs results object if it does not exist:
-          private$PSA_summary[["EVPPI"]] <- self$get_EVPPI_results()
+          self$get_EVPPI_results()
+          # pass arguments to the plotting function:
+          dots_$EVPPI_res <- private$PSA_summary[["EVPPI"]]
+          private$PSA_summary[["EVPPI_plot"]] <-
+            do.call(private$plot_EVPPI_, dots_)
+          # return default object after creation:
+          private$PSA_summary[["EVPPI_plot"]]
+        } else {
+          # pass arguments to the plotting function:
+          dots_$EVPPI_res <- private$PSA_summary[["EVPPI"]]
+          do.call(private$plot_EVPPI_, dots_)
         }
-        # pass arguments to the plotting function:
-        dots_$EVPPI_res <- private$PSA_summary[["EVPPI"]]
-        do.call(private$plot_EVPPI_, dots_)
       }
 
       return(self$EVPPI_plot)
@@ -505,15 +673,30 @@ ShinyPSA <- R6::R6Class(
     #' PSA_outputs$get_PSA_stabl_plots()
     #' }
     get_PSA_stabl_plots = function(...) {
-      # pass arguments to the plotting function:
-      self$stability_plots <- private$check_PSA_stability(...)
-
-      # return default plot if no arguments were passed to the function:
+      # grab passed arguments, if any:
       dots_ <- list(...)
-      if(length(dots_) == 0)
-        return(private$PSA_summary[["Stability_plots"]])
+      # depending on passed arguments:
+      self$stability_plots <-
+        if(length(dots_) == 0 &
+           !is.null(private$PSA_summary[["Stability_plots"]])) {
+        # return default object if no arguments were passed to the function:
+        private$PSA_summary[["Stability_plots"]]
+      } else {
+        if(is.null(private$PSA_summary[["Stability_plots"]])) {
+          # pass arguments to the drawing function:
+          dots_$.PSA_data <- private$PSA_summary
+          # create default object as it does not exist:
+          private$PSA_summary[["Stability_plots"]] <-
+            do.call(private$check_PSA_stability, dots_)
+          # return default object after creation:
+          private$PSA_summary[["Stability_plots"]]
+        } else {
+          # pass arguments to the drawing function:
+          dots_$.PSA_data <- private$PSA_summary
+          do.call(private$check_PSA_stability, dots_)
+        }
+      }
 
-      # if any arguments exist, then return the new plot:
       return(self$stability_plots)
     },
 
@@ -549,6 +732,7 @@ ShinyPSA <- R6::R6Class(
     costs = NULL,
     params = NULL,
     PSA_summary = NULL,
+    EVPPI_subsets = NULL,
 
     ## Summarise PSA outputs and report results:----
     #

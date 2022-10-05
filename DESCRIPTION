@@ -19,6 +19,7 @@ Depends:
     tidyverse
 Imports: 
     bslib,
+    combinat,
     dplyr,
     DT,
     ggplot2,
@@ -29,7 +30,6 @@ Imports:
     plyr,
     purrr,
     R6,
-    rockchalk,
     scales,
     shinyjs,
     shinymanager,

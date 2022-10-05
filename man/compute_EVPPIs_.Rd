@@ -111,7 +111,7 @@ cEVPPI_ind_res <- compute_EVPPIs_(
 
 cEVPPI_pop_res <- compute_EVPPIs_(
     .PSA_data = PSA_summary,
-    .set_names = c("theta6", "theta14", "theta15", "theta16"),
+    .set_names = c("theta6", "theta14", "theta15", "theta16", "theta5"),
     .subset_ = TRUE,
     .MAICER_ = 20000,
     .individual_evppi_ = FALSE,

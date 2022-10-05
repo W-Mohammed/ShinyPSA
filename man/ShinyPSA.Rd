@@ -21,6 +21,14 @@ PSA_outputs <- ShinyPSA$new(
                   .interventions = ShinyPSA::Brennan_1K_PSA$treats,
                   .evppi = TRUE,
                   .plot = TRUE)
+
+PSA_outputs <- ShinyPSA$new(
+                  .effs = as_tibble(ShinyPSA::Brennan_10K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_10K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_10K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_10K_PSA$treats,
+                  .evppi = FALSE,
+                  .plot = FALSE)
 }
 
 
@@ -167,7 +175,10 @@ PSA_outputs <- ShinyPSA$new(
                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
                   .interventions = ShinyPSA::Vaccine_PSA$treats)
 
-PSA_outputs$get_Sub_EVPPI_results()
+PSA_outputs$get_Sub_EVPPI_results(
+  .set = c(14, 16, 5))
+PSA_outputs$get_Sub_EVPPI_results(
+  .set_names = c("theta5", "theta14", "theta16"))
 }
 
 ## ------------------------------------------------
@@ -644,7 +655,10 @@ Get the Subset EVPPI results table
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Extra arguments passed to the plotting functions}
+\item{\code{...}}{Extra arguments passed to the plotting functions. Should at
+least contain either:
+\code{.set}: Parameters' indexes.
+\code{.set_names}: Parameters' names.}
 }
 \if{html}{\out{</div>}}
 }
@@ -661,7 +675,10 @@ PSA_outputs <- ShinyPSA$new(
                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
                   .interventions = ShinyPSA::Vaccine_PSA$treats)
 
-PSA_outputs$get_Sub_EVPPI_results()
+PSA_outputs$get_Sub_EVPPI_results(
+  .set = c(14, 16, 5))
+PSA_outputs$get_Sub_EVPPI_results(
+  .set_names = c("theta5", "theta14", "theta16"))
 }
 }
 \if{html}{\out{</div>}}
