@@ -19,12 +19,14 @@ Depends:
     tidyverse
 Imports: 
     bslib,
+    combinat,
     dplyr,
     DT,
     ggplot2,
     ggpubr,
     ggrepel,
     magrittr,
+    mgcv,
     plyr,
     purrr,
     R6,
