@@ -110,6 +110,130 @@ assign_extraArgs_ <- function(.default_args_, .env_, .args_) {
     })
 }
 
+#' Generate stats
+#'
+#' @param .effs A matrix containing the \code{effects} from PSA. Number of
+#' \code{columns} is equal to the interventions while the number of
+#' \code{rows} is equal to the number of PSA simulations to be summarised.
+#' @param .costs A matrix containing the \code{costs} from PSA. Number of
+#' \code{columns} is equal to the interventions while the number of
+#' \code{rows} is equal to the number of PSA simulations to be summarised.
+#' @param .interventions A vector containing the names of all
+#' interventions. If not provided or less names than needed is provided,
+#' the function will generate generic names, for example
+#' \code{intervention 1}.
+#' @param .units_ A character, the units to associate with the
+#' monitory values in the summary table. Default is sterling pounds
+#' (GBP) \code{"\u00A3"}.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+stats_generator_ <- function(.effs, .costs, .interventions,
+                             .units_ = "\u00A3") {
+  .costs <- .costs %>%
+    dplyr::as_tibble(.name_repair = ~ make.names(., unique = TRUE))
+  .effs <- .effs %>%
+    dplyr::as_tibble(.name_repair = ~ make.names(., unique = TRUE))
+
+  stats <- purrr::map_dfc(
+    .x = .costs,
+    .f = function(x) {
+      scales::dollar(
+        x = mean(x),
+        prefix = .units_,
+        accuracy = 1)}) %>%
+    `colnames<-`(.interventions) %>%
+    tidyr::pivot_longer(
+      cols = dplyr::everything(),
+      names_to = "Interventions",
+      values_to = "Mean") %>%
+    dplyr::right_join(
+      x = .,
+      y = purrr::map_dfc(
+        .x = .costs,
+        .f = function(x) {
+          scales::dollar(
+            x = quantile(x, 0.025),
+            prefix = .units_,
+            accuracy = 1)}) %>%
+        `colnames<-`(.interventions) %>%
+        tidyr::pivot_longer(
+          cols = dplyr::everything(),
+          names_to = "Interventions",
+          values_to = "lb"),
+      by = "Interventions") %>%
+    dplyr::right_join(
+      x = .,
+      y = purrr::map_dfc(
+        .x = .costs,
+        .f = function(x) {
+          scales::dollar(
+            x = quantile(x, 0.975),
+            prefix = .units_,
+            accuracy = 1)}) %>%
+        `colnames<-`(.interventions) %>%
+        tidyr::pivot_longer(
+          cols = dplyr::everything(),
+          names_to = "Interventions",
+          values_to = "ub"),
+      by = "Interventions") %>%
+    dplyr::mutate(
+      "Costs [95% CI]" =paste0(Mean, " [", lb," - ", ub, "]")) %>%
+    dplyr::select(-c(Mean, lb, ub)) %>%
+    dplyr::right_join(
+      x = .,
+      y = purrr::map_dfc(
+        .x = .effs,
+        .f = function(x) {
+          round(
+            x = mean(x),
+            digits = 4)}) %>%
+        `colnames<-`(.interventions) %>%
+        tidyr::pivot_longer(
+          cols = dplyr::everything(),
+          names_to = "Interventions",
+          values_to = "Mean") %>%
+        dplyr::right_join(
+          x = .,
+          y = purrr::map_dfc(
+            .x = .effs,
+            .f = function(x) {
+              round(
+                x = quantile(x, 0.025),
+                digits = 3)}) %>%
+            `colnames<-`(.interventions) %>%
+            tidyr::pivot_longer(
+              cols = dplyr::everything(),
+              names_to = "Interventions",
+              values_to = "lb"),
+          by = "Interventions") %>%
+        dplyr::right_join(
+          x = .,
+          y = purrr::map_dfc(
+            .x = .effs,
+            .f = function(x) {
+              round(
+                x = quantile(x, 0.975),
+                digits = 3)}) %>%
+            `colnames<-`(.interventions) %>%
+            tidyr::pivot_longer(
+              cols = dplyr::everything(),
+              names_to = "Interventions",
+              values_to = "ub"),
+          by = "Interventions") %>%
+        dplyr::mutate(
+          "QALYs [95% CI]" =paste0(Mean, " [", lb," - ", ub, "]")) %>%
+        dplyr::select(-c(Mean, lb, ub)),
+      by = "Interventions")
+
+  return(list(
+    "Costs" = .costs,
+    "Effects" = .effs,
+    "Stats" = stats))
+}
+
 #' Run the demo Shiny app.
 #'
 #' @param example_app The example shiny app to run.

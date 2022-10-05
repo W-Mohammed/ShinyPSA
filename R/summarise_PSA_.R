@@ -11,11 +11,11 @@
 #' Summarise PSA outputs and report results
 #'
 #' @param .effs A matrix containing the \code{effects} from PSA. Number of
-#'  \code{columns} is equal to the interventions while the number of
-#'  \code{rows} is equal to the number of PSA simulations to be summarised.
+#' \code{columns} is equal to the interventions while the number of
+#' \code{rows} is equal to the number of PSA simulations to be summarised.
 #' @param .costs A matrix containing the \code{costs} from PSA. Number of
-#'  \code{columns} is equal to the interventions while the number of
-#'  \code{rows} is equal to the number of PSA simulations to be summarised.
+#' \code{columns} is equal to the interventions while the number of
+#' \code{rows} is equal to the number of PSA simulations to be summarised.
 #' @param .params A matrix containing parameters' configurations used in
 #' the PSA. The Number of \code{rows} is equal to the number of PSA simulations
 #' to be summarised.
