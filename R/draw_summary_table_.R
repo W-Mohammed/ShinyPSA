@@ -34,6 +34,8 @@
 #' @param .time_horion_ The time expected to pass (in years) before the
 #' interventions under consideration change (how long before the decision
 #' under consideration become obsolete or requires updating)
+#' @param .effs_accuracy_ Number of digits for effects measure; default is 3 and
+#' is expressed as 1e-3 or 0.001.
 #'
 #' @return A table, dataframe, tibble or DT objects.
 #' @importFrom tidyselect vars_select_helpers
@@ -52,13 +54,12 @@
 #'                         .wtp_ = c(100, 20000, 30000),
 #'                         .beautify_ = TRUE,
 #'                         .long_ = TRUE)
-#'                         t
+#' t
 #'
 #' t <- draw_summary_table_(.PSA_data = PSA_summary,
 #'                         .wtp_ = c(100, 20000, 30000),
 #'                         .beautify_ = TRUE,
 #'                         .long_ = F)
-#'
 #' t
 #' }
 #'
@@ -71,7 +72,8 @@ draw_summary_table_ <- function(.PSA_data,
                                 .individual_evpi_ = TRUE,
                                 .evpi_population_ = NULL,
                                 .discount_rate_ = 0.035,
-                                .time_horion_ = NULL) {
+                                .time_horion_ = NULL,
+                                .effs_accuracy_ = 1e-3) {
   ## Set currency label if none were provided:----
   if(is.null(.units_) | length(.units_) != 1) .units_ = "\u00A3"
 
@@ -176,71 +178,109 @@ draw_summary_table_ <- function(.PSA_data,
                                         x = `EVPI - WTP`,
                                         prefix = .units_)))
 
+  ## Get the [95% CI] of costs and consequences:----
+  effs_95_label <- paste0(.effects_label_, " 95% CI")
+  ci_95 <- ShinyPSA::generate_95_ci(
+    ### Effects 95% CI:----
+    .data_ = .PSA_data[['e']],
+    .interventions = .PSA_data[['interventions']],
+    .accuracy_ = .effs_accuracy_,
+    .units_ = "") %>%
+    dplyr::rename({{effs_95_label}} := `[95% CI]`) %>%
+    ### Costs 95% CI:----
+    dplyr::right_join(
+      x = .,
+      y = generate_95_ci(
+    .data_ = .PSA_data[['c']],
+    .interventions = .PSA_data[['interventions']],
+    .accuracy_ = 1,
+    .units_ = .units_),
+      by = "intervention") %>%
+    dplyr::rename(`Costs 95% CI` := `[95% CI]`)
+
   ## Put summary table together:----
   ### prepare a tidy evaluation variable:----
   incr_col_ <- paste("Incremental", .effects_label_)
+  effs_mu_95_label = paste0({{.effects_label_}}, " [95% CI]")
   ### start building the final tibble:----
   Summary_tbl <- ICER_tbl %>%
+    #### join the 95% CI data by intervention name:----
+    dplyr::left_join(x = ., y = ci_95, by = 'intervention') %>%
     #### join the expected NMB to the ICER results by intervention name:----
-  dplyr::left_join(x = ., y = eNMB, by = 'intervention') %>%
+    dplyr::left_join(x = ., y = eNMB, by = 'intervention') %>%
     #### join the probability of being cost-effective by intervention name:----
-  dplyr::left_join(x = ., y = CEAF, by = 'intervention') %>%
+    dplyr::left_join(x = ., y = CEAF, by = 'intervention') %>%
     #### create probability CE columns from relevant row values:----
-  tidyr::pivot_wider(
-    names_from = `CEAF - WTP`,
-    values_from = `CEAF - values`) %>%
+    tidyr::pivot_wider(
+      names_from = `CEAF - WTP`,
+      values_from = `CEAF - values`) %>%
     #### drop any NAs resulting from pivot_wider:----
-  dplyr::select(tidyselect::vars_select_helpers$where(
-    fn = function(.x) !all(is.na(.x)))) %>%
+    dplyr::select(tidyselect::vars_select_helpers$where(
+      fn = function(.x) !all(is.na(.x)))) %>%
     #### join the EVPI:
     dplyr::left_join(x = ., y = EVPI, by = 'intervention') %>%
     #### create EVPI columns from relevant row values:----
-  tidyr::pivot_wider(
-    names_from = `EVPI - WTP`,
-    values_from = `EVPI - values`) %>%
+    tidyr::pivot_wider(
+      names_from = `EVPI - WTP`,
+      values_from = `EVPI - values`) %>%
     #### drop any NAs resulting from pivot_wider:----
-  dplyr::select(tidyselect::vars_select_helpers$where(
-    fn = function(.x) !all(is.na(.x)))) %>%
+    dplyr::select(tidyselect::vars_select_helpers$where(
+      fn = function(.x) !all(is.na(.x)))) %>%
     #### do some formatting:----
-  ##### format currency columns:----
-  dplyr::mutate(
-    dplyr::across(
-      tidyselect::vars_select_helpers$where(
-        is.numeric) & !c(qalys, delta.e,
-                         dplyr::starts_with("Prob.")),
-      ~ scales::dollar(
-        x = .x,
-        prefix = .units_))) %>%
+    ##### format currency columns:----
+    dplyr::mutate(
+      dplyr::across(
+        tidyselect::vars_select_helpers$where(is.numeric) &
+          !c(qalys, delta.e,
+             dplyr::starts_with("Prob."),
+             dplyr::contains("95% CI")), ~
+          scales::dollar(
+            x = .x,
+            prefix = .units_,
+            accuracy = 1))) %>%
     ##### format effects columns:----
-  dplyr::mutate(
-    dplyr::across(c(qalys, delta.e, dplyr::starts_with("Prob.")),
-                  ~ as.character(round(.x, digits = 4)))) %>%
+    dplyr::mutate(
+      dplyr::across(c(qalys, delta.e, dplyr::starts_with("Prob.")),
+                    ~ as.character(round(.x, digits = 3)))) %>%
     ##### drop dominance column if it exists:----
-  dplyr::select(-dplyr::any_of('dominance')) %>%
+    dplyr::select(-dplyr::any_of('dominance')) %>%
     ##### rename columns to proper names:----
-  dplyr::rename({{.effects_label_}} := qalys,
-                Comparators = intervention,
-                {{incr_col_}} := delta.e,
-                "Incremental Costs" = delta.c,
-                "ICER information" = icer_label) %>%
+    dplyr::rename({{.effects_label_}} := qalys,
+                  Comparators = intervention,
+                  {{incr_col_}} := delta.e,
+                  "Incremental Costs" = delta.c,
+                  "ICER information" = icer_label) %>%
     ##### proper column name:----
-  dplyr::rename_with(stringr::str_to_title, costs) %>%
+    dplyr::rename_with(stringr::str_to_title, costs) %>%
     ##### convert column names to capital letters:----
-  dplyr::rename_with(toupper, icer) %>%
+    dplyr::rename_with(toupper, icer) %>%
     #### put values from ICER information to the ICER column:----
-  dplyr::mutate(
-    ICER = case_when(
-      is.na(ICER) ~
-        `ICER information`,
-      TRUE ~ ICER)) %>%
-    dplyr::select(-`ICER information`)
+    dplyr::mutate(
+      ICER = case_when(
+        is.na(ICER) ~ `ICER information`,
+        TRUE ~ ICER)) %>%
+      dplyr::select(-`ICER information`) %>%
+      dplyr::select(
+        Comparators, Costs, `Costs 95% CI`, `Incremental Costs`,
+        {{.effects_label_}}, {{effs_95_label}}, {{incr_col_}},
+        dplyr::everything()) %>%
+    #### rename QALYs and Costs to mean:----
+        dplyr::mutate(
+        "Costs [95% CI]" = paste0(
+          Costs, " ", `Costs 95% CI`),
+        {{effs_mu_95_label}} := paste0(
+          .data[[{{.effects_label_}}]], " ", .data[[{{effs_95_label}}]])) %>%
+        dplyr::select(
+          Comparators, `Costs [95% CI]`, {{effs_mu_95_label}},
+          `Incremental Costs`, {{incr_col_}}, dplyr::everything()) %>%
+        dplyr::select(
+          -Costs, -`Costs 95% CI`, -{{.effects_label_}},
+          -{{effs_95_label}})
+
   ## Create a long format table:----
   if(.long_) {
     ### reorder some columns for DT::RowGroup option:----
     Summary_tbl <- Summary_tbl %>%
-      dplyr::select(
-        Costs, `Incremental Costs`, QALYs, `Incremental QALYs`,
-        dplyr::everything()) %>%
       #### flip the dataset to have everything in long format:----
     tidyr::pivot_longer(
       cols = -Comparators,
@@ -250,10 +290,6 @@ draw_summary_table_ <- function(.PSA_data,
     tidyr::pivot_wider(
       names_from = Comparators,
       values_from = Values)
-  }
-  ## Feedback if a beautiful version was not requested:----
-  if(!.beautify_) {
-    print(table_caption)
   }
   ## Beautified tables:----
   ### Long format beautified table:----
@@ -290,13 +326,14 @@ draw_summary_table_ <- function(.PSA_data,
           )
         }
       ))
+
     #### Prepare DT-table helper columns:----
     Summary_tbl <- Summary_tbl %>%
       dplyr::mutate(
         ##### Prepare DT-table row groups:----
-        RowGroup_ = c(rep(glue::glue("Costs ({.units_})"), 2),
-                      rep("QALYs", 2),
-                      "Incremental Cost-Effectiveness Ratio",
+        RowGroup_ = c(rep(glue::glue("Costs ({.units_})"), 1),
+                      rep(.effects_label_, 1),
+                      rep("Incremental Analysis", 3),
                       rep(glue::glue("Net Benefit ({.units_})"),
                           length(.wtp_)),
                       rep("Probability Cost-Effective",
@@ -305,7 +342,7 @@ draw_summary_table_ <- function(.PSA_data,
                           Information ({.units_}) [1]"),
                           length(.wtp_))),
         ##### Prepare border info:----
-        RowBorder_ = c(0, 1, 0, 1, 1,
+        RowBorder_ = c(1, 1, 0, 0, 1,
                        rep(0, length(.wtp_) - 1), 1,
                        rep(0, length(.wtp_) - 1), 1,
                        rep(0, length(.wtp_) - 1), 1)
@@ -358,7 +395,7 @@ draw_summary_table_ <- function(.PSA_data,
         caption = htmltools::tags$caption(
           style = 'caption-side: top; text-align: left;',
           htmltools::h3(
-            "Probabilistic Sensitivity Analysis Results"
+            "Probabilistic Sensitivity Analysis Summary Table"
           )
         )
       ) %>%
@@ -370,23 +407,26 @@ draw_summary_table_ <- function(.PSA_data,
   }
   ### Wide format beautified table:----
   if(.beautify_ & !.long_) {
+    #### reorder table for wide format:----
     #### custom table container to create column groups:----
     sketch_ <- htmltools::withTags(table(
       class = 'display',
       thead(
         tr(
           th(rowspan = 2, 'Comparators'), # 1 column (merge 2 rows)
-          th(rowspan = 2, 'QALYs'), # 1 column (merge 2 rows)
-          th(rowspan = 2, 'Costs'), # 1 column (merge 2 rows)
-          th(colspan = 2, 'Incremental'), # span over 2 columns
-          th(rowspan = 2, 'ICER'), # 1 column (merge 2 rows)
-          th(colspan = length(.wtp_), 'Net Benefit'), # span over num .wtp_
+          th(rowspan = 1, glue::glue("Costs ({.units_})")),
+          th(rowspan = 1, 'QALYs'), # 1 column (merge 2 rows)
+          th(colspan = 3, 'Incremental analysis'), # span over 2 columns
+          th(colspan = length(.wtp_),
+             glue::glue("Net Benefit ({.units_})")), # span over num .wtp_
           th(colspan = length(.wtp_), 'Probability cost-effective'),
-          th(colspan = length(.wtp_), 'EVPI [1]'),
+          th(colspan = length(.wtp_),
+             glue::glue("EVPI ({.units_}) [1]")),
         ),
         tr(
-          purrr::map(
-            .x = c("QALYs", "Costs", # Incremental
+          purrr::map(# "costs", "effects, "c.inc", "e.inc"
+            .x = c("Mean [95% CI]", "Mean [95% CI]",
+                   glue::glue("Costs ({.units_})"), "QALYs", "ICER",
                    rep(
                      scales::dollar(# Net Benefit, Prob. CE, EVPI
                        x = .wtp_,
@@ -396,7 +436,7 @@ draw_summary_table_ <- function(.PSA_data,
       )
     ))
     #### get columns where to border is to be drawn:----
-    colBorder_ <- c(1:3, 5, 6,
+    colBorder_ <- c(1:3, 6,
                     6 + length(.wtp_),
                     6 + (length(.wtp_) * 2),
                     6 + (length(.wtp_) * 3))
@@ -444,7 +484,7 @@ draw_summary_table_ <- function(.PSA_data,
         caption = htmltools::tags$caption(
           style = 'caption-side: top; text-align: left;',
           htmltools::h3(
-            "Probabilistic Sensitivity Analysis Results"
+            "Probabilistic Sensitivity Analysis Summary Table"
           )
         )
       ) %>%

@@ -14,7 +14,8 @@ draw_summary_table_(
   .individual_evpi_ = TRUE,
   .evpi_population_ = NULL,
   .discount_rate_ = 0.035,
-  .time_horion_ = NULL
+  .time_horion_ = NULL,
+  .effs_accuracy_ = 0.001
 )
 }
 \arguments{
@@ -51,6 +52,9 @@ affected populations.}
 \item{.time_horion_}{The time expected to pass (in years) before the
 interventions under consideration change (how long before the decision
 under consideration become obsolete or requires updating)}
+
+\item{.effs_accuracy_}{Number of digits for effects measure; default is 3 and
+is expressed as 1e-3 or 0.001.}
 }
 \value{
 A table, dataframe, tibble or DT objects.
@@ -71,13 +75,12 @@ t <- draw_summary_table_(.PSA_data = PSA_summary,
                         .wtp_ = c(100, 20000, 30000),
                         .beautify_ = TRUE,
                         .long_ = TRUE)
-                        t
+t
 
 t <- draw_summary_table_(.PSA_data = PSA_summary,
                         .wtp_ = c(100, 20000, 30000),
                         .beautify_ = TRUE,
                         .long_ = F)
-
 t
 }
 
