@@ -1,9 +1,0 @@
-intervention,costs,qalys,delta.e,delta.c,dominated,e.dominated,icer
-intervention1,0,4.21,NA,NA,NA,NA,NA
-intervention2,5777,4.433,NA,NA,dominated,NA,NA
-intervention3,3200,4.62,NA,NA,dominated,NA,NA
-intervention5,12706,4.826,NA,NA,dominated,NA,NA
-intervention6,3000,5.5,NA,NA,NA,e.dominated,NA
-intervention4,12571,6.825,NA,NA,dominated,NA,NA
-intervention7,10000,7.7,NA,NA,NA,e.dominated,NA
-intervention8,11000,12,7.79,11000,NA,NA,1412.0667522464698
