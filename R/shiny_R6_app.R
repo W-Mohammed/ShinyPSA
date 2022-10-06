@@ -443,6 +443,23 @@ ShinyPSA_R6_App <- R6::R6Class(
                       ),
                       fluidRow(
                         tagList(
+                          # Input: upload effects file:
+                          div(
+                            style = "display: flex;
+                          margin-top: 0rem !important;",
+                            class = "pl-4 d-flex align-items-start",
+                            fileInput(
+                              buttonLabel = "Browse parameters file...",
+                              inputId = "p",
+                              label = NULL,
+                              multiple = FALSE,
+                              accept = c(".csv")
+                            )
+                          ),
+                        )
+                      ),
+                      fluidRow(
+                        tagList(
                           div(
                             style = "display: flex;
                           margin-top: 0rem !important;",
@@ -959,15 +976,16 @@ ShinyPSA_R6_App <- R6::R6Class(
           session = session,
           input = input,
           output = output,
-          .choices_ = c("Hyperphosphatemia_PSA", "Vaccine_PSA",
-                        "Smoking_PSA", "Hypothetical_PSA",
-                        "Clopidogrel_PSA")
+          .choices_ = c("Hyperphosphatemia_PSA", "Brennan_1K_PSA",
+                        "Brennan_10K_PSA", "Brennan_50K_PSA",
+                        "Hypothetical_PSA", "Clopidogrel_PSA")
         )
       ##### Uploaded data:----
       incoming <- reactive({
         req(
           input$c,
           input$e,
+          input$p,
           input[[self$iContainer[["intrNme"]]$
                    get_uiInId()]]
         )
@@ -978,6 +996,10 @@ ShinyPSA_R6_App <- R6::R6Class(
           ),
           "e" = read_csv(
             file = input$e$datapath,
+            show_col_types = FALSE
+          ),
+          "p" = read_csv(
+            file = input$p$datapath,
             show_col_types = FALSE
           ),
           "treats" = strsplit(input[[self$iContainer[["intrNme"]]$
@@ -993,8 +1015,12 @@ ShinyPSA_R6_App <- R6::R6Class(
                "Costs file is empty or could not be processed"),
           need(!is.null(incoming()$e),
                "Effects file is empty or could not be processed"),
+          need(!is.null(incoming()$p),
+               "Parameters file is empty or could not be processed"),
           need(dim(incoming()$c) == dim(incoming()$e),
                "Costs/effects don't have equal rows and/or columns"),
+          need(nrow(incoming()$e) == nrow(incoming()$p),
+               "Parameters and effects don't have equal rows (simulations)"),
           need(length(incoming()$treats) == ncol(incoming()$c),
                "Provided names are not equal to data columns")
         )
@@ -1041,6 +1067,7 @@ ShinyPSA_R6_App <- R6::R6Class(
           rContainer[[sData_name()]] <- ShinyPSA$new(
             .effs = sData_list[[sData_name()]]$e,
             .costs = sData_list[[sData_name()]]$c,
+            .params = sData_list[[sData_name()]]$p,
             .interventions = sData_list[[sData_name()]]$treats,
             .Kmax = input[[self$iContainer[["maxWTP1"]]$
                              get_uiInId()]]
