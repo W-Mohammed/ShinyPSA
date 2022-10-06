@@ -782,196 +782,21 @@ ShinyPSA <- R6::R6Class(
                               .ref = NULL, .Kmax = 100000, .wtp = NULL,
                               .max_Kpoints = 100, .lambda = 30000,
                               .evppi = FALSE, .plot = FALSE) {
-
-      # Stop if .effs & .costs have different dimensions:
-      stopifnot('Unequal dimensions in .effs and .costs' =
-                  dim(.effs) == dim(.costs),
-                'PSA results for less than two interventions is supplied' =
-                  ncol(.effs) >= 2)
-
-      # Simulations & interventions analysed:
-      n.sim <- nrow(.effs) # Number of simulations
-      n.comparators <- ncol(.effs) # Number of interventions
-      n.comparisons <- n.comparators - 1 # Number of least possible comparisons
-      v.ints <- 1:n.comparators # Vector with index of interventions'
-
-      # Check supplied interventions labels, create ones if any is missing:
-      if(!is.null(.interventions) & length(.interventions) != n.comparators) {
-        .interventions <- NULL
-      }
-      if(is.null(.interventions)) {
-        .interventions <- paste("intervention", 1:n.comparators)
-      }
-
-      # Set missing values or remove ones to be ignored:
-      if(n.comparators == 2){
-        # If no reference was provided in a non-incremental analysis:
-        if(is.null(.ref)){
-          .ref <- 1
-          message(
-            paste0(
-              "You did not select a reference intervention. [",
-              .interventions[.ref],
-              "] will be used as reference for differential values and plots."))
-        }
-        comp <- v.ints[-.ref]
-      } else {
-        # Ignore .ref if the analysis will be an incremental one:
-        if(!is.null(.ref)) {
-          .ref <- NULL
-          message("More than two interventions, .ref is ignored")
-        }
-        comp <- NULL
-      }
-
-      # Set up willingness-to-pay:
-      if (is.null(.Kmax)) {
-        .Kmax <- 100000
-      }
-      if (is.null(.wtp)) {
-        .wtp <- c(20000, 30000, 50000)
-      }
-      n.points <- .Kmax/.max_Kpoints
-      v.k <- seq(from = 0, to = .Kmax, length.out = n.points + 1)
-      v.k <- c(v.k, .wtp)
-      v.k <- sort(unique(v.k))
-      n.k <- length(v.k)
-      names(v.k) <- scales::dollar(
-        x = v.k,
-        prefix = "\u00A3"
+      # pass arguments through to the package function:
+      return(
+        ShinyPSA::summarise_PSA_(
+          .effs = .effs,
+          .costs = .costs,
+          .params = .params,
+          .interventions = .interventions,
+          .ref = .ref,
+          .Kmax = .Kmax,
+          .wtp = .wtp,
+          .max_Kpoints = .max_Kpoints,
+          .lambda = .lambda,
+          .evppi = .evppi,
+          .plot = .plot)
       )
-
-      # Ensure .effs and .costs are tibbles and name columns appropriately:
-      .effs <- .effs %>%
-        dplyr::as_tibble(.name_repair = "unique") %>%
-        `colnames<-`(.interventions)
-      .costs <- .costs %>%
-        dplyr::as_tibble(.name_repair = "unique") %>%
-        `colnames<-`(.interventions)
-
-      # Compute effects and costs differentials:
-      if(n.comparators == 2) {
-        delta.effs <- private$calculate_differentials_(
-          .data = .effs,
-          .ref = .ref)
-        delta.costs <- private$calculate_differentials_(
-          .data = .costs,
-          .ref = .ref)
-      } else {
-        delta.effs <- NULL
-        delta.costs <- NULL
-      }
-
-      # Compute ICER(s):
-      ICER <- private$compute_ICERs_(
-        .icer_data = NULL,
-        .effs = .effs,
-        .costs = .costs,
-        .interventions = .interventions)
-
-      # Compute NMB or iNMB, e.NMB or e.iNMB and best option for each k:
-      nmbs <- private$compute_NMBs_(
-        .effs = .effs,
-        .costs = .costs,
-        .interventions = .interventions,
-        .Kmax = .Kmax,
-        .wtp = .wtp)
-      NMB <- nmbs$nmb
-      e.NMB <- nmbs$e.nmb
-      best <- nmbs$best_interv
-      best_name <- nmbs$best_interv_name
-      check <- nmbs$check
-      kstar <- nmbs$wtp_star
-
-      # Compute CEAC:
-      CEAC <- private$compute_CEACs_(
-        .nmb = NMB)
-
-      # Compute CEAF:
-      CEAF <- private$compute_CEAFs_(
-        .ceac = CEAC)
-
-      # Compute EVPI:
-      EVPIs <- private$compute_EVPIs_(
-        .effs = .effs,
-        .costs = .costs,
-        .Kmax = .Kmax,
-        .interventions = .interventions,
-        .wtp = .wtp)
-      U <- EVPIs$U
-      Ustar <- EVPIs$Ustar
-      ol <- EVPIs$ol
-      vi <- EVPIs$vi
-      EVPI <- EVPIs$evi
-
-      ## Outputs of the function:
-      results <- list(
-
-        interventions = .interventions, ref = .ref, comp = comp, ICER = ICER,
-        NMB = NMB, e.NMB = e.NMB, CEAC = CEAC, CEAF = CEAF, EVPI = EVPI,
-        best_id = best, best_name = best_name, WTPs = v.k,
-        WTPstar = kstar, U = U, Ustar = Ustar, vi = vi, ol = ol, e = .effs,
-        c = .costs, p = .params, delta.e = delta.effs, delta.c = delta.costs,
-        n.sim = n.sim, n.comparators = n.comparators, step = n.k, Kmax = .Kmax
-      )
-
-      class(results) <- "psa"
-
-      # If requested, compute EVPPI:
-      if(.evppi) {
-        # Compute EVPPI:
-        EVPPI <- private$compute_EVPPIs_(
-          .PSA_data = results,
-          .MAICER_ = .lambda)
-
-        # Save EVPPI results table to the final results object:
-        results <- c(results,
-                     'EVPPI' = list(EVPPI))
-      }
-
-      # If requested, develop and save plots and table:
-      if(.plot == TRUE) {
-        Summary_table <- private$draw_summary_table_(
-          .PSA_data = results
-        )
-        CEP_plot <- private$plot_CEplane_(
-          .PSA_data = results,
-          .ref = .ref
-        )
-        CEAC_plot <- private$plot_CEAC_(
-          .PSA_data = results,
-          .ref = .ref
-        )
-        CEAF_plot <- private$plot_CEAF_(
-          .PSA_data = results
-        )
-        EVPI_plot <- private$plot_EVPI_(
-          .PSA_data = results
-        )
-        eNMB_plot <- private$plot_eNMB_(
-          .PSA_data = results
-        )
-        EVPPI_plot <- if(.evppi) {
-          private$plot_EVPPI_(
-            EVPPI_res = EVPPI
-          )
-        }
-        stability_plots <- private$check_PSA_stability(
-          .PSA_data = results
-        )
-
-        results <- c(results,
-                     'Summary_table' = list(Summary_table),
-                     'CEP_plot' = list(CEP_plot),
-                     'CEAC_plot' = list(CEAC_plot),
-                     'CEAF_plot' = list(CEAF_plot),
-                     'EVPI_plot' = list(EVPI_plot),
-                     'eNMB_plot' = list(eNMB_plot),
-                     'EVPPI_plot' = list(EVPPI_plot),
-                     'Stability_plots' = list(stability_plots))
-      }
-
-      return(results)
     },
 
     ## Compute ICER(s):----
@@ -1578,7 +1403,8 @@ ShinyPSA <- R6::R6Class(
     # @param .time_horion_ The time expected to pass (in years) before the
     # interventions under consideration change (how long before the decision
     # under consideration become obsolete or requires updating)
-    #
+    # @param .effs_accuracy_ Number of digits for effects measure; default is 3
+    # and is expressed as 1e-3 or 0.001.
     # @return A table, dataframe, tibble or DT objects.
     # @importFrom tidyselect vars_select_helpers
     # @export
@@ -1614,7 +1440,8 @@ ShinyPSA <- R6::R6Class(
                                    .individual_evpi_ = TRUE,
                                    .evpi_population_ = NULL,
                                    .discount_rate_ = 0.035,
-                                   .time_horion_ = NULL) {
+                                   .time_horion_ = NULL,
+                                   .effs_accuracy_ = 1e-3) {
       ## Set currency label if none were provided:----
       if(is.null(.units_) | length(.units_) != 1) .units_ = "\u00A3"
 
@@ -1719,11 +1546,34 @@ ShinyPSA <- R6::R6Class(
                                             x = `EVPI - WTP`,
                                             prefix = .units_)))
 
+      ## Get the [95% CI] of costs and consequences:----
+      effs_95_label <- paste0(.effects_label_, " 95% CI")
+      ci_95 <- ShinyPSA::generate_95_ci(
+        ### Effects 95% CI:----
+        .data_ = .PSA_data[['e']],
+        .interventions = .PSA_data[['interventions']],
+        .accuracy_ = .effs_accuracy_,
+        .units_ = "") %>%
+        dplyr::rename({{effs_95_label}} := `[95% CI]`) %>%
+        ### Costs 95% CI:----
+      dplyr::right_join(
+        x = .,
+        y = generate_95_ci(
+          .data_ = .PSA_data[['c']],
+          .interventions = .PSA_data[['interventions']],
+          .accuracy_ = 1,
+          .units_ = .units_),
+        by = "intervention") %>%
+        dplyr::rename(`Costs 95% CI` := `[95% CI]`)
+
       ## Put summary table together:----
       ### prepare a tidy evaluation variable:----
       incr_col_ <- paste("Incremental", .effects_label_)
+      effs_mu_95_label = paste0({{.effects_label_}}, " [95% CI]")
       ### start building the final tibble:----
       Summary_tbl <- ICER_tbl %>%
+        #### join the 95% CI data by intervention name:----
+      dplyr::left_join(x = ., y = ci_95, by = 'intervention') %>%
         #### join the expected NMB to the ICER results by intervention name:----
       dplyr::left_join(x = ., y = eNMB, by = 'intervention') %>%
         #### join the probability of being cost-effective by intervention name:----
@@ -1748,16 +1598,18 @@ ShinyPSA <- R6::R6Class(
       ##### format currency columns:----
       dplyr::mutate(
         dplyr::across(
-          tidyselect::vars_select_helpers$where(
-            is.numeric) & !c(qalys, delta.e,
-                             dplyr::starts_with("Prob.")),
-          ~ scales::dollar(
-            x = .x,
-            prefix = .units_))) %>%
+          tidyselect::vars_select_helpers$where(is.numeric) &
+            !c(qalys, delta.e,
+               dplyr::starts_with("Prob."),
+               dplyr::contains("95% CI")), ~
+            scales::dollar(
+              x = .x,
+              prefix = .units_,
+              accuracy = 1))) %>%
         ##### format effects columns:----
       dplyr::mutate(
         dplyr::across(c(qalys, delta.e, dplyr::starts_with("Prob.")),
-                      ~ as.character(round(.x, digits = 4)))) %>%
+                      ~ as.character(round(.x, digits = 3)))) %>%
         ##### drop dominance column if it exists:----
       dplyr::select(-dplyr::any_of('dominance')) %>%
         ##### rename columns to proper names:----
@@ -1773,17 +1625,30 @@ ShinyPSA <- R6::R6Class(
         #### put values from ICER information to the ICER column:----
       dplyr::mutate(
         ICER = case_when(
-          is.na(ICER) ~
-            `ICER information`,
+          is.na(ICER) ~ `ICER information`,
           TRUE ~ ICER)) %>%
-        dplyr::select(-`ICER information`)
+        dplyr::select(-`ICER information`) %>%
+        dplyr::select(
+          Comparators, Costs, `Costs 95% CI`, `Incremental Costs`,
+          {{.effects_label_}}, {{effs_95_label}}, {{incr_col_}},
+          dplyr::everything()) %>%
+        #### rename QALYs and Costs to mean:----
+      dplyr::mutate(
+        "Costs [95% CI]" = paste0(
+          Costs, " ", `Costs 95% CI`),
+        {{effs_mu_95_label}} := paste0(
+          .data[[{{.effects_label_}}]], " ", .data[[{{effs_95_label}}]])) %>%
+        dplyr::select(
+          Comparators, `Costs [95% CI]`, {{effs_mu_95_label}},
+          `Incremental Costs`, {{incr_col_}}, dplyr::everything()) %>%
+        dplyr::select(
+          -Costs, -`Costs 95% CI`, -{{.effects_label_}},
+          -{{effs_95_label}})
+
       ## Create a long format table:----
       if(.long_) {
         ### reorder some columns for DT::RowGroup option:----
         Summary_tbl <- Summary_tbl %>%
-          dplyr::select(
-            Costs, `Incremental Costs`, QALYs, `Incremental QALYs`,
-            dplyr::everything()) %>%
           #### flip the dataset to have everything in long format:----
         tidyr::pivot_longer(
           cols = -Comparators,
@@ -1793,10 +1658,6 @@ ShinyPSA <- R6::R6Class(
         tidyr::pivot_wider(
           names_from = Comparators,
           values_from = Values)
-      }
-      ## Feedback if a beautiful version was not requested:----
-      if(!.beautify_) {
-        print(table_caption)
       }
       ## Beautified tables:----
       ### Long format beautified table:----
@@ -1833,13 +1694,14 @@ ShinyPSA <- R6::R6Class(
               )
             }
           ))
+
         #### Prepare DT-table helper columns:----
         Summary_tbl <- Summary_tbl %>%
           dplyr::mutate(
             ##### Prepare DT-table row groups:----
-            RowGroup_ = c(rep(glue::glue("Costs ({.units_})"), 2),
-                          rep("QALYs", 2),
-                          "Incremental Cost-Effectiveness Ratio",
+            RowGroup_ = c(rep(glue::glue("Costs ({.units_})"), 1),
+                          rep(.effects_label_, 1),
+                          rep("Incremental Analysis", 3),
                           rep(glue::glue("Net Benefit ({.units_})"),
                               length(.wtp_)),
                           rep("Probability Cost-Effective",
@@ -1848,7 +1710,7 @@ ShinyPSA <- R6::R6Class(
                           Information ({.units_}) [1]"),
                               length(.wtp_))),
             ##### Prepare border info:----
-            RowBorder_ = c(0, 1, 0, 1, 1,
+            RowBorder_ = c(1, 1, 0, 0, 1,
                            rep(0, length(.wtp_) - 1), 1,
                            rep(0, length(.wtp_) - 1), 1,
                            rep(0, length(.wtp_) - 1), 1)
@@ -1901,7 +1763,7 @@ ShinyPSA <- R6::R6Class(
             caption = htmltools::tags$caption(
               style = 'caption-side: top; text-align: left;',
               htmltools::h3(
-                "Probabilistic Sensitivity Analysis Results"
+                "Probabilistic Sensitivity Analysis Summary Table"
               )
             )
           ) %>%
@@ -1913,23 +1775,26 @@ ShinyPSA <- R6::R6Class(
       }
       ### Wide format beautified table:----
       if(.beautify_ & !.long_) {
+        #### reorder table for wide format:----
         #### custom table container to create column groups:----
         sketch_ <- htmltools::withTags(table(
           class = 'display',
           thead(
             tr(
               th(rowspan = 2, 'Comparators'), # 1 column (merge 2 rows)
-              th(rowspan = 2, 'QALYs'), # 1 column (merge 2 rows)
-              th(rowspan = 2, 'Costs'), # 1 column (merge 2 rows)
-              th(colspan = 2, 'Incremental'), # span over 2 columns
-              th(rowspan = 2, 'ICER'), # 1 column (merge 2 rows)
-              th(colspan = length(.wtp_), 'Net Benefit'), # span over num .wtp_
+              th(rowspan = 1, glue::glue("Costs ({.units_})")),
+              th(rowspan = 1, 'QALYs'), # 1 column (merge 2 rows)
+              th(colspan = 3, 'Incremental analysis'), # span over 2 columns
+              th(colspan = length(.wtp_),
+                 glue::glue("Net Benefit ({.units_})")), # span over num .wtp_
               th(colspan = length(.wtp_), 'Probability cost-effective'),
-              th(colspan = length(.wtp_), 'EVPI [1]'),
+              th(colspan = length(.wtp_),
+                 glue::glue("EVPI ({.units_}) [1]")),
             ),
             tr(
-              purrr::map(
-                .x = c("QALYs", "Costs", # Incremental
+              purrr::map(# "costs", "effects, "c.inc", "e.inc"
+                .x = c("Mean [95% CI]", "Mean [95% CI]",
+                       glue::glue("Costs ({.units_})"), "QALYs", "ICER",
                        rep(
                          scales::dollar(# Net Benefit, Prob. CE, EVPI
                            x = .wtp_,
@@ -1939,7 +1804,7 @@ ShinyPSA <- R6::R6Class(
           )
         ))
         #### get columns where to border is to be drawn:----
-        colBorder_ <- c(1:3, 5, 6,
+        colBorder_ <- c(1:3, 6,
                         6 + length(.wtp_),
                         6 + (length(.wtp_) * 2),
                         6 + (length(.wtp_) * 3))
@@ -1987,7 +1852,7 @@ ShinyPSA <- R6::R6Class(
             caption = htmltools::tags$caption(
               style = 'caption-side: top; text-align: left;',
               htmltools::h3(
-                "Probabilistic Sensitivity Analysis Results"
+                "Probabilistic Sensitivity Analysis Summary Table"
               )
             )
           ) %>%
