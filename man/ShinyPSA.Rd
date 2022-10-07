@@ -225,6 +225,21 @@ PSA_outputs <- ShinyPSA$new(
 
 PSA_outputs$get_WTP()
 }
+
+## ------------------------------------------------
+## Method `ShinyPSA$get_params_names`
+## ------------------------------------------------
+
+\dontrun{
+# Instantiate a copy of class ShinyPSA:
+PSA_outputs <- ShinyPSA$new(
+                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
+                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+
+PSA_outputs$get_params_names()
+}
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -270,6 +285,7 @@ benefits and probability being cost-effective.}
 \item \href{#method-ShinyPSA-get_EVPPI_plot}{\code{ShinyPSA$get_EVPPI_plot()}}
 \item \href{#method-ShinyPSA-get_PSA_stabl_plots}{\code{ShinyPSA$get_PSA_stabl_plots()}}
 \item \href{#method-ShinyPSA-get_WTP}{\code{ShinyPSA$get_WTP()}}
+\item \href{#method-ShinyPSA-get_params_names}{\code{ShinyPSA$get_params_names()}}
 \item \href{#method-ShinyPSA-clone}{\code{ShinyPSA$clone()}}
 }
 }
@@ -783,6 +799,36 @@ PSA_outputs <- ShinyPSA$new(
                   .interventions = ShinyPSA::Vaccine_PSA$treats)
 
 PSA_outputs$get_WTP()
+}
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-ShinyPSA-get_params_names"></a>}}
+\if{latex}{\out{\hypertarget{method-ShinyPSA-get_params_names}{}}}
+\subsection{Method \code{get_params_names()}}{
+Get the parameters' names.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ShinyPSA$get_params_names()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A character vector.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# Instantiate a copy of class ShinyPSA:
+PSA_outputs <- ShinyPSA$new(
+                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
+                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+
+PSA_outputs$get_params_names()
 }
 }
 \if{html}{\out{</div>}}

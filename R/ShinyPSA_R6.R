@@ -721,6 +721,27 @@ ShinyPSA <- R6::R6Class(
     get_WTP = function() {
 
       return(private$PSA_summary[["WTPs"]])
+    },
+    #' @description
+    #' Get the parameters' names.
+    #'
+    #' @return A character vector.
+    #' @export
+    #'
+    #' @examples
+    #' \dontrun{
+    #' # Instantiate a copy of class ShinyPSA:
+    #' PSA_outputs <- ShinyPSA$new(
+    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
+    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'
+    #' PSA_outputs$get_params_names()
+    #' }
+    get_params_names = function() {
+
+      return(colnames(private$params))
     }
 
   ),
@@ -1244,10 +1265,13 @@ ShinyPSA <- R6::R6Class(
     compute_EVPPIs_ = function(.PSA_data = private$PSA_summary,
                                .effs = NULL, .costs = NULL,
                                .EVPI = NULL, .WTPs = NULL, .params = NULL,
-                               .set = NULL, .set_names = NULL, .subset_ = FALSE,
-                               .MAICER_ = 30000, .units_ = "\u00A3",
-                               .individual_evppi_ = TRUE, .discount_rate_ = 0.035,
-                               .evppi_population_ = NULL, .time_horion_ = NULL,
+                               .set = NULL, .set_names = NULL,
+                               .subset_ = FALSE, .MAICER_ = 30000,
+                               .units_ = "\u00A3",
+                               .individual_evppi_ = TRUE,
+                               .discount_rate_ = 0.035,
+                               .evppi_population_ = NULL,
+                               .time_horion_ = NULL,
                                .session = NULL) {
       # pass arguments through to the package function:
       return(
