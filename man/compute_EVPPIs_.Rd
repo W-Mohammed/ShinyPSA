@@ -20,6 +20,7 @@ compute_EVPPIs_(
   .discount_rate_ = 0.035,
   .evppi_population_ = NULL,
   .time_horion_ = NULL,
+  .interventions_ = NULL,
   .session = NULL
 )
 }
@@ -70,6 +71,11 @@ affected by the competing health technologies under evaluation.}
 \item{.time_horion_}{The time expected to pass (in years) before the
 interventions under consideration change (how long before the decision
 under consideration become obsolete or requires updating).}
+
+\item{.interventions_}{A vector containing the names of all
+interventions. If not provided or less names than needed is provided,
+the function will generate generic names, for example
+\code{intervention 1}.}
 
 \item{.session}{Shiny app session.}
 }

@@ -86,8 +86,8 @@ ShinyPSA <- R6::R6Class(
     #' Number of \code{columns} is equal to the interventions while the
     #' number of \code{rows} is equal to the number of PSA simulations to
     #' be summarised.
-    #' @param .params A matrix containing parameters' configurations used in
-    #' the PSA. The Number of \code{rows} is equal to the number of PSA
+    #' @param .params A matrix containing parameters' configurations used
+    #' in the PSA. The Number of \code{rows} is equal to the number of PSA
     #' simulations to be summarised.
     #' @param .interventions A vector containing the names of all
     #' interventions. If not provided or less names than needed is
@@ -117,7 +117,7 @@ ShinyPSA <- R6::R6Class(
     #' PSA_outputs <- ShinyPSA$new(
     #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
     #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p)
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
     #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats,
     #'                   .evppi = TRUE)
     #' }
@@ -160,8 +160,8 @@ ShinyPSA <- R6::R6Class(
     #' .beautify_ Return a visually improved version of the table. The
     #' returned version is built using DT::datatable()
     #' .long_ Logical (default \code{TRUE}) for whether a long version
-    #' of the table is to be returned. If \code{FALSE}, a wide version of the
-    #' table will be returned
+    #' of the table is to be returned. If \code{FALSE}, a wide version of
+    #' the table will be returned
     #'
     #' @return A table of class DT
     #' @export
@@ -170,10 +170,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_Summary_table()
     #' }
@@ -217,10 +217,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' # Get default plot:
     #' PSA_outputs$get_CEP()
@@ -276,10 +276,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_CEAC()
     #' }
@@ -323,10 +323,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_CEAF()
     #' }
@@ -370,10 +370,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_eNMB()
     #' }
@@ -417,10 +417,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_EVPI()
     #' }
@@ -464,10 +464,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_EVPPI_results()
     #' }
@@ -502,8 +502,8 @@ ShinyPSA <- R6::R6Class(
     #' @description
     #' Get the Subset EVPPI results table
     #'
-    #' @param ... Extra arguments passed to the plotting functions. Should at
-    #' least contain either:
+    #' @param ... Extra arguments passed to the plotting functions.
+    #' Should at least contain either:
     #' \code{.set}: Parameters' indexes.
     #' \code{.set_names}: Parameters' names.
     #'
@@ -514,10 +514,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_Sub_EVPPI_results(
     #'   .set = c(14, 16, 5))
@@ -554,11 +554,39 @@ ShinyPSA <- R6::R6Class(
         'One or more parameter index are out-of-bound.' =
           min(dots_[['.set']]) >= 1)
 
+      # keep unique params indexes:
+      dots_[['.set']] <- unique(dots_[['.set']])
+
       # check if current subset was not processed before:
+      params_set <- dplyr::tibble(
+        "combis" = paste0(dots_[['.set']], collapse = '_'),
+        "MAICER" = if(is.null(dots_[[".MAICER_"]])) {
+          30000
+        } else {
+          dots_[[".MAICER_"]]},
+        "Population" = if(is.null(dots_[[".evppi_population_"]])) {
+          NA
+        } else {
+          dots_[[".evppi_population_"]]},
+        "Discount rate" = if(is.null(dots_[[".discount_rate_"]])) {
+          NA
+        } else {
+          dots_[[".discount_rate_"]]},
+        "Time horizon" = if(is.null(dots_[[".time_horion_"]])) {
+          NA
+        } else {
+          dots_[[".time_horion_"]]})
+
       EVPPI_subset_exists <- if(is.null(private$EVPPI_subsets)) {
          FALSE
       } else {
-        if(paste0(dots_[['.set']], collapse = '_') %in% private$EVPPI_subsets) {
+        # create a comparison dataset and keep unique rows:
+        compare_sets <- private$EVPPI_subsets %>%
+          dplyr::bind_rows(params_set) %>%
+          dplyr::distinct()
+
+        if(nrow(private$EVPPI_subsets) == nrow(compare_sets)) {
+          # if new parameters set and settings is not unique:
           TRUE
         } else {
           FALSE
@@ -574,11 +602,33 @@ ShinyPSA <- R6::R6Class(
         params_perm <- unique(params_perm)
         # collapse permutations to help compare with existing/passed subsets:
         params_perm <- params_perm %>%
-          dplyr::as_tibble(.name_repair = ~ make.names(., unique = TRUE)) %>%
+          dplyr::as_tibble(
+            .name_repair = ~ make.names(., unique = TRUE)) %>%
           tidyr::unite("combis", everything(), sep = "_") %>%
-          dplyr::pull("combis")
+          dplyr::mutate(
+            "MAICER" = if(is.null(dots_[[".MAICER_"]])) {
+              30000
+            } else {
+              dots_[[".MAICER_"]]
+            },
+            "Population" = if(is.null(dots_[[".evppi_population_"]])) {
+              NA
+            } else {
+              dots_[[".evppi_population_"]]
+            },
+            "Discount rate" = if(is.null(dots_[[".discount_rate_"]])) {
+              NA
+            } else {
+              dots_[[".discount_rate_"]]
+            },
+            "Time horizon" = if(is.null(dots_[[".time_horion_"]])) {
+              NA
+            } else {
+              dots_[[".time_horion_"]]
+            })
         # add new permutations to previously processed ones:
-        private$EVPPI_subsets <- c(private$EVPPI_subsets, params_perm)
+        private$EVPPI_subsets <- private$EVPPI_subsets %>%
+          dplyr::bind_rows(params_perm)
       }
 
       # hard-code key arguments:
@@ -617,10 +667,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_EVPPI_plot()
     #' }
@@ -665,10 +715,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_PSA_stabl_plots()
     #' }
@@ -711,10 +761,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_WTP()
     #' }
@@ -732,10 +782,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p)
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_params_names()
     #' }
@@ -1015,9 +1065,10 @@ ShinyPSA <- R6::R6Class(
     # library(ShinyPSA)
     #
     # PSA_summary <- summarise_PSA_(
-    #   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #
     # p <- plot_CEplane_(PSA_summary,
     #                  .ref = 1,

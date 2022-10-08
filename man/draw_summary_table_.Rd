@@ -53,8 +53,8 @@ affected populations.}
 interventions under consideration change (how long before the decision
 under consideration become obsolete or requires updating)}
 
-\item{.effs_accuracy_}{Number of digits for effects measure; default is 3 and
-is expressed as 1e-3 or 0.001.}
+\item{.effs_accuracy_}{Number of digits for effects measure; default is
+3 and is expressed as 1e-3 or 0.001.}
 }
 \value{
 A table, dataframe, tibble or DT objects.

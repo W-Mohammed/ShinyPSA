@@ -34,8 +34,8 @@
 #' @param .time_horion_ The time expected to pass (in years) before the
 #' interventions under consideration change (how long before the decision
 #' under consideration become obsolete or requires updating)
-#' @param .effs_accuracy_ Number of digits for effects measure; default is 3 and
-#' is expressed as 1e-3 or 0.001.
+#' @param .effs_accuracy_ Number of digits for effects measure; default is
+#' 3 and is expressed as 1e-3 or 0.001.
 #'
 #' @return A table, dataframe, tibble or DT objects.
 #' @importFrom tidyselect vars_select_helpers
