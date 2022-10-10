@@ -255,7 +255,8 @@ check_PSA_stability <- function(.PSA_data = NULL, .effs = NULL, .costs = NULL,
 # }
 plot_stability_lines <- function(df, x_var, y_var, plot_group, title,
                                  x_lab, y_lab, .legend_pos_ = .legend_pos,
-                                 .zoom_ = .zoom, .zoom_cords_ = .zoom_cords,
+                                 .zoom_ = .zoom,
+                                 .zoom_cords_ = .zoom_cords,
                                  .add_ylabel = FALSE) {
   # Zoom:
   if(.zoom_ | (!is.null(.zoom_cords_) & is.numeric(.zoom_cords_))) {
@@ -267,8 +268,8 @@ plot_stability_lines <- function(df, x_var, y_var, plot_group, title,
 
   p <- ggplot2::ggplot() +
     ggplot2::coord_cartesian(
-      ylim = .zoom_cords_,
-      xlim = c(0, NA),
+      ylim = c(0, NA),
+      xlim = .zoom_cords_,
       expand = FALSE) +
     ggplot2::geom_hline(
       yintercept = 0,

@@ -308,10 +308,7 @@ ShinyPSA_R6_App <- R6::R6Class(
         .label_ = "Population EVPI sample size:"
       )
       self$iContainer[["updBtn6"]] <- actionButton$new(
-        .label_ = "Update EVPPI plot"
-      )
-      self$iContainer[["RstBtn6"]] <- actionButton$new(
-        .label_ = "Reset EVPPI plot"
+        .label_ = "Update EVPPI table"
       )
       self$iContainer[["lambdaEVPPI"]] <- numericInput$new(
         .label_ = "Maiximum acceptable ICER for EVPPI:"
@@ -357,6 +354,21 @@ ShinyPSA_R6_App <- R6::R6Class(
       )
       self$iContainer[["popSzEVPPIS"]] <- numericInput$new(
         .label_ = "Population Subset EVPPI sample size:"
+      )
+      self$iContainer[["updBtn8"]] <- actionButton$new(
+        .label_ = "Update EVPPI plot"
+      )
+      self$iContainer[["updBtn9"]] <- actionButton$new(
+        .label_ = "Update stability plot"
+      )
+      self$iContainer[["zomSch6"]] <- prettySwitch$new(
+        .label_ = "Zoom to min/max X axis values"
+      )
+      self$iContainer[["zomLbX"]] <- numericInput$new(
+        .label_ = "Zoom: X axis lower bound value:"
+      )
+      self$iContainer[["zomUbX"]] <- numericInput$new(
+        .label_ = "Zoom: X axis upper bound value:"
       )
     },
     ### UI:----
@@ -954,74 +966,83 @@ ShinyPSA_R6_App <- R6::R6Class(
                   bslib::nav(
                     width = 9,
                     title = "Expected Value of Partial Perfect Information",
-                    fluidRow(
-                      column(
-                        width = 2,
-                        self$iContainer[["updBtn6"]]$
-                          ui_input(
-                            .width_ = "100%"
+                    tabsetPanel(
+                      id = "EVPPI_sub_panel",
+                      bslib::nav(
+                        title = "EVPPI Summary Table",
+                        fluidRow(
+                          column(
+                            width = 2,
+                            self$iContainer[["updBtn6"]]$
+                              ui_input(
+                                .width_ = "100%"
+                              ),
+                            hr(),
+                            self$iContainer[["lambdaEVPPI"]]$
+                              ui_input(
+                                .min_ = 0,
+                                .max_ = 1e6,
+                                .value_ = 30000
+                              ),
+                            self$iContainer[["popEVPPI"]]$
+                              ui_input(
+                                .class_ = "pl-2 flex-fill text-left"
+                              ),
+                            self$iContainer[["timEVPPI"]]$
+                              ui_input(
+                                .min_ = 1,
+                                .max_ = 100,
+                                .value_ = 1
+                              ),
+                            self$iContainer[["dsRtEVPPI"]]$
+                              ui_input(
+                                .min_ = 0,
+                                .max_ = 1,
+                                .value_ = 0.035
+                              ),
+                            self$iContainer[["popSzEVPPI"]]$
+                              ui_input(
+                                .min_ = 0,
+                                .max_ = 1e8,
+                                .value_ = 1.5e3
+                              )
                           ),
-                        hr(),
-                        self$iContainer[["lambdaEVPPI"]]$
-                          ui_input(
-                            .min_ = 0,
-                            .max_ = 1e6,
-                            .value_ = 30000
-                          ),
-                        self$iContainer[["PcntSch"]]$
-                          ui_input(
-                            .class_ = "pl-2 flex-fill text-left"
-                          ),
-                        self$iContainer[["MinPcnt"]]$
-                          ui_input(
-                            .min_ = 0,
-                            .max_ = 100,
-                            .value_ = NULL
-                          ),
-                        self$iContainer[["MaxParam"]]$
-                          ui_input(
-                            .min_ = 0,
-                            .max_ = 100,
-                            .value_ = 100
-                          ),
-                        self$iContainer[["popEVPPI"]]$
-                          ui_input(
-                            .class_ = "pl-2 flex-fill text-left"
-                          ),
-                        self$iContainer[["timEVPPI"]]$
-                          ui_input(
-                            .min_ = 1,
-                            .max_ = 100,
-                            .value_ = 1
-                          ),
-                        self$iContainer[["dsRtEVPPI"]]$
-                          ui_input(
-                            .min_ = 0,
-                            .max_ = 1,
-                            .value_ = 0.035
-                          ),
-                        self$iContainer[["popSzEVPPI"]]$
-                          ui_input(
-                            .min_ = 0,
-                            .max_ = 1e8,
-                            .value_ = 1.5e3
-                          ),
-                        self$iContainer[["RstBtn6"]]$
-                          ui_input(
-                            .width_ = "100%"
-                          )
-                      ),
-                      column(
-                        width = 10,
-                        tabsetPanel(
-                          id = "EVPPI_sub_panel",
-                          bslib::nav(
-                            title = "EVPPI Summary Table",
+                          column(
+                            width = 10,
                             self$iContainer[["EVPPITbl"]]$
                               ui_output()
+                          )
+                        )
+                      ),
+                      bslib::nav(
+                        title = "EVPPI Bar Plot",
+                        fluidRow(
+                          column(
+                            width = 2,
+                            self$iContainer[["updBtn8"]]$
+                              ui_input(
+                                .width_ = "100%"
+                              ),
+                            hr(),
+                            self$iContainer[["PcntSch"]]$
+                              ui_input(
+                                .class_ = "pl-2 flex-fill text-left"
+                              ),
+                            self$iContainer[["MinPcnt"]]$
+                              ui_input(
+                                .min_ = 0,
+                                .max_ = 100,
+                                .value_ = NULL
+                              ),
+                            self$iContainer[["MaxParam"]]$
+                              ui_input(
+                                .min_ = 0,
+                                .max_ = 100,
+                                .value_ = 100
+                              )
                           ),
-                          bslib::nav(
-                            title = "EVPPI Bar Plot",
+                          column(
+                            width = 10,
                             self$iContainer[["EVPPI"]]$
                               ui_output()
                           )
@@ -1089,8 +1110,29 @@ ShinyPSA_R6_App <- R6::R6Class(
                     title = "PSA outputs stability",
                     fluidRow(
                       column(
-                        width = 2
-                      ),
+                        width = 2,
+                        self$iContainer[["updBtn9"]]$
+                          ui_input(
+                            .width_ = "100%"
+                          ),
+                        hr(),
+                        self$iContainer[["zomSch6"]]$
+                          ui_input(
+                            .class_ = "pl-2 flex-fill text-left"
+                          ),
+                        self$iContainer[["zomLbX"]]$
+                          ui_input(
+                            .min_ = 0,
+                            .max_ = 1e4,
+                            .value_ = 0
+                          ),
+                        self$iContainer[["zomUbX"]]$
+                          ui_input(
+                            .min_ = 100,
+                            .max_ = 1e6,
+                            .value_ = 1000
+                          )
+                        ),
                       column(
                         width = 10,
                         self$iContainer[["PSA_stability"]]$
@@ -2060,7 +2102,7 @@ ShinyPSA_R6_App <- R6::R6Class(
         ignoreInit = TRUE
       )
 
-      ##### Actions on EVPPI update button:----
+      ##### Actions on EVPPI update table button:----
       observeEvent(
         eventExpr = (input[[self$iContainer[["updBtn6"]]$
                               get_uiInId()]]),
@@ -2068,7 +2110,7 @@ ShinyPSA_R6_App <- R6::R6Class(
           ###### Waiter:----
           waiter <- waiter::Waiter$new(
             html = self$waiter_dev(
-              .info_ = "Updating Expected value of partial perfect information plot..."
+              .info_ = "Updating Expected value of partial perfect information table..."
             ),
             hide_on_render  = FALSE
           )
@@ -2100,6 +2142,26 @@ ShinyPSA_R6_App <- R6::R6Class(
               .readyDT_ = TRUE
             )
 
+        },
+        ignoreNULL = TRUE,
+        ignoreInit = TRUE
+      )
+
+      ##### Actions on EVPPI update plot button:----
+      observeEvent(
+        eventExpr = (input[[self$iContainer[["updBtn8"]]$
+                              get_uiInId()]]),
+        handlerExpr = {
+          ###### Waiter:----
+          waiter <- waiter::Waiter$new(
+            html = self$waiter_dev(
+              .info_ = "Updating Expected value of partial perfect information plot..."
+            ),
+            hide_on_render  = FALSE
+          )
+          waiter$show()
+          on.exit(waiter$hide())
+          ###### Updating EVPPI:----
           ####### Pass values to the get_EVPPI_plot function:----
           self$iContainer[["EVPPI"]]$
             server(
@@ -2113,36 +2175,8 @@ ShinyPSA_R6_App <- R6::R6Class(
                   .min_percent = input[[self$iContainer[["MinPcnt"]]$
                                           get_uiInId()]],
                   .params_num = input[[self$iContainer[["MaxParam"]]$
-                                       get_uiInId()]]
+                                         get_uiInId()]]
                 )
-            )
-        },
-        ignoreNULL = TRUE,
-        ignoreInit = TRUE
-      )
-
-      ##### Actions on EVPPI reset button:----
-      observeEvent(
-        eventExpr = (input[[self$iContainer[["RstBtn6"]]$
-                              get_uiInId()]]),
-        handlerExpr = {
-          ###### Waiter:----
-          waiter <- waiter::Waiter$new(
-            html = self$waiter_dev(
-              .info_ = "Resetting Expected value of partial perfect information plot..."
-            ),
-            hide_on_render  = FALSE
-          )
-          waiter$show()
-          on.exit(waiter$hide())
-          ###### Resetting EVPI plot:----
-          self$iContainer[["EVPPI"]]$
-            server(
-              session = session,
-              input = input,
-              output = output,
-              .plot_ = rContainer[[sData_name()]]$
-                get_EVPPI_plot()
             )
         },
         ignoreNULL = TRUE,
@@ -2195,6 +2229,44 @@ ShinyPSA_R6_App <- R6::R6Class(
         ignoreInit = TRUE
       )
 
+      ##### Actions on Stability plot button:----
+      observeEvent(
+        eventExpr = (input[[self$iContainer[["updBtn9"]]$
+                              get_uiInId()]]),
+        handlerExpr = {
+          ###### Waiter:----
+          waiter <- waiter::Waiter$new(
+            html = self$waiter_dev(
+              .info_ = "Updating PSA stability plots..."
+            ),
+            hide_on_render  = FALSE
+          )
+          waiter$show()
+          on.exit(waiter$hide())
+          ###### Updating PSA stability plots:----
+          ####### Pass values to the get_PSA_stabl_plots function:----
+          self$iContainer[["PSA_stability"]]$
+            server(
+              session = session,
+              input = input,
+              output = output,
+              .plot_ = rContainer[[sData_name()]]$
+                get_PSA_stabl_plots(
+                  .zoom = input[[self$iContainer[["zomSch6"]]$
+                                   get_uiInId()]],
+                  .zoom_cords = c(
+                    input[[self$iContainer[["zomLbX"]]$
+                             get_uiInId()]],
+                    input[[self$iContainer[["zomUbX"]]$
+                             get_uiInId()]]
+                  )
+                )
+            )
+        },
+        ignoreNULL = TRUE,
+        ignoreInit = TRUE
+      )
+
       #### Global handlers:----
       ##### Theme switcher:----
       observe(
@@ -2207,7 +2279,7 @@ ShinyPSA_R6_App <- R6::R6Class(
               bslib::bs_theme()
             } else {
               bslib::bs_theme(
-                bootswatch = "solar" #"sandstone"
+                bootswatch = "solar" #"cyborg" #"solar" #"sandstone"
               )
             }
           )
