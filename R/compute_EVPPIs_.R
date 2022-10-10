@@ -347,6 +347,12 @@ gamFunc <- function(.params, NB, sets, s = 1000, .session = NULL) {
   g.hat[[1]] <- 0
 
   input.parameters <- .params
+  ## WM: prevent issues with spaces in parameters' names
+  colnames(input.parameters) <- gsub(
+    pattern = " ",
+    replacement = "_",
+    x = colnames(input.parameters))
+  ## End of WM inputs
   paramSet <- cbind(cbind(input.parameters)[, sets, drop=FALSE])
 
   constantParams <- (apply(paramSet, 2, var) == 0)
