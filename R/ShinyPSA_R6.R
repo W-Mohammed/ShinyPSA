@@ -474,25 +474,88 @@ ShinyPSA <- R6::R6Class(
     get_EVPPI_results = function(...) {
       # grab passed arguments, if any:
       dots_ <- list(...)
+
+      # check if current subset was not processed before:
+      settings_ <- dplyr::tibble(
+        "MAICER" = if(is.null(dots_[[".MAICER_"]])) {
+          30000
+        } else {
+          dots_[[".MAICER_"]]},
+        "Population EVPPI" = if(is.null(dots_[[".individual_evppi_"]])) {
+          dots_[[".individual_evppi_"]] <- TRUE
+          FALSE
+        } else {
+          !isTRUE(dots_[[".individual_evppi_"]])},
+        "Population" = if(is.null(dots_[[".evppi_population_"]])) {
+          NA
+        } else {
+          if(isTRUE(dots_[[".individual_evppi_"]])) {
+            NA
+          } else if(dots_[[".individual_evppi_"]] == FALSE) {
+            dots_[[".evppi_population_"]]
+          } else {
+            NA}},
+        "Discount rate" = if(is.null(dots_[[".discount_rate_"]])) {
+          0.035
+        } else {
+          dots_[[".discount_rate_"]]},
+        "Time horizon" = if(is.null(dots_[[".time_horion_"]])) {
+          NA
+        } else {
+          if(isTRUE(dots_[[".individual_evppi_"]])) {
+            NA
+          } else if(dots_[[".individual_evppi_"]] == FALSE) {
+            dots_[[".time_horion_"]]
+          } else {
+            NA}})
+
+      EVPPI_exists <- if(is.null(private$EVPPI_settings)) {
+        FALSE
+      } else {
+        # compare settings:
+        compare_settings <- dplyr::semi_join(
+          private$EVPPI_settings,
+          settings_)
+
+        if(nrow(compare_settings) != 0) {
+          # if passed settings are not unique:
+          settings_id <- compare_settings$id
+          TRUE
+        } else {
+          FALSE
+        }
+      }
+      # save of all permutations of passed parameter-subset for future calls:
+      if(!isTRUE(EVPPI_exists)) {
+        # add new settings to previously processed ones:
+        settings_ <- settings_ %>%
+          dplyr::mutate(
+            "id" = if(is.null(private$EVPPI_settings)) {
+              1
+            } else {
+              max(private$EVPPI_settings$id) + 1
+            }
+          )
+        private$EVPPI_settings <- private$EVPPI_settings %>%
+          dplyr::bind_rows(settings_)
+      }
+
       # depending on passed arguments:
       self$EVPPI_results <-
-        if(length(dots_) == 0 &
-           !is.null(private$PSA_summary[["EVPPI"]])) {
-          # return default object if no arguments were passed to the function:
-          private$PSA_summary[["EVPPI"]]
+        if(!isTRUE(EVPPI_exists)) {
+          # new settings passed to functions:
+          dots_$.PSA_data <- private$PSA_summary
+          # save new settings output to a tmp object:
+          tmp <- do.call(private$compute_EVPPIs_, dots_)
+          # add tmp object to private object:
+          private$PSA_summary[['EVPPI']] <-
+            c(private$PSA_summary[['EVPPI']],
+              list(tmp))
+          # return tmp object:
+          tmp
         } else {
-          if(is.null(private$PSA_summary[["EVPPI"]])) {
-            # create object is missing:
-            dots_$.PSA_data <- private$PSA_summary
-            private$PSA_summary[["EVPPI"]] <- do.call(
-              private$compute_EVPPIs_, dots_)
-            # return default object after creation:
-            private$PSA_summary[["EVPPI"]]
-          } else {
-            # pass arguments to the relevant function:
-            dots_$.PSA_data <- private$PSA_summary
-            do.call(private$compute_EVPPIs_, dots_)
-          }
+          print("These EVPPI settings were processed before.")
+          private$PSA_summary[['EVPPI']][[settings_id]]
         }
 
       return(self$EVPPI_results)
@@ -564,28 +627,43 @@ ShinyPSA <- R6::R6Class(
           30000
         } else {
           dots_[[".MAICER_"]]},
+        "Population EVPPI" = if(is.null(dots_[[".individual_evppi_"]])) {
+          dots_[[".individual_evppi_"]] <- TRUE
+          FALSE
+        } else {
+          !isTRUE(dots_[[".individual_evppi_"]])},
         "Population" = if(is.null(dots_[[".evppi_population_"]])) {
           NA
         } else {
-          dots_[[".evppi_population_"]]},
+          if(isTRUE(dots_[[".individual_evppi_"]])) {
+            NA
+          } else if(dots_[[".individual_evppi_"]] == FALSE) {
+            dots_[[".evppi_population_"]]
+          } else {
+            NA}},
         "Discount rate" = if(is.null(dots_[[".discount_rate_"]])) {
-          NA
+          0.035
         } else {
           dots_[[".discount_rate_"]]},
         "Time horizon" = if(is.null(dots_[[".time_horion_"]])) {
           NA
         } else {
-          dots_[[".time_horion_"]]})
+          if(isTRUE(dots_[[".individual_evppi_"]])) {
+            NA
+          } else if(dots_[[".individual_evppi_"]] == FALSE) {
+            dots_[[".time_horion_"]]
+          } else {
+            NA}})
 
       EVPPI_subset_exists <- if(is.null(private$EVPPI_subsets)) {
          FALSE
       } else {
         # create a comparison dataset and keep unique rows:
-        compare_sets <- private$EVPPI_subsets %>%
-          dplyr::bind_rows(params_set) %>%
-          dplyr::distinct()
+        compare_sets <- dplyr::semi_join(
+          private$EVPPI_subsets,
+          params_set)
 
-        if(nrow(private$EVPPI_subsets) == nrow(compare_sets)) {
+        if(nrow(compare_sets) != 0) {
           # if new parameters set and settings is not unique:
           TRUE
         } else {
@@ -609,23 +687,38 @@ ShinyPSA <- R6::R6Class(
             "MAICER" = if(is.null(dots_[[".MAICER_"]])) {
               30000
             } else {
-              dots_[[".MAICER_"]]
-            },
+              dots_[[".MAICER_"]]},
+            "Population EVPPI" = if(is.null(dots_[[".individual_evppi_"]])) {
+              dots_[[".individual_evppi_"]] <- TRUE
+              FALSE
+            } else {
+              !isTRUE(dots_[[".individual_evppi_"]])},
             "Population" = if(is.null(dots_[[".evppi_population_"]])) {
               NA
             } else {
-              dots_[[".evppi_population_"]]
-            },
+              if(isTRUE(dots_[[".individual_evppi_"]])) {
+                NA
+              } else if(dots_[[".individual_evppi_"]] == FALSE) {
+                dots_[[".evppi_population_"]]
+              } else {
+                NA}},
             "Discount rate" = if(is.null(dots_[[".discount_rate_"]])) {
-              NA
+              0.035
             } else {
-              dots_[[".discount_rate_"]]
-            },
+              dots_[[".discount_rate_"]]},
             "Time horizon" = if(is.null(dots_[[".time_horion_"]])) {
               NA
             } else {
-              dots_[[".time_horion_"]]
-            })
+              if(isTRUE(dots_[[".individual_evppi_"]])) {
+                NA
+              } else if(dots_[[".individual_evppi_"]] == FALSE) {
+                dots_[[".time_horion_"]]
+              } else {
+                NA}},
+            "id" = if(is.null(private$EVPPI_settings)) {
+              1
+            } else {
+              max(private$EVPPI_settings$id) + 1})
         # add new permutations to previously processed ones:
         private$EVPPI_subsets <- private$EVPPI_subsets %>%
           dplyr::bind_rows(params_perm)
@@ -678,26 +771,21 @@ ShinyPSA <- R6::R6Class(
       # grab passed arguments, if any:
       dots_ <- list(...)
       # depending on passed arguments:
-      self$EVPPI_plot <- if(length(dots_) == 0 &
-                            !is.null(private$PSA_summary[["EVPPI_plot"]])) {
-        # return default object if no arguments were passed to the function:
-        private$PSA_summary[["EVPPI_plot"]]
-      } else {
-        if(is.null(private$PSA_summary[["EVPPI"]])) {
+      self$EVPPI_plot <-
+        if(is.null(self$EVPPI_results)) {
           # create EVPPIs results object if it does not exist:
           self$get_EVPPI_results()
           # pass arguments to the plotting function:
-          dots_$EVPPI_res <- private$PSA_summary[["EVPPI"]]
+          dots_$EVPPI_res <- self$EVPPI_results
           private$PSA_summary[["EVPPI_plot"]] <-
             do.call(private$plot_EVPPI_, dots_)
           # return default object after creation:
           private$PSA_summary[["EVPPI_plot"]]
         } else {
           # pass arguments to the plotting function:
-          dots_$EVPPI_res <- private$PSA_summary[["EVPPI"]]
+          dots_$EVPPI_res <- self$EVPPI_results
           do.call(private$plot_EVPPI_, dots_)
         }
-      }
 
       return(self$EVPPI_plot)
     },
@@ -772,6 +860,8 @@ ShinyPSA <- R6::R6Class(
 
       return(private$PSA_summary[["WTPs"]])
     },
+
+    ## Get parameters names:----
     #' @description
     #' Get the parameters' names.
     #'
@@ -803,6 +893,7 @@ ShinyPSA <- R6::R6Class(
     costs = NULL,
     params = NULL,
     PSA_summary = NULL,
+    EVPPI_settings = NULL,
     EVPPI_subsets = NULL,
 
     ## Summarise PSA outputs and report results:----
