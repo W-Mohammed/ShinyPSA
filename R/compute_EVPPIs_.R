@@ -18,32 +18,37 @@
 #' \code{columns} is equal to the interventions while the number of
 #' \code{rows} is equal to the number of PSA simulations to be summarised.
 #' @param .EVPI A data table containing EVPI data.
-#' @param .WTPs A vector containing the Willingness-to-pay values over which
-#' EVPI values were estimated.
+#' @param .WTPs A vector containing the Willingness-to-pay values over
+#' which EVPI values were estimated.
 #' @param .params A matrix containing parameters' configurations used in
 #' the PSA.
 #' @param .set A vector of parameters' names for conditional EVPPI.
 #' @param .set_names A vector of parameter-names to be used for EVPPI.
 #' @param .subset_ Boolean for whether to estimate conditional EVPPI for a
 #' subset of parameters.
-#' @param .MAICER_ The Maximum acceptable incremental cost-effectiveness ratio.
-#' (MAICER) to be considered in the summary table. Default value is
+#' @param .MAICER_ The Maximum acceptable incremental cost-effectiveness
+#' ratio (MAICER) to be considered in the summary table. Default value is
 #' \code{30,000}.
 #' @param .units_ A character, the units to associate with the
 #' monitory values in the summary table. Default is sterling pounds
 #' (GBP) \code{"\u00A3"}.
-#' @param .individual_evppi_ Logical (default \code{TRUE}) to return per person
-#' EVPPI, otherwise population EVPPI will be reported.
-#' @param .discount_rate_ The discount rate used to discount future affected
-#' populations.
+#' @param .individual_evppi_ Logical (default \code{TRUE}) to return per
+#' person EVPPI, otherwise population EVPPI will be reported.
+#' @param .discount_rate_ The discount rate used to discount future
+#' affected populations.
 #' @param .evppi_population_ The size of the population that is annually
 #' affected by the competing health technologies under evaluation.
 #' @param .time_horion_ The time expected to pass (in years) before the
 #' interventions under consideration change (how long before the decision
 #' under consideration become obsolete or requires updating).
 #' @param .session Shiny app session.
+#' @param .interventions_ A vector containing the names of all
+#' interventions. If not provided or less names than needed is provided,
+#' the function will generate generic names, for example
+#' \code{intervention 1}.
 #'
-#' @return A list containing the EVPPI results table and caption information.
+#' @return A list containing the EVPPI results table and caption
+#' information.
 #' @export
 #'
 #' @examples
@@ -87,33 +92,40 @@
 #' }
 compute_EVPPIs_ <- function(.PSA_data, .effs = NULL, .costs = NULL,
                             .EVPI = NULL, .WTPs = NULL, .params = NULL,
-                            .set = NULL, .set_names = NULL, .subset_ = FALSE,
-                            .MAICER_ = 30000, .units_ = "\u00A3",
-                            .individual_evppi_ = TRUE, .discount_rate_ = 0.035,
-                            .evppi_population_ = NULL, .time_horion_ = NULL,
+                            .set = NULL, .set_names = NULL,
+                            .subset_ = FALSE, .MAICER_ = 30000,
+                            .units_ = "\u00A3", .individual_evppi_ = TRUE,
+                            .discount_rate_ = 0.035,
+                            .evppi_population_ = NULL,
+                            .time_horion_ = NULL, .interventions_ = NULL,
                             .session = NULL) {
-
   # Sanity checks:----
   stopifnot(
     'Please pass necessary data for EVPPI estimation' =
       !is.null(.PSA_data) |
-      !is.null(.effs) |
-      !is.null(.costs) |
-      !is.null(.params),
+      (!is.null(.effs) & !is.null(.costs) & !is.null(.params)),
     'Please pass necessary data for EVPI estimation' =
       !is.null(.PSA_data) |
-      !is.null(.EVPI) |
-      !is.null(.WTPs)
+      (!is.null(.EVPI) & !is.null(.WTPs))
     )
-  if(is.null(.effs) | is.null(.costs) | is.null(.params)) {
+  stopifnot(
+    'Unequal dimensions in .effs and .costs' =
+      dim(.effs) == dim(.costs),
+    'Uequal number of PSA simulations data in .params and .effs/.costs' =
+      nrow(.params) == nrow(.costs)
+  )
+  if(!is.null(.PSA_data) &
+     (is.null(.effs) | is.null(.costs) | is.null(.params))) {
     .effs = .PSA_data$e
     .costs = .PSA_data$c
     .params = .PSA_data$p
+    .interventions = .PSA_data$interventions
   }
-  stopifnot(
-    'Unequal dimensions in .effs and .costs' =
-      dim(.effs) == dim(.costs)
-  )
+  if(!is.null(.PSA_data) &
+     (is.null(.EVPI) | is.null(.WTPs))) {
+    .EVPI = .PSA_data$EVPI
+    .WTPs = .PSA_data$WTPs
+  }
   if(is.null(.set) & is.null(.set_names)) {
     .subset_ <- FALSE
   }
@@ -123,6 +135,39 @@ compute_EVPPIs_ <- function(.PSA_data, .effs = NULL, .costs = NULL,
   if(is.null(.set) & !is.null(.set_names)) {
     .set <- which(colnames(.params) %in% .set_names)
   }
+  # Check interventions names, create ones if any is missing:----
+  n_treats <- ncol(.effs)
+  if(!is.null(.interventions) & length(.interventions) != n_treats) {
+    .interventions <- NULL
+  }
+  if(is.null(.interventions)) {
+    .interventions <- paste("intervention", 1:n_treats)
+  }
+
+  # Sort out .MAICER_ value:----
+  ## replace .MAICER_ value if more than max WTP:----
+  if(!is.null(.MAICER_))
+    if(length(.MAICER_) < 1)
+      .MAICER_ <- NULL
+  if(is.null(.MAICER_))
+    .MAICER_ <- c(20000, 30000)
+  if(!is.null(.MAICER_))
+    .MAICER_ <- .MAICER_[!is.na(.MAICER_)]
+  if(any(.MAICER_ > max(.WTPs)))
+    .MAICER_ <- .MAICER_[.MAICER_ < max(.WTPs)]
+
+  ### replace unevaluated wtp with nearest replacements:
+  MAICER_index_ <- purrr::map_dbl(
+    .x = .MAICER_,
+    .f = function(MAICER_ = .x) {
+      which.min(
+        abs(
+          MAICER_ - .WTPs
+        )
+      )
+    }
+  )
+  .MAICER_ <- unique(.WTPs[MAICER_index_])
 
   # Estimate individual EVPPI:----
   ## Calculate incremental net benefit (INB):----
@@ -201,49 +246,54 @@ compute_EVPPIs_ <- function(.PSA_data, .effs = NULL, .costs = NULL,
     ## Calculate EVPI from inputs if PSA_data object was not provided:----
     ShinyPSA::compute_EVPIs_(
       .effs = .effs,
-      .costs = .costs)
+      .costs = .costs,
+      .wtp = .WTPs,
+      .interventions = .interventions)
   }
 
   # Prepare EVPPI results table:----
   ## Build the individual EVPPI results table:----
-  tmp_name <- paste0("Per Person EVPPI (", .units_, "). MAICER = ",
-                     scales::dollar(
-                       x = .MAICER_,
-                       prefix = .units_))
-  ind_evppi <- dplyr::tibble(
+  pp_name <- paste0("Per Person EVPPI (", .units_, ")")
+  pop_name <- paste0("Population EVPPI over ", .time_horion_,
+                     " years (", .units_, ")")
+  evppi_tab <- dplyr::tibble(
     "Parameters" = if(isTRUE(.subset_)) {
       paste(.set_names, collapse = " + ")
     } else {
       colnames(.params)},
-    {{tmp_name}} :=
+    {{pp_name}} :=
       round(EVPPI[, 1], 2),
     "Standard Error" =
       round(EVPPI[, 2], 2),
-    "Indexed to Overall EVPI (%)" =
-      scales::percent(round((EVPPI[, 1] / EVPI), 2)))
-  ## Build the population EVPPI results table:----
-  pop_evppi <- NULL
-  if(!isTRUE(.individual_evppi_)) {
-    tmp_name <- paste0("Population EVPPI over ", .time_horion_,
-                       " years (", .units_, ")")
-    pop_evppi <- ind_evppi %>%
+    "Indexed to Overall EVPI" =
+      scales::percent(round((EVPPI[, 1] / EVPI), 2))) %>%
+    {if(!isTRUE(.individual_evppi_)) {
       dplyr::mutate(
-        {{tmp_name}} :=
-          signif(EVPPI[, 1] * discounted_population, 4))
-  }
+        .data = .,
+        "Population EVPPI" = signif(
+          EVPPI[, 1] * discounted_population, 4),
+        "Population parameters" = paste0(
+          .time_horion_, " year(s) at ",
+          .discount_rate_ * 100, "% discount rate, and ",
+          .evppi_population_, " individuals."))
+    } else {
+      dplyr::mutate(
+        .data = .,
+        "Population EVPPI" = NA,
+        "Population parameters" = NA)
+      }
+    } %>%
+    dplyr::mutate(
+      "MAICER" = scales::dollar(
+        x = .MAICER_,
+        prefix = .units_)
+    )
 
   # Prepare results list:----
-  if(!is.null(pop_evppi)) {
-    return(
-      list('Population EVPPI' = pop_evppi,
-           'Table caption' = table_caption,
-           'Plot caption' = plot_caption))
-  } else {
-    return(
-      list('Individual EVPPI' = ind_evppi,
-           'Table caption' = table_caption,
-           'Plot caption' = plot_caption))
-  }
+  return(
+    list('EVPPI' = evppi_tab,
+         'Table caption' = table_caption,
+         'Plot caption' = plot_caption))
 }
 
 # The functions below were defined by Mark Strong, Penny Breeze, Chloe Thomas
@@ -328,7 +378,7 @@ gamFunc <- function(.params, NB, sets, s = 1000, .session = NULL) {
 
 
   if(!is.null(.session)) {
-    progress <- shiny::Progress$new(session, min=1, max=D-1)
+    progress <- shiny::Progress$new(.session, min=1, max=D-1)
     on.exit(progress$close())
     progress$set(message = 'Calculating conditional expected net benefits',
                  detail = 'Please wait...')
@@ -448,7 +498,7 @@ applyCalcSingleParamGam <- function(.params, nb, .session = NULL) {
   numVar <- NCOL(.params)
 
   if(!is.null(.session)) {
-    progress <- shiny::Progress$new(session, min=1, max=sum(numVar))
+    progress <- shiny::Progress$new(.session, min=1, max=sum(numVar))
     on.exit(progress$close())
     progress$set(message = 'Calculation in progress',
                  detail = 'Please wait...')
@@ -577,7 +627,7 @@ estimate.hyperparameters <- function(NB, inputs, .session = NULL) {
   hyperparameters[[1]] <- NA
 
   if(!is.null(.session)){
-    progress1 <- shiny::Progress$new(session, min=1, max=D)
+    progress1 <- shiny::Progress$new(.session, min=1, max=D)
     on.exit(progress1$close())
     progress1$set(message = 'Estimating GP hyperparameters',
                   detail = 'Please wait...')
@@ -724,7 +774,7 @@ gpFunc <- function(.params, NB, sets, s = 1000, .session = NULL) {
   tilde.g[[1]] <- matrix(0, nrow=s, ncol=min(N, 1000))   # bug fix 25.1.19
 
   if(!is.null(.session)) {
-    progress2 <- shiny::Progress$new(session, min=1, max=D)
+    progress2 <- shiny::Progress$new(.session, min=1, max=D)
     on.exit(progress2$close())
     progress2$set(message = 'Calculating Standard Error',
                   detail = 'Please wait...')

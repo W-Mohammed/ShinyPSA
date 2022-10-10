@@ -938,3 +938,242 @@ numericInput = R6::R6Class(
 
   )
 )
+# prettyCheckboxGroup:----
+#' R6 Class employing shinyWidgets::prettyCheckboxGroup
+#'
+#' @description
+#' An instance of this class is used in similar way to
+#' shinyWidgets::prettyCheckboxGroup
+#' @format An [R6::R6Class] object.
+#' @name prettyCheckboxGroup
+NULL
+#'
+#' @rdname prettyCheckboxGroup
+#' @export
+prettyCheckboxGroup = R6::R6Class(
+  classname = 'prettyCheckboxGroup',
+
+  public = list(
+    ## Fields:----
+
+    ## Methods:----
+    ### Initialise:----
+    initialize = function(.label_) {
+
+      private$label_ = .label_
+      private$id_ = uuid::UUIDgenerate()
+      private$ns_ = NS(private$id_)
+
+    },
+    ### UI:----
+    #### UI input:----
+    ui_input = function(.tag_ = "UI_input", .choices_, .icon_ = "check",
+                        .bigger_ = TRUE, .animation_ = "tada",
+                        .status_ = "success",
+                        .class_ = "flex-fill text-right") {
+
+      private$uiInput_Id_ <- private$ns_(.tag_)
+
+      tagList(
+        div(
+          class = .class_, #"flex-fill text-right"
+          style = "font-size: 1rem;",
+          shinyWidgets::prettyCheckboxGroup(
+            inputId = private$uiInput_Id_,
+            label = private$label_,
+            icon = .icon_,
+            choices = .choices_,
+            bigger = .bigger_,
+            animation = .animation_,
+            status = .status_
+          )
+        )
+      )
+
+    },
+    #### UI output:----
+    ui_output = function(.tag_ = "UI_output") {
+
+      private$uiOutput_Id_ <- private$ns_(.tag_)
+
+      tagList(
+        # renderUI(
+        #   inputId = private$uiOutput_Id_,
+        #   label = self$label_
+        # )
+      )
+
+    },
+    #### UI rendered output:----
+    ui_render_output = function(.tag_ = "UI_render_output") {
+
+      private$uiRenderedOutput_Id_ <- private$ns_(.tag_)
+
+      tagList(
+        # renderUI(
+        #   inputId = private$uiRenderedOutput_Id_,
+        #   label = self$label_
+        # )
+      )
+
+    },
+    ### Server:----
+    server = function(input, output, session) {
+    },
+    ### Getters:----
+    #### Get UI input ID:----
+    get_uiInId = function() {
+
+      return(private$uiInput_Id_)
+    },
+    #### Get UI output ID:----
+    get_uiOtId = function() {
+
+      return(private$uiOutput_Id_)
+    },
+    #### Get UI rendered output ID:----
+    get_uiRdOtId = function() {
+
+      return(private$uiRenderedOutput_Id_)
+    }
+
+  ),
+
+  private = list(
+    ## Fields:----
+    label_ = NULL,
+    id_ = NULL,
+    ns_ = NULL,
+    uiInput_Id_ = NULL,
+    uiOutput_Id_ = NULL,
+    uiRenderedOutput_Id_ = NULL
+
+    ## Methods:----
+
+  )
+)
+# pickerInput:----
+#' R6 Class employing shinyWidgets::pickerInput
+#'
+#' @description
+#' An instance of this class is used in similar way to
+#' shinyWidgets::pickerInput
+#' @format An [R6::R6Class] object.
+#' @name pickerInput
+NULL
+#'
+#' @rdname pickerInput
+#' @export
+pickerInput = R6::R6Class(
+  classname = 'pickerInput',
+
+  public = list(
+    ## Fields:----
+
+    ## Methods:----
+    ### Initialise:----
+    initialize = function(.label_) {
+
+      private$label_ = .label_
+      private$id_ = uuid::UUIDgenerate()
+      private$ns_ = NS(private$id_)
+
+    },
+    ### UI:----
+    #### UI input:----
+    ui_input = function(.tag_ = "UI_input", .choices_, .info_,
+                        .more_info_, .class_ = "flex-fill text-left") {
+
+      private$uiInput_Id_ <- private$ns_(.tag_)
+
+      tagList(
+        div(
+          class = .class_, #"flex-fill text-right"
+          style = "font-size: 1rem;",
+          shinyWidgets::pickerInput(
+            inputId = private$uiInput_Id_,
+            label = private$label_,
+            choices = .choices_,
+            options = shinyWidgets::pickerOptions(
+              actionsBox = TRUE,
+              liveSearch = TRUE,
+              size = 10,
+              selectedTextFormat = 'count > 3', #'values'
+              title = .info_,
+              header = .more_info_
+              ),
+            multiple = TRUE
+            )
+        )
+      )
+
+    },
+    #### UI output:----
+    ui_output = function(.tag_ = "UI_output") {
+
+      private$uiOutput_Id_ <- private$ns_(.tag_)
+
+      tagList(
+        # renderUI(
+        #   inputId = private$uiOutput_Id_,
+        #   label = self$label_
+        # )
+      )
+
+    },
+    #### UI rendered output:----
+    ui_render_output = function(.tag_ = "UI_render_output") {
+
+      private$uiRenderedOutput_Id_ <- private$ns_(.tag_)
+
+      tagList(
+        # renderUI(
+        #   inputId = private$uiRenderedOutput_Id_,
+        #   label = self$label_
+        # )
+      )
+
+    },
+    ### Server:----
+    ### server:----
+    server = function(input, output, session, .choices_ = .choices_) {
+
+      shinyWidgets::updatePickerInput(
+        session = session,
+        inputId = private$uiInput_Id_,
+        choices = .choices_
+      )
+
+    },
+    ### Getters:----
+    #### Get UI input ID:----
+    get_uiInId = function() {
+
+      return(private$uiInput_Id_)
+    },
+    #### Get UI output ID:----
+    get_uiOtId = function() {
+
+      return(private$uiOutput_Id_)
+    },
+    #### Get UI rendered output ID:----
+    get_uiRdOtId = function() {
+
+      return(private$uiRenderedOutput_Id_)
+    }
+
+  ),
+
+  private = list(
+    ## Fields:----
+    label_ = NULL,
+    id_ = NULL,
+    ns_ = NULL,
+    uiInput_Id_ = NULL,
+    uiOutput_Id_ = NULL,
+    uiRenderedOutput_Id_ = NULL
+
+    ## Methods:----
+
+  )
+)

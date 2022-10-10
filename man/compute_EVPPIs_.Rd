@@ -20,6 +20,7 @@ compute_EVPPIs_(
   .discount_rate_ = 0.035,
   .evppi_population_ = NULL,
   .time_horion_ = NULL,
+  .interventions_ = NULL,
   .session = NULL
 )
 }
@@ -37,8 +38,8 @@ results.}
 
 \item{.EVPI}{A data table containing EVPI data.}
 
-\item{.WTPs}{A vector containing the Willingness-to-pay values over which
-EVPI values were estimated.}
+\item{.WTPs}{A vector containing the Willingness-to-pay values over
+which EVPI values were estimated.}
 
 \item{.params}{A matrix containing parameters' configurations used in
 the PSA.}
@@ -50,19 +51,19 @@ the PSA.}
 \item{.subset_}{Boolean for whether to estimate conditional EVPPI for a
 subset of parameters.}
 
-\item{.MAICER_}{The Maximum acceptable incremental cost-effectiveness ratio.
-(MAICER) to be considered in the summary table. Default value is
+\item{.MAICER_}{The Maximum acceptable incremental cost-effectiveness
+ratio (MAICER) to be considered in the summary table. Default value is
 \code{30,000}.}
 
 \item{.units_}{A character, the units to associate with the
 monitory values in the summary table. Default is sterling pounds
 (GBP) \code{"\u00A3"}.}
 
-\item{.individual_evppi_}{Logical (default \code{TRUE}) to return per person
-EVPPI, otherwise population EVPPI will be reported.}
+\item{.individual_evppi_}{Logical (default \code{TRUE}) to return per
+person EVPPI, otherwise population EVPPI will be reported.}
 
-\item{.discount_rate_}{The discount rate used to discount future affected
-populations.}
+\item{.discount_rate_}{The discount rate used to discount future
+affected populations.}
 
 \item{.evppi_population_}{The size of the population that is annually
 affected by the competing health technologies under evaluation.}
@@ -71,10 +72,16 @@ affected by the competing health technologies under evaluation.}
 interventions under consideration change (how long before the decision
 under consideration become obsolete or requires updating).}
 
+\item{.interventions_}{A vector containing the names of all
+interventions. If not provided or less names than needed is provided,
+the function will generate generic names, for example
+\code{intervention 1}.}
+
 \item{.session}{Shiny app session.}
 }
 \value{
-A list containing the EVPPI results table and caption information.
+A list containing the EVPPI results table and caption
+information.
 }
 \description{
 Compute the Expected Value of Perfect Partial Information (EVPPI).

@@ -54,7 +54,7 @@ plot_EVPPI_ <- function(EVPPI_res, .show_percent = TRUE, .min_percent = 1,
              replacement = "",
              x = EVPPI_res[[1]][[4]]))) %>%
     ## rename exiting string percent variable to a usable name:----
-    dplyr::rename("Percent overall EVPI" = "Indexed to Overall EVPI (%)") %>%
+    dplyr::rename("Percent overall EVPI" = "Indexed to Overall EVPI") %>%
     ## sort EVPPI values in descending order:----
     dplyr::arrange(dplyr::desc(`Per Person EVPPI`)) %>%
     ## if a subset of EVPPI is requested:----
@@ -110,12 +110,12 @@ plot_EVPPI_ <- function(EVPPI_res, .show_percent = TRUE, .min_percent = 1,
       title = "Per Person EVPPI",
       caption = if(!is.null(.min_percent)) {
         if(is.numeric(.min_percent)) {
-          paste0(EVPPI_res[['Plot caption']], "
+          paste0(EVPPI_res[['Plot caption']][1], "
                  Parameters with EVPPI less than ", .min_percent,
                  "% of overall EVPI are excluded from plot.")
         }
       } else {
-        EVPPI_res[['Plot caption']]
+        EVPPI_res[['Plot caption']][1]
       },
       x = "EVPPI (\u00A3)",
       y = "Parameters")

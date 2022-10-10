@@ -41,7 +41,7 @@ PSA_outputs <- ShinyPSA$new(
 PSA_outputs <- ShinyPSA$new(
                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
-                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p)
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
                   .interventions = ShinyPSA::Brennan_1K_PSA$treats,
                   .evppi = TRUE)
 }
@@ -53,10 +53,10 @@ PSA_outputs <- ShinyPSA$new(
 \dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_Summary_table()
 }
@@ -68,10 +68,10 @@ PSA_outputs$get_Summary_table()
 \dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 # Get default plot:
 PSA_outputs$get_CEP()
@@ -95,10 +95,10 @@ PSA_outputs$get_CEP(
 \dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_CEAC()
 }
@@ -110,10 +110,10 @@ PSA_outputs$get_CEAC()
 \dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_CEAF()
 }
@@ -125,10 +125,10 @@ PSA_outputs$get_CEAF()
 \dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_eNMB()
 }
@@ -140,10 +140,10 @@ PSA_outputs$get_eNMB()
 \dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_EVPI()
 }
@@ -155,10 +155,10 @@ PSA_outputs$get_EVPI()
 \dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_EVPPI_results()
 }
@@ -170,10 +170,10 @@ PSA_outputs$get_EVPPI_results()
 \dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_Sub_EVPPI_results(
   .set = c(14, 16, 5))
@@ -188,10 +188,10 @@ PSA_outputs$get_Sub_EVPPI_results(
 \dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_EVPPI_plot()
 }
@@ -203,10 +203,10 @@ PSA_outputs$get_EVPPI_plot()
 \dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_PSA_stabl_plots()
 }
@@ -218,12 +218,27 @@ PSA_outputs$get_PSA_stabl_plots()
 \dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_WTP()
+}
+
+## ------------------------------------------------
+## Method `ShinyPSA$get_params_names`
+## ------------------------------------------------
+
+\dontrun{
+# Instantiate a copy of class ShinyPSA:
+PSA_outputs <- ShinyPSA$new(
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p)
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
+
+PSA_outputs$get_params_names()
 }
 }
 \section{Public fields}{
@@ -270,6 +285,7 @@ benefits and probability being cost-effective.}
 \item \href{#method-ShinyPSA-get_EVPPI_plot}{\code{ShinyPSA$get_EVPPI_plot()}}
 \item \href{#method-ShinyPSA-get_PSA_stabl_plots}{\code{ShinyPSA$get_PSA_stabl_plots()}}
 \item \href{#method-ShinyPSA-get_WTP}{\code{ShinyPSA$get_WTP()}}
+\item \href{#method-ShinyPSA-get_params_names}{\code{ShinyPSA$get_params_names()}}
 \item \href{#method-ShinyPSA-clone}{\code{ShinyPSA$clone()}}
 }
 }
@@ -308,8 +324,8 @@ Number of \code{columns} is equal to the interventions while the
 number of \code{rows} is equal to the number of PSA simulations to
 be summarised.}
 
-\item{\code{.params}}{A matrix containing parameters' configurations used in
-the PSA. The Number of \code{rows} is equal to the number of PSA
+\item{\code{.params}}{A matrix containing parameters' configurations used
+in the PSA. The Number of \code{rows} is equal to the number of PSA
 simulations to be summarised.}
 
 \item{\code{.interventions}}{A vector containing the names of all
@@ -349,7 +365,7 @@ A new \code{ShinyPSA} object.
 PSA_outputs <- ShinyPSA$new(
                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
-                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p)
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
                   .interventions = ShinyPSA::Brennan_1K_PSA$treats,
                   .evppi = TRUE)
 }
@@ -383,8 +399,8 @@ column in the summary table. Default is QALYs.
 .beautify_ Return a visually improved version of the table. The
 returned version is built using DT::datatable()
 .long_ Logical (default \code{TRUE}) for whether a long version
-of the table is to be returned. If \code{FALSE}, a wide version of the
-table will be returned}
+of the table is to be returned. If \code{FALSE}, a wide version of
+the table will be returned}
 }
 \if{html}{\out{</div>}}
 }
@@ -396,10 +412,10 @@ A table of class DT
 \preformatted{\dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_Summary_table()
 }
@@ -433,10 +449,10 @@ A ggplot2 object
 \preformatted{\dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 # Get default plot:
 PSA_outputs$get_CEP()
@@ -482,10 +498,10 @@ A ggplot2 object
 \preformatted{\dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_CEAC()
 }
@@ -519,10 +535,10 @@ A ggplot2 object
 \preformatted{\dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_CEAF()
 }
@@ -556,10 +572,10 @@ A ggplot2 object
 \preformatted{\dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_eNMB()
 }
@@ -593,10 +609,10 @@ A ggplot2 object
 \preformatted{\dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_EVPI()
 }
@@ -630,10 +646,10 @@ A list containing EVPPI results
 \preformatted{\dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_EVPPI_results()
 }
@@ -655,8 +671,8 @@ Get the Subset EVPPI results table
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Extra arguments passed to the plotting functions. Should at
-least contain either:
+\item{\code{...}}{Extra arguments passed to the plotting functions.
+Should at least contain either:
 \code{.set}: Parameters' indexes.
 \code{.set_names}: Parameters' names.}
 }
@@ -670,10 +686,10 @@ A list containing Subset EVPPI results
 \preformatted{\dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_Sub_EVPPI_results(
   .set = c(14, 16, 5))
@@ -710,10 +726,10 @@ A ggplot2 object
 \preformatted{\dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_EVPPI_plot()
 }
@@ -747,10 +763,10 @@ A ggplot2 object
 \preformatted{\dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_PSA_stabl_plots()
 }
@@ -777,12 +793,42 @@ A numerical vector.
 \preformatted{\dontrun{
 # Instantiate a copy of class ShinyPSA:
 PSA_outputs <- ShinyPSA$new(
-                  .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-                  .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-                  .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-                  .interventions = ShinyPSA::Vaccine_PSA$treats)
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
 
 PSA_outputs$get_WTP()
+}
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-ShinyPSA-get_params_names"></a>}}
+\if{latex}{\out{\hypertarget{method-ShinyPSA-get_params_names}{}}}
+\subsection{Method \code{get_params_names()}}{
+Get the parameters' names.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ShinyPSA$get_params_names()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A character vector.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# Instantiate a copy of class ShinyPSA:
+PSA_outputs <- ShinyPSA$new(
+                  .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+                  .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+                  .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p)
+                  .interventions = ShinyPSA::Brennan_1K_PSA$treats)
+
+PSA_outputs$get_params_names()
 }
 }
 \if{html}{\out{</div>}}

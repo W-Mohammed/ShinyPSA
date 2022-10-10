@@ -86,8 +86,8 @@ ShinyPSA <- R6::R6Class(
     #' Number of \code{columns} is equal to the interventions while the
     #' number of \code{rows} is equal to the number of PSA simulations to
     #' be summarised.
-    #' @param .params A matrix containing parameters' configurations used in
-    #' the PSA. The Number of \code{rows} is equal to the number of PSA
+    #' @param .params A matrix containing parameters' configurations used
+    #' in the PSA. The Number of \code{rows} is equal to the number of PSA
     #' simulations to be summarised.
     #' @param .interventions A vector containing the names of all
     #' interventions. If not provided or less names than needed is
@@ -117,7 +117,7 @@ ShinyPSA <- R6::R6Class(
     #' PSA_outputs <- ShinyPSA$new(
     #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
     #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p)
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
     #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats,
     #'                   .evppi = TRUE)
     #' }
@@ -160,8 +160,8 @@ ShinyPSA <- R6::R6Class(
     #' .beautify_ Return a visually improved version of the table. The
     #' returned version is built using DT::datatable()
     #' .long_ Logical (default \code{TRUE}) for whether a long version
-    #' of the table is to be returned. If \code{FALSE}, a wide version of the
-    #' table will be returned
+    #' of the table is to be returned. If \code{FALSE}, a wide version of
+    #' the table will be returned
     #'
     #' @return A table of class DT
     #' @export
@@ -170,10 +170,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_Summary_table()
     #' }
@@ -217,10 +217,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' # Get default plot:
     #' PSA_outputs$get_CEP()
@@ -276,10 +276,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_CEAC()
     #' }
@@ -323,10 +323,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_CEAF()
     #' }
@@ -370,10 +370,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_eNMB()
     #' }
@@ -417,10 +417,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_EVPI()
     #' }
@@ -464,35 +464,98 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_EVPPI_results()
     #' }
     get_EVPPI_results = function(...) {
       # grab passed arguments, if any:
       dots_ <- list(...)
+
+      # check if current subset was not processed before:
+      settings_ <- dplyr::tibble(
+        "MAICER" = if(is.null(dots_[[".MAICER_"]])) {
+          30000
+        } else {
+          dots_[[".MAICER_"]]},
+        "Population EVPPI" = if(is.null(dots_[[".individual_evppi_"]])) {
+          dots_[[".individual_evppi_"]] <- TRUE
+          FALSE
+        } else {
+          !isTRUE(dots_[[".individual_evppi_"]])},
+        "Population" = if(is.null(dots_[[".evppi_population_"]])) {
+          NA
+        } else {
+          if(isTRUE(dots_[[".individual_evppi_"]])) {
+            NA
+          } else if(dots_[[".individual_evppi_"]] == FALSE) {
+            dots_[[".evppi_population_"]]
+          } else {
+            NA}},
+        "Discount rate" = if(is.null(dots_[[".discount_rate_"]])) {
+          0.035
+        } else {
+          dots_[[".discount_rate_"]]},
+        "Time horizon" = if(is.null(dots_[[".time_horion_"]])) {
+          NA
+        } else {
+          if(isTRUE(dots_[[".individual_evppi_"]])) {
+            NA
+          } else if(dots_[[".individual_evppi_"]] == FALSE) {
+            dots_[[".time_horion_"]]
+          } else {
+            NA}})
+
+      EVPPI_exists <- if(is.null(private$EVPPI_settings)) {
+        FALSE
+      } else {
+        # compare settings:
+        compare_settings <- dplyr::semi_join(
+          private$EVPPI_settings,
+          settings_)
+
+        if(nrow(compare_settings) != 0) {
+          # if passed settings are not unique:
+          settings_id <- compare_settings$id
+          TRUE
+        } else {
+          FALSE
+        }
+      }
+      # save of all permutations of passed parameter-subset for future calls:
+      if(!isTRUE(EVPPI_exists)) {
+        # add new settings to previously processed ones:
+        settings_ <- settings_ %>%
+          dplyr::mutate(
+            "id" = if(is.null(private$EVPPI_settings)) {
+              1
+            } else {
+              max(private$EVPPI_settings$id) + 1
+            }
+          )
+        private$EVPPI_settings <- private$EVPPI_settings %>%
+          dplyr::bind_rows(settings_)
+      }
+
       # depending on passed arguments:
       self$EVPPI_results <-
-        if(length(dots_) == 0 &
-           !is.null(private$PSA_summary[["EVPPI"]])) {
-          # return default object if no arguments were passed to the function:
-          private$PSA_summary[["EVPPI"]]
+        if(!isTRUE(EVPPI_exists)) {
+          # new settings passed to functions:
+          dots_$.PSA_data <- private$PSA_summary
+          # save new settings output to a tmp object:
+          tmp <- do.call(private$compute_EVPPIs_, dots_)
+          # add tmp object to private object:
+          private$PSA_summary[['EVPPI']] <-
+            c(private$PSA_summary[['EVPPI']],
+              list(tmp))
+          # return tmp object:
+          tmp
         } else {
-          if(is.null(private$PSA_summary[["EVPPI"]])) {
-            # create object is missing:
-            dots_$.PSA_data <- private$PSA_summary
-            private$PSA_summary[["EVPPI"]] <- do.call(
-              private$compute_EVPPIs_, dots_)
-            # return default object after creation:
-            private$PSA_summary[["EVPPI"]]
-          } else {
-            # pass arguments to the relevant function:
-            dots_$.PSA_data <- private$PSA_summary
-            do.call(private$compute_EVPPIs_, dots_)
-          }
+          print("These EVPPI settings were processed before.")
+          private$PSA_summary[['EVPPI']][[settings_id]]
         }
 
       return(self$EVPPI_results)
@@ -502,8 +565,8 @@ ShinyPSA <- R6::R6Class(
     #' @description
     #' Get the Subset EVPPI results table
     #'
-    #' @param ... Extra arguments passed to the plotting functions. Should at
-    #' least contain either:
+    #' @param ... Extra arguments passed to the plotting functions.
+    #' Should at least contain either:
     #' \code{.set}: Parameters' indexes.
     #' \code{.set_names}: Parameters' names.
     #'
@@ -514,10 +577,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_Sub_EVPPI_results(
     #'   .set = c(14, 16, 5))
@@ -554,11 +617,54 @@ ShinyPSA <- R6::R6Class(
         'One or more parameter index are out-of-bound.' =
           min(dots_[['.set']]) >= 1)
 
+      # keep unique params indexes:
+      dots_[['.set']] <- unique(dots_[['.set']])
+
       # check if current subset was not processed before:
+      params_set <- dplyr::tibble(
+        "combis" = paste0(dots_[['.set']], collapse = '_'),
+        "MAICER" = if(is.null(dots_[[".MAICER_"]])) {
+          30000
+        } else {
+          dots_[[".MAICER_"]]},
+        "Population EVPPI" = if(is.null(dots_[[".individual_evppi_"]])) {
+          dots_[[".individual_evppi_"]] <- TRUE
+          FALSE
+        } else {
+          !isTRUE(dots_[[".individual_evppi_"]])},
+        "Population" = if(is.null(dots_[[".evppi_population_"]])) {
+          NA
+        } else {
+          if(isTRUE(dots_[[".individual_evppi_"]])) {
+            NA
+          } else if(dots_[[".individual_evppi_"]] == FALSE) {
+            dots_[[".evppi_population_"]]
+          } else {
+            NA}},
+        "Discount rate" = if(is.null(dots_[[".discount_rate_"]])) {
+          0.035
+        } else {
+          dots_[[".discount_rate_"]]},
+        "Time horizon" = if(is.null(dots_[[".time_horion_"]])) {
+          NA
+        } else {
+          if(isTRUE(dots_[[".individual_evppi_"]])) {
+            NA
+          } else if(dots_[[".individual_evppi_"]] == FALSE) {
+            dots_[[".time_horion_"]]
+          } else {
+            NA}})
+
       EVPPI_subset_exists <- if(is.null(private$EVPPI_subsets)) {
          FALSE
       } else {
-        if(paste0(dots_[['.set']], collapse = '_') %in% private$EVPPI_subsets) {
+        # create a comparison dataset and keep unique rows:
+        compare_sets <- dplyr::semi_join(
+          private$EVPPI_subsets,
+          params_set)
+
+        if(nrow(compare_sets) != 0) {
+          # if new parameters set and settings is not unique:
           TRUE
         } else {
           FALSE
@@ -574,11 +680,48 @@ ShinyPSA <- R6::R6Class(
         params_perm <- unique(params_perm)
         # collapse permutations to help compare with existing/passed subsets:
         params_perm <- params_perm %>%
-          dplyr::as_tibble(.name_repair = ~ make.names(., unique = TRUE)) %>%
+          dplyr::as_tibble(
+            .name_repair = ~ make.names(., unique = TRUE)) %>%
           tidyr::unite("combis", everything(), sep = "_") %>%
-          dplyr::pull("combis")
+          dplyr::mutate(
+            "MAICER" = if(is.null(dots_[[".MAICER_"]])) {
+              30000
+            } else {
+              dots_[[".MAICER_"]]},
+            "Population EVPPI" = if(is.null(dots_[[".individual_evppi_"]])) {
+              dots_[[".individual_evppi_"]] <- TRUE
+              FALSE
+            } else {
+              !isTRUE(dots_[[".individual_evppi_"]])},
+            "Population" = if(is.null(dots_[[".evppi_population_"]])) {
+              NA
+            } else {
+              if(isTRUE(dots_[[".individual_evppi_"]])) {
+                NA
+              } else if(dots_[[".individual_evppi_"]] == FALSE) {
+                dots_[[".evppi_population_"]]
+              } else {
+                NA}},
+            "Discount rate" = if(is.null(dots_[[".discount_rate_"]])) {
+              0.035
+            } else {
+              dots_[[".discount_rate_"]]},
+            "Time horizon" = if(is.null(dots_[[".time_horion_"]])) {
+              NA
+            } else {
+              if(isTRUE(dots_[[".individual_evppi_"]])) {
+                NA
+              } else if(dots_[[".individual_evppi_"]] == FALSE) {
+                dots_[[".time_horion_"]]
+              } else {
+                NA}},
+            "id" = if(is.null(private$EVPPI_settings)) {
+              1
+            } else {
+              max(private$EVPPI_settings$id) + 1})
         # add new permutations to previously processed ones:
-        private$EVPPI_subsets <- c(private$EVPPI_subsets, params_perm)
+        private$EVPPI_subsets <- private$EVPPI_subsets %>%
+          dplyr::bind_rows(params_perm)
       }
 
       # hard-code key arguments:
@@ -617,10 +760,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_EVPPI_plot()
     #' }
@@ -628,26 +771,21 @@ ShinyPSA <- R6::R6Class(
       # grab passed arguments, if any:
       dots_ <- list(...)
       # depending on passed arguments:
-      self$EVPPI_plot <- if(length(dots_) == 0 &
-                            !is.null(private$PSA_summary[["EVPPI_plot"]])) {
-        # return default object if no arguments were passed to the function:
-        private$PSA_summary[["EVPPI_plot"]]
-      } else {
-        if(is.null(private$PSA_summary[["EVPPI"]])) {
+      self$EVPPI_plot <-
+        if(is.null(self$EVPPI_results)) {
           # create EVPPIs results object if it does not exist:
           self$get_EVPPI_results()
           # pass arguments to the plotting function:
-          dots_$EVPPI_res <- private$PSA_summary[["EVPPI"]]
+          dots_$EVPPI_res <- self$EVPPI_results
           private$PSA_summary[["EVPPI_plot"]] <-
             do.call(private$plot_EVPPI_, dots_)
           # return default object after creation:
           private$PSA_summary[["EVPPI_plot"]]
         } else {
           # pass arguments to the plotting function:
-          dots_$EVPPI_res <- private$PSA_summary[["EVPPI"]]
+          dots_$EVPPI_res <- self$EVPPI_results
           do.call(private$plot_EVPPI_, dots_)
         }
-      }
 
       return(self$EVPPI_plot)
     },
@@ -665,10 +803,10 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_PSA_stabl_plots()
     #' }
@@ -711,16 +849,39 @@ ShinyPSA <- R6::R6Class(
     #' \dontrun{
     #' # Instantiate a copy of class ShinyPSA:
     #' PSA_outputs <- ShinyPSA$new(
-    #'                   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #'                   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #'                   .params = as_tibble(ShinyPSA::Vaccine_PSA$p)
-    #'                   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #'
     #' PSA_outputs$get_WTP()
     #' }
     get_WTP = function() {
 
       return(private$PSA_summary[["WTPs"]])
+    },
+
+    ## Get parameters names:----
+    #' @description
+    #' Get the parameters' names.
+    #'
+    #' @return A character vector.
+    #' @export
+    #'
+    #' @examples
+    #' \dontrun{
+    #' # Instantiate a copy of class ShinyPSA:
+    #' PSA_outputs <- ShinyPSA$new(
+    #'                   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #'                   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #'                   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p)
+    #'                   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
+    #'
+    #' PSA_outputs$get_params_names()
+    #' }
+    get_params_names = function() {
+
+      return(colnames(private$params))
     }
 
   ),
@@ -732,6 +893,7 @@ ShinyPSA <- R6::R6Class(
     costs = NULL,
     params = NULL,
     PSA_summary = NULL,
+    EVPPI_settings = NULL,
     EVPPI_subsets = NULL,
 
     ## Summarise PSA outputs and report results:----
@@ -994,9 +1156,10 @@ ShinyPSA <- R6::R6Class(
     # library(ShinyPSA)
     #
     # PSA_summary <- summarise_PSA_(
-    #   .effs = as_tibble(ShinyPSA::Vaccine_PSA$e),
-    #   .costs = as_tibble(ShinyPSA::Vaccine_PSA$c),
-    #   .interventions = ShinyPSA::Vaccine_PSA$treats)
+    #   .effs = as_tibble(ShinyPSA::Brennan_1K_PSA$e),
+    #   .costs = as_tibble(ShinyPSA::Brennan_1K_PSA$c),
+    #   .params = as_tibble(ShinyPSA::Brennan_1K_PSA$p),
+    #   .interventions = ShinyPSA::Brennan_1K_PSA$treats)
     #
     # p <- plot_CEplane_(PSA_summary,
     #                  .ref = 1,
@@ -1244,10 +1407,13 @@ ShinyPSA <- R6::R6Class(
     compute_EVPPIs_ = function(.PSA_data = private$PSA_summary,
                                .effs = NULL, .costs = NULL,
                                .EVPI = NULL, .WTPs = NULL, .params = NULL,
-                               .set = NULL, .set_names = NULL, .subset_ = FALSE,
-                               .MAICER_ = 30000, .units_ = "\u00A3",
-                               .individual_evppi_ = TRUE, .discount_rate_ = 0.035,
-                               .evppi_population_ = NULL, .time_horion_ = NULL,
+                               .set = NULL, .set_names = NULL,
+                               .subset_ = FALSE, .MAICER_ = 30000,
+                               .units_ = "\u00A3",
+                               .individual_evppi_ = TRUE,
+                               .discount_rate_ = 0.035,
+                               .evppi_population_ = NULL,
+                               .time_horion_ = NULL,
                                .session = NULL) {
       # pass arguments through to the package function:
       return(
