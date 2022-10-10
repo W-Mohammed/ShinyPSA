@@ -519,7 +519,7 @@ dataTableDT = R6::R6Class(
     },
 
     ### server:----
-    server = function(input, output, session, .table_, .readyDT_) {
+    server = function(input, output, session, .table_, .readyDT_, .scrollX_ = TRUE) {
 
       output[[private$uiOutput_Id_]] <- if(!.readyDT_) {
         DT::renderDataTable(
@@ -529,7 +529,7 @@ dataTableDT = R6::R6Class(
               extensions = 'Buttons',
               options = list(
                 dom = 'Bfrtip',
-                scrollX = FALSE,
+                scrollX = .scrollX_,
                 pageLength = 10,
                 buttons = c('csv', 'excel'),
                 filter = c("none")

@@ -370,6 +370,15 @@ ShinyPSA_R6_App <- R6::R6Class(
       self$iContainer[["zomUbX"]] <- numericInput$new(
         .label_ = "Zoom: X axis upper bound value:"
       )
+      self$iContainer[["costs"]] <-  dataTableDT$new(
+        .label_ = "Summarised Costs:"
+      )
+      self$iContainer[["effects"]] <-  dataTableDT$new(
+        .label_ = "Summarised Effects:"
+      )
+      self$iContainer[["parameters"]] <-  dataTableDT$new(
+        .label_ = "PSA Simulated Parameters:"
+      )
     },
     ### UI:----
     ui = function() {
@@ -727,7 +736,7 @@ ShinyPSA_R6_App <- R6::R6Class(
                   ###### Cost-Effectiveness Acceptability Curve:----
                   bslib::nav(
                     width = 9,
-                    title = "Cost-Effectiveness Acceptability Curve",
+                    title = "CEAC",
                     fluidRow(
                       column(
                         width = 2,
@@ -789,7 +798,7 @@ ShinyPSA_R6_App <- R6::R6Class(
                   ###### Cost-Effectiveness Acceptability Frontier:----
                   bslib::nav(
                     width = 9,
-                    title = "Cost-Effectiveness Acceptability Frontier",
+                    title = "CEAF",
                     fluidRow(
                       column(
                         width = 2,
@@ -843,7 +852,7 @@ ShinyPSA_R6_App <- R6::R6Class(
                   ###### Expected Net Monitory Benefit:----
                   bslib::nav(
                     width = 9,
-                    title = "Expected Net Monitory Benefit",
+                    title = "eNMB",
                     fluidRow(
                       column(
                         width = 2,
@@ -890,10 +899,10 @@ ShinyPSA_R6_App <- R6::R6Class(
                       )
                     )
                   ),
-                  ###### Expected Value of Perfect Information (EVPI):----
+                  ###### Expected Value of Perfect Information:----
                   bslib::nav(
                     width = 9,
-                    title = "Expected Value of Perfect Information",
+                    title = "EVPI",
                     fluidRow(
                       column(
                         width = 2,
@@ -965,7 +974,7 @@ ShinyPSA_R6_App <- R6::R6Class(
                   ###### Partial EVPI (EVPPI):----
                   bslib::nav(
                     width = 9,
-                    title = "Expected Value of Partial Perfect Information",
+                    title = "EVPPI",
                     tabsetPanel(
                       id = "EVPPI_sub_panel",
                       bslib::nav(
@@ -1053,7 +1062,7 @@ ShinyPSA_R6_App <- R6::R6Class(
                   ###### Subset EVPPI:----
                   bslib::nav(
                     width = 9,
-                    title = "Expected Value of a Subset Partial Perfect Information",
+                    title = "Subset EVPPI",
                     fluidRow(
                       column(
                         width = 2,
@@ -1104,39 +1113,70 @@ ShinyPSA_R6_App <- R6::R6Class(
                       )
                     )
                   ),
-                  ###### PSA Outputs Stability:----
+                  ###### PSA Inputs checks and Outputs stability:----
                   bslib::nav(
                     width = 9,
-                    title = "PSA outputs stability",
-                    fluidRow(
-                      column(
-                        width = 2,
-                        self$iContainer[["updBtn9"]]$
-                          ui_input(
-                            .width_ = "100%"
+                    title = "Checks",
+                    tabsetPanel(
+                      id = "Checks_sub_panel",
+                      bslib::nav(
+                        title = "PSA Stability plots",
+                        fluidRow(
+                          column(
+                            width = 2,
+                            self$iContainer[["updBtn9"]]$
+                              ui_input(
+                                .width_ = "100%"
+                              ),
+                            hr(),
+                            self$iContainer[["zomSch6"]]$
+                              ui_input(
+                                .class_ = "pl-2 flex-fill text-left"
+                              ),
+                            self$iContainer[["zomLbX"]]$
+                              ui_input(
+                                .min_ = 0,
+                                .max_ = 1e4,
+                                .value_ = 0
+                              ),
+                            self$iContainer[["zomUbX"]]$
+                              ui_input(
+                                .min_ = 100,
+                                .max_ = 1e6,
+                                .value_ = 1000
+                              )
                           ),
-                        hr(),
-                        self$iContainer[["zomSch6"]]$
-                          ui_input(
-                            .class_ = "pl-2 flex-fill text-left"
-                          ),
-                        self$iContainer[["zomLbX"]]$
-                          ui_input(
-                            .min_ = 0,
-                            .max_ = 1e4,
-                            .value_ = 0
-                          ),
-                        self$iContainer[["zomUbX"]]$
-                          ui_input(
-                            .min_ = 100,
-                            .max_ = 1e6,
-                            .value_ = 1000
+                          column(
+                            width = 10,
+                            self$iContainer[["PSA_stability"]]$
+                              ui_output()
                           )
-                        ),
-                      column(
-                        width = 10,
-                        self$iContainer[["PSA_stability"]]$
-                          ui_output()
+                        )
+                      ),
+                      bslib::nav(
+                        title = "Inputs",
+                        fluidRow(
+                          column(
+                            width = 10,
+                            offset = 1,
+                            h3("PSA outputs:"),
+                            br(),
+                            HTML('<hr style="color: black;">'),
+                            h4("Costs:"),
+                            self$iContainer[["costs"]]$
+                              ui_output(),
+                            hr(),
+                            HTML('<hr style="color: black;">'),
+                            h4("Effects:"),
+                            self$iContainer[["effects"]]$
+                              ui_output(),
+                            hr(),
+                            HTML('<hr style="color: black;">'),
+                            h3("PSA inputs:"),
+                            self$iContainer[["parameters"]]$
+                              ui_output()
+                          )
+                        )
                       )
                     )
                   )
@@ -1395,7 +1435,7 @@ ShinyPSA_R6_App <- R6::R6Class(
                 get_params_names()
             )
 
-          ###### Retrieve the PSA Stability plots from the ShinyPSA object:----
+          ###### Retrieve Stability plots from the ShinyPSA object:----
           self$iContainer[["PSA_stability"]]$
             server(
               session = session,
@@ -1403,6 +1443,36 @@ ShinyPSA_R6_App <- R6::R6Class(
               output = output,
               .plot_ = rContainer[[sData_name()]]$
                 get_PSA_stabl_plots()
+            )
+
+          ###### Retrieve costs:----
+          self$iContainer[["costs"]]$
+            server(
+              session = session,
+              input = input,
+              output = output,
+              .table_ = sData_list[[sData_name()]]$c,
+              .readyDT_ = FALSE
+            )
+
+          ###### Retrieve effects:----
+          self$iContainer[["effects"]]$
+            server(
+              session = session,
+              input = input,
+              output = output,
+              .table_ = sData_list[[sData_name()]]$e,
+              .readyDT_ = FALSE
+            )
+
+          ###### Retrieve parameters:----
+          self$iContainer[["parameters"]]$
+            server(
+              session = session,
+              input = input,
+              output = output,
+              .table_ = sData_list[[sData_name()]]$p,
+              .readyDT_ = FALSE
             )
 
         },
@@ -1532,7 +1602,7 @@ ShinyPSA_R6_App <- R6::R6Class(
                 get_params_names()
             )
 
-          ###### Retrieve the PSA Stability plots from the ShinyPSA object:----
+          ###### Retrieve Stability plots from the ShinyPSA object:----
           self$iContainer[["PSA_stability"]]$
             server(
               session = session,
@@ -1540,6 +1610,36 @@ ShinyPSA_R6_App <- R6::R6Class(
               output = output,
               .plot_ = rContainer[[sData_name()]]$
                 get_PSA_stabl_plots()
+            )
+
+          ###### Retrieve costs:----
+          self$iContainer[["costs"]]$
+            server(
+              session = session,
+              input = input,
+              output = output,
+              .table_ = sData_list[[sData_name()]]$c,
+              .readyDT_ = TRUE
+            )
+
+          ###### Retrieve effects:----
+          self$iContainer[["effects"]]$
+            server(
+              session = session,
+              input = input,
+              output = output,
+              .table_ = sData_list[[sData_name()]]$e,
+              .readyDT_ = TRUE
+            )
+
+          ###### Retrieve parameters:----
+          self$iContainer[["parameters"]]$
+            server(
+              session = session,
+              input = input,
+              output = output,
+              .table_ = sData_list[[sData_name()]]$p,
+              .readyDT_ = TRUE
             )
 
         },
