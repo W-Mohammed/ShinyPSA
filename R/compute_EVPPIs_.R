@@ -262,11 +262,11 @@ compute_EVPPIs_ <- function(.PSA_data, .effs = NULL, .costs = NULL,
     } else {
       colnames(.params)},
     {{pp_name}} :=
-      round(EVPPI[, 1], 2),
+      round(x = EVPPI[, 1], digits = 2),
     "Standard Error" =
-      round(EVPPI[, 2], 2),
+      round(x = EVPPI[, 2], digits = 2),
     "Indexed to Overall EVPI" =
-      scales::percent(round((EVPPI[, 1] / EVPI), 2))) %>%
+      scales::percent(x = (EVPPI[, 1] / EVPI), accuracy = 0.1)) %>%
     {if(!isTRUE(.individual_evppi_)) {
       dplyr::mutate(
         .data = .,
