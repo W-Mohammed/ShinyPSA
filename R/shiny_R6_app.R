@@ -1255,8 +1255,111 @@ ShinyPSA_R6_App <- R6::R6Class(
                         "Hypothetical_PSA", "Clopidogrel_PSA")
         )
       ##### Uploaded data:----
-      incoming <- reactive({
+      ##### Input validation:----
+      ###### define a parent input validator:
+      iv <- shinyvalidate::InputValidator$new()
+      ###### define children input validators:
+      costs_iv <- shinyvalidate::InputValidator$new()
+      effs_iv <- shinyvalidate::InputValidator$new()
+      params_iv <- shinyvalidate::InputValidator$new()
+      dims_iv <- shinyvalidate::InputValidator$new()
+      simulations_iv <- shinyvalidate::InputValidator$new()
+      ###### add children input validators to the parent one:
+      iv$add_validator(costs_iv)
+      iv$add_validator(effs_iv)
+      iv$add_validator(params_iv)
+      iv$add_validator(dims_iv)
+      iv$add_validator(simulations_iv)
+      ###### add rules to the children input validators:
+      costs_iv$add_rule(
+        inputId = "c",
+        rule = shinyvalidate::sv_optional())
+      costs_iv$add_rule(
+        inputId = "c",
+        rule = shinyvalidate::compose_rules(
+          ~ {ShinyPSA::check_missings_(
+            .data_ = ., .label_ = "Costs")},
+          ~ {ShinyPSA::check_numerics_(
+            .data_ = ., .label_ = "Costs")}))
+      effs_iv$add_rule(
+        inputId = "e",
+        rule = shinyvalidate::sv_optional())
+      effs_iv$add_rule(
+        inputId = "e",
+        rule = shinyvalidate::compose_rules(
+          ~ {ShinyPSA::check_missings_(
+            .data_ = ., .label_ = "Effects")},
+          ~ {ShinyPSA::check_numerics_(
+            .data_ = ., .label_ = "Effects")}))
+      params_iv$add_rule(
+        inputId = "p",
+        rule = shinyvalidate::sv_optional())
+      params_iv$add_rule(
+        inputId = "p",
+        rule = shinyvalidate::compose_rules(
+          ~ {ShinyPSA::check_missings_(
+            .data_ = ., .label_ = "Parameters")},
+          ~ {ShinyPSA::check_numerics_(
+            .data_ = ., .label_ = "Parameters")}))
+      dims_iv$condition(~ (shiny::isTruthy(input$c) &
+                             shiny::isTruthy(input$e)))
+      dims_iv$add_rule(
+        inputId = "c",
+        rule = ~ {
+          ShinyPSA::check_PSA_inputs(
+            .costs_ = input$c,
+            .effs_ = input$e,
+            .params_ = NULL,
+            .id_ = "c")
+        })
+      dims_iv$add_rule(
+        inputId = "e",
+        rule = ~ {
+          check_PSA_inputs(
+            .costs_ = input$c,
+            .effs_ = input$e,
+            .params_ = NULL,
+            .id_ = "e")
+        })
+      simulations_iv$condition(~ any(
+        (shiny::isTruthy(input$p) & shiny::isTruthy(input$e)) |
+          (shiny::isTruthy(input$p) & shiny::isTruthy(input$c))
+      ))
+      simulations_iv$add_rule(
+        inputId = "c",
+        rule = ~ {
+          ShinyPSA::check_PSA_inputs(
+            .costs_ = input$c,
+            .effs_ = NULL,
+            .params_ = input$p,
+            .id_ = "c")
+        })
+      simulations_iv$add_rule(
+        inputId = "e",
+        rule = ~ {
+          check_PSA_inputs(
+            .costs_ = NULL,
+            .effs_ = input$e,
+            .params_ = input$p,
+            .id_ = "e")
+        })
+      simulations_iv$add_rule(
+        inputId = "p",
+        rule = ~ {
+          check_PSA_inputs(
+            .costs_ = input$c,
+            .effs_ = input$e,
+            .params_ = input$p,
+            .id_ = "p")
+        })
+
+      ###### start displaying errors in the UI:
+      iv$enable()
+
+      ##### Uploaded data list:----
+      uData_list <- reactive({
         req(
+          iv$is_valid(),
           input$c,
           input$e,
           input$p,
@@ -1282,23 +1385,6 @@ ShinyPSA_R6_App <- R6::R6Class(
             unlist() %>%
             gsub(pattern = " ", replacement = "")
         )
-      })
-      uData_list <- reactive({
-        validate(
-          need(!is.null(incoming()$c),
-               "Costs file is empty or could not be processed"),
-          need(!is.null(incoming()$e),
-               "Effects file is empty or could not be processed"),
-          need(!is.null(incoming()$p),
-               "Parameters file is empty or could not be processed"),
-          need(dim(incoming()$c) == dim(incoming()$e),
-               "Costs/effects don't have equal rows and/or columns"),
-          need(nrow(incoming()$e) == nrow(incoming()$p),
-               "Parameters and effects don't have equal rows (simulations)"),
-          need(length(incoming()$treats) == ncol(incoming()$c),
-               "Provided names are not equal to data columns")
-        )
-        incoming()
       })
 
       ##### Reactive/static data set and data name object:----
@@ -1485,6 +1571,7 @@ ShinyPSA_R6_App <- R6::R6Class(
         eventExpr = input[[self$iContainer[["uplBtn"]]$
                              get_uiInId()]],
         handlerExpr = {
+          if(iv$is_valid()) {
           ###### Waiter:----
           waiter <- waiter::Waiter$new(
             html = self$waiter_dev(
@@ -1508,6 +1595,7 @@ ShinyPSA_R6_App <- R6::R6Class(
           rContainer[[sData_name()]] <- ShinyPSA$new(
             .effs = sData_list[[sData_name()]]$e,
             .costs = sData_list[[sData_name()]]$c,
+            .params = sData_list[[sData_name()]]$p,
             .interventions = sData_list[[sData_name()]]$treats,
             .Kmax = input[[self$iContainer[["maxWTP2"]]$
                              get_uiInId()]]
@@ -1619,7 +1707,7 @@ ShinyPSA_R6_App <- R6::R6Class(
               input = input,
               output = output,
               .table_ = sData_list[[sData_name()]]$c,
-              .readyDT_ = TRUE
+              .readyDT_ = FALSE
             )
 
           ###### Retrieve effects:----
@@ -1629,7 +1717,7 @@ ShinyPSA_R6_App <- R6::R6Class(
               input = input,
               output = output,
               .table_ = sData_list[[sData_name()]]$e,
-              .readyDT_ = TRUE
+              .readyDT_ = FALSE
             )
 
           ###### Retrieve parameters:----
@@ -1639,9 +1727,16 @@ ShinyPSA_R6_App <- R6::R6Class(
               input = input,
               output = output,
               .table_ = sData_list[[sData_name()]]$p,
-              .readyDT_ = TRUE
+              .readyDT_ = FALSE
             )
 
+          } else {
+            shiny::showNotification(
+              ui = "Please fix issues in the inputs tab!",
+              duration = 10,
+              type = "error"
+            )
+          }
         },
         ignoreNULL = TRUE,
         ignoreInit = TRUE
