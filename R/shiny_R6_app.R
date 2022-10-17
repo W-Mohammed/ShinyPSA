@@ -1256,6 +1256,28 @@ ShinyPSA_R6_App <- R6::R6Class(
         )
       ##### Uploaded data:----
       ##### Input validation:----
+      ###### defining some reactive values to reduce data reading times:
+      c_rExp <- reactive({
+        req(input$c)
+        read_csv(
+          file = input$c$datapath,
+          show_col_types = FALSE
+          )
+        })
+      e_rExp <- reactive({
+        req(input$e)
+        read_csv(
+          file = input$e$datapath,
+          show_col_types = FALSE
+        )
+      })
+      p_rExp <- reactive({
+        req(input$p)
+        read_csv(
+          file = input$p$datapath,
+          show_col_types = FALSE
+        )
+      })
       ###### define a parent input validator:
       iv <- shinyvalidate::InputValidator$new()
       ###### define children input validators:
@@ -1263,13 +1285,15 @@ ShinyPSA_R6_App <- R6::R6Class(
       effs_iv <- shinyvalidate::InputValidator$new()
       params_iv <- shinyvalidate::InputValidator$new()
       dims_iv <- shinyvalidate::InputValidator$new()
-      simulations_iv <- shinyvalidate::InputValidator$new()
+      simulations_c_iv <- shinyvalidate::InputValidator$new()
+      simulations_e_iv <- shinyvalidate::InputValidator$new()
       ###### add children input validators to the parent one:
       iv$add_validator(costs_iv)
       iv$add_validator(effs_iv)
       iv$add_validator(params_iv)
       iv$add_validator(dims_iv)
-      iv$add_validator(simulations_iv)
+      iv$add_validator(simulations_c_iv)
+      iv$add_validator(simulations_e_iv)
       ###### add rules to the children input validators:
       costs_iv$add_rule(
         inputId = "c",
@@ -1278,9 +1302,11 @@ ShinyPSA_R6_App <- R6::R6Class(
         inputId = "c",
         rule = shinyvalidate::compose_rules(
           ~ {ShinyPSA::check_missings_(
-            .data_ = ., .label_ = "Costs")},
+            .data_ = c_rExp(), .label_ = "Costs")},
           ~ {ShinyPSA::check_numerics_(
-            .data_ = ., .label_ = "Costs")}))
+            .data_ = c_rExp(), .label_ = "Costs")},
+          ~ {ShinyPSA::check_options_(
+            .data_ = c_rExp(), .label_ = "costs")}))
       effs_iv$add_rule(
         inputId = "e",
         rule = shinyvalidate::sv_optional())
@@ -1288,9 +1314,11 @@ ShinyPSA_R6_App <- R6::R6Class(
         inputId = "e",
         rule = shinyvalidate::compose_rules(
           ~ {ShinyPSA::check_missings_(
-            .data_ = ., .label_ = "Effects")},
+            .data_ = e_rExp(), .label_ = "Effects")},
           ~ {ShinyPSA::check_numerics_(
-            .data_ = ., .label_ = "Effects")}))
+            .data_ = e_rExp(), .label_ = "Effects")},
+          ~ {ShinyPSA::check_options_(
+            .data_ = e_rExp(), .label_ = "effects")}))
       params_iv$add_rule(
         inputId = "p",
         rule = shinyvalidate::sv_optional())
@@ -1298,17 +1326,19 @@ ShinyPSA_R6_App <- R6::R6Class(
         inputId = "p",
         rule = shinyvalidate::compose_rules(
           ~ {ShinyPSA::check_missings_(
-            .data_ = ., .label_ = "Parameters")},
+            .data_ = p_rExp(), .label_ = "Parameters")},
           ~ {ShinyPSA::check_numerics_(
-            .data_ = ., .label_ = "Parameters")}))
+            .data_ = p_rExp(), .label_ = "Parameters")},
+          ~ {ShinyPSA::check_uniqueness_(
+            .data_ = p_rExp(), .label_ = "parameters")}))
       dims_iv$condition(~ (shiny::isTruthy(input$c) &
                              shiny::isTruthy(input$e)))
       dims_iv$add_rule(
         inputId = "c",
         rule = ~ {
           ShinyPSA::check_PSA_inputs(
-            .costs_ = input$c,
-            .effs_ = input$e,
+            .costs_ = c_rExp(),
+            .effs_ = e_rExp(),
             .params_ = NULL,
             .id_ = "c")
         })
@@ -1316,40 +1346,51 @@ ShinyPSA_R6_App <- R6::R6Class(
         inputId = "e",
         rule = ~ {
           check_PSA_inputs(
-            .costs_ = input$c,
-            .effs_ = input$e,
+            .costs_ = c_rExp(),
+            .effs_ = e_rExp(),
             .params_ = NULL,
             .id_ = "e")
         })
-      simulations_iv$condition(~ any(
-        (shiny::isTruthy(input$p) & shiny::isTruthy(input$e)) |
+      simulations_c_iv$condition(~
           (shiny::isTruthy(input$p) & shiny::isTruthy(input$c))
-      ))
-      simulations_iv$add_rule(
+      )
+      simulations_c_iv$add_rule(
         inputId = "c",
         rule = ~ {
           ShinyPSA::check_PSA_inputs(
-            .costs_ = input$c,
+            .costs_ = c_rExp(),
             .effs_ = NULL,
-            .params_ = input$p,
+            .params_ = p_rExp(),
             .id_ = "c")
         })
-      simulations_iv$add_rule(
+      simulations_c_iv$add_rule(
+        inputId = "p",
+        rule = ~ {
+          check_PSA_inputs(
+            .costs_ = c_rExp(),
+            .effs_ = NULL,
+            .params_ = p_rExp(),
+            .id_ = "p")
+        })
+      simulations_e_iv$condition(~
+        (shiny::isTruthy(input$p) & shiny::isTruthy(input$e))
+      )
+      simulations_e_iv$add_rule(
         inputId = "e",
         rule = ~ {
           check_PSA_inputs(
             .costs_ = NULL,
-            .effs_ = input$e,
-            .params_ = input$p,
+            .effs_ = e_rExp(),
+            .params_ = p_rExp(),
             .id_ = "e")
         })
-      simulations_iv$add_rule(
+      simulations_e_iv$add_rule(
         inputId = "p",
         rule = ~ {
           check_PSA_inputs(
-            .costs_ = input$c,
-            .effs_ = input$e,
-            .params_ = input$p,
+            .costs_ = NULL,
+            .effs_ = e_rExp(),
+            .params_ = p_rExp(),
             .id_ = "p")
         })
 
@@ -1367,18 +1408,9 @@ ShinyPSA_R6_App <- R6::R6Class(
                    get_uiInId()]]
         )
         list(
-          "c" = read_csv(
-            file = input$c$datapath,
-            show_col_types = FALSE
-          ),
-          "e" = read_csv(
-            file = input$e$datapath,
-            show_col_types = FALSE
-          ),
-          "p" = read_csv(
-            file = input$p$datapath,
-            show_col_types = FALSE
-          ),
+          "c" = c_rExp(),
+          "e" = e_rExp(),
+          "p" = p_rExp(),
           "treats" = strsplit(input[[self$iContainer[["intrNme"]]$
                                        get_uiInId()]],
                               ",") %>%

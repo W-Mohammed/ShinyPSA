@@ -25,26 +25,7 @@
 #' \dontrun{
 #' }
 check_PSA_inputs <- function(.costs_, .effs_, .params_, .id_) {
-  # read inputs:
-  ## costs:
-  if(shiny::isTruthy(.costs_))
-    .costs_ <- readr::read_csv(
-      file = .costs_$datapath,
-      show_col_types = FALSE
-    )
-  ## effects:
-  if(shiny::isTruthy(.effs_))
-    .effs_ <- readr::read_csv(
-      file = .effs_$datapath,
-      show_col_types = FALSE
-    )
-  ## parameters:
-  if(shiny::isTruthy(.params_))
-    .params_ <- readr::read_csv(
-      file = .params_$datapath,
-      show_col_types = FALSE
-    )
-
+  # Switch reaction based on which input is being validated:
   switch (.id_,
           c = if(shiny::isTruthy(.effs_)) {
             if(all(dim(.costs_) == dim(.effs_))) {
@@ -202,18 +183,16 @@ check_PSA_inputs <- function(.costs_, .effs_, .params_, .id_) {
 #' \dontrun{
 #' }
 check_numerics_ <- function(.data_, .label_) {
-  .data_ <- readr::read_csv(
-    file = .data_$datapath,
-    show_col_types = FALSE)
-
-  tmp <- purrr::map_lgl(
+  # loop through columns and check column type:
+  tmp_vct <- purrr::map_lgl(
     .x = .data_,
     .f = function(.col_) {
       is.numeric(.col_)
     })
 
+  # return message if not all columns were numerics:
   return(
-    if(all(tmp)) {
+    if(all(tmp_vct)) {
       NULL
     } else {
       glue::glue("{.label_} data has one or more non-numeric columns!")
@@ -233,19 +212,76 @@ check_numerics_ <- function(.data_, .label_) {
 #' \dontrun{
 #' }
 check_missings_ <- function(.data_, .label_) {
-  .data_ <- readr::read_csv(
-    file = .data_$datapath,
-    show_col_types = FALSE)
-
-  tmp <- any(
+  # check if any point in data set is missing:
+  tmp_lgl <- any(
     is.na(.data_)
   )
 
+  # return message if any data points were missing:
   return(
-    if(!tmp) {
+    if(!tmp_lgl) {
       NULL
     } else {
       glue::glue("{.label_} data has one or more missing values!")
+    }
+  )
+}
+
+#' Check if two or more decision options data were provided.
+#'
+#' @param .data_ The data structure to check for number of decision options.
+#' @param .label_ The name of the data structure being checked.
+#'
+#' @return A logical or message based on whether missing data exists.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' }
+check_options_ <- function(.data_, .label_) {
+  # check if any point in data set is missing:
+  tmp_lgl <- ncol(.data_) >= 2
+
+  # return message if any data points were missing:
+  return(
+    if(tmp_lgl) {
+      NULL
+    } else {
+      glue::glue(
+      "There must be at least two decision options.
+      If you have a single set of incremental {.label_} for a two-decision option problem,
+      either upload the absolute costs, or include a column of zeroes.")
+    }
+  )
+}
+
+#' Check if enough unique data points are in supplied parameters object.
+#'
+#' @param .data_ The parameters data structure to check for missing values.
+#' @param .label_ The name of the data structure being checked.
+#'
+#' @return A logical or message based on whether missing data exists.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' }
+check_uniqueness_ <- function(.data_, .label_) {
+  # loop through columns and check if number of unique values is <5:
+  tmp_vct <- purrr::map_lgl(
+    .x = .data_,
+    .f = function(.col_) {
+      tmp_vct2 <- unique(.col_)
+      length(tmp_vct2) >= 5
+    })
+
+  # return message if not all columns were numerics:
+  return(
+    if(all(tmp_vct)) {
+      NULL
+    } else {
+      glue::glue("One or more columns in the {.label_} data contains too
+                 few (<5) unique values for EVPPI analysis!")
     }
   )
 }
