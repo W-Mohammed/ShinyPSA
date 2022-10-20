@@ -1400,57 +1400,100 @@ ShinyPSA_R6_App <- R6::R6Class(
       ##### Uploaded data list:----
       uData_list <- reactive({
         req(
-          iv$is_valid(),
-          input$c,
-          input$e,
-          input$p,
-          input[[self$iContainer[["intrNme"]]$
-                   get_uiInId()]]
+          iv$is_valid()
         )
         list(
           "c" = c_rExp(),
           "e" = e_rExp(),
           "p" = p_rExp(),
-          "treats" = strsplit(input[[self$iContainer[["intrNme"]]$
-                                       get_uiInId()]],
-                              ",") %>%
-            unlist() %>%
-            gsub(pattern = " ", replacement = "")
+          "treats" = tryCatch(
+            expr = {
+              strsplit(input[[self$iContainer[["intrNme"]]$
+                                get_uiInId()]],
+                       ",") %>%
+                unlist() %>%
+                gsub(pattern = " ", replacement = "")
+            }, error = function(e) {
+              NULL
+            })
         )
       })
 
-      ##### Reactive/static data set and data name object:----
+      ##### Reactive/static data set, data source and data name objects:----
       sData_list <- reactiveValues()
       sData_name <- reactiveVal()
+      sData_source <- reactiveVal()
+
+      ##### Reactive to control reaction to action button:----
+      buttons_reactive <- reactiveValues()
 
       ##### Reactive container for R6 objects:----
       rContainer <- reactiveValues()
 
-      #### Renderers:----
-      ##### Actions on add button:----
+      ##### Reactives to react to radio buttons:----
+      ###### Add button control:----
       observeEvent(
-        eventExpr = input[[self$iContainer[["addBtn"]]$
-                             get_uiInId()]],
+        eventExpr = input[[self$iContainer[["addBtn"]]$get_uiInId()]],
         handlerExpr = {
+          ###### Define source of data set for later:----
+          sData_source("selected")
+          ###### Store name of data set for later:----
+          sData_name(
+            input[[self$iContainer[["getData"]]$get_uiInId()]]
+          )
+          ###### Store data set for later:----
+          sData_list[[sData_name()]] <- get(
+            x = input[[self$iContainer[["getData"]]$get_uiInId()]],
+            pos = "package:ShinyPSA"
+          )
+          ###### Switch reactive object to trigger main functions:----
+          buttons_reactive[["add"]] <- TRUE
+        },
+        ignoreNULL = TRUE,
+        ignoreInit = TRUE)
+      ###### Upload button control:----
+      observeEvent(
+        eventExpr = input[[self$iContainer[["uplBtn"]]$get_uiInId()]],
+        handlerExpr = {
+          # if all input validations passed:
+          if(iv$is_valid()) {
+            ###### Define source of data set for later:----
+            sData_source("uploaded")
+            ###### Store name of data set for later:----
+            sData_name("uploaded data")
+            ###### Store data set for later:----
+            sData_list[[sData_name()]] <- uData_list()
+            ###### Switch reactive object to trigger main functions:----
+            buttons_reactive[["upload"]] <- TRUE
+          } else {
+            # if input validation failed:
+            shiny::showNotification(
+              ui = "Please fix issues in the inputs tab!",
+              duration = 10,
+              type = "error"
+            )
+          }
+        },
+        ignoreNULL = TRUE,
+        ignoreInit = TRUE)
+
+      #### Renderers:----
+      ##### Actions on add or upload button:----
+      observeEvent(
+        eventExpr = c(buttons_reactive[["add"]], buttons_reactive[["upload"]]),
+        handlerExpr = {
+          ###### Reset reactive controls:----
+          buttons_reactive[["add"]] <- NULL
+          buttons_reactive[["upload"]] <- NULL
           ###### Waiter:----
           waiter <- waiter::Waiter$new(
             html = self$waiter_dev(
-              .info_ = "Summarising selected PSA data..."
+              .info_ = glue::glue("Summarising {sData_source()} PSA data...")
             ),
             hide_on_render  = FALSE
           )
           waiter$show()
           on.exit(waiter$hide())
-          ###### Store name and data set for later:----
-          sData_name(
-            input[[self$iContainer[["getData"]]$
-                     get_uiInId()]]
-          )
-          sData_list[[sData_name()]] <- get(
-            x = input[[self$iContainer[["getData"]]$
-                         get_uiInId()]],
-            pos = "package:ShinyPSA"
-          )
           ###### Render the name of the summarised data:----
           output$selectedData <- renderText({
             sData_name()
@@ -1593,182 +1636,6 @@ ShinyPSA_R6_App <- R6::R6Class(
               .readyDT_ = FALSE
             )
 
-        },
-        ignoreNULL = TRUE,
-        ignoreInit = TRUE
-      )
-
-      ##### Actions on upload button:----
-      observeEvent(
-        eventExpr = input[[self$iContainer[["uplBtn"]]$
-                             get_uiInId()]],
-        handlerExpr = {
-          if(iv$is_valid()) {
-          ###### Waiter:----
-          waiter <- waiter::Waiter$new(
-            html = self$waiter_dev(
-              .info_ = "Summarising uploaded PSA data..."
-            ),
-            hide_on_render  = FALSE
-          )
-          waiter$show()
-          on.exit(waiter$hide())
-          ###### Store name and data set for later:----
-          sData_name(
-            "uploaded data"
-          )
-          req(uData_list())
-          sData_list[[sData_name()]] <- uData_list()
-          ###### Render the name of the summarised data:----
-          output$selectedData <- renderText({
-            sData_name()
-          })
-          ###### Create an instance of class ShinyPSA using the data:----
-          rContainer[[sData_name()]] <- ShinyPSA$new(
-            .effs = sData_list[[sData_name()]]$e,
-            .costs = sData_list[[sData_name()]]$c,
-            .params = sData_list[[sData_name()]]$p,
-            .interventions = sData_list[[sData_name()]]$treats,
-            .Kmax = input[[self$iContainer[["maxWTP2"]]$
-                             get_uiInId()]]
-          )
-          ###### Retrieve the Summary table from the ShinyPSA object:----
-          self$iContainer[["sumTbl"]]$
-            server(
-              session = session,
-              input = input,
-              output = output,
-              .table_ = rContainer[[sData_name()]]$
-                get_Summary_table(
-                  .beautify_ = TRUE,
-                  .long_ = TRUE
-                ),
-              .readyDT_ = TRUE
-            )
-          ###### Retrieve the CEP from the ShinyPSA object:----
-          self$iContainer[["CEP"]]$
-            server(
-              session = session,
-              input = input,
-              output = output,
-              .plot_ = rContainer[[sData_name()]]$
-                get_CEP()
-            )
-          ###### Retrieve intervention names for CEP options:----
-          self$iContainer[["getRef1"]]$
-            server(
-              session = session,
-              input = input,
-              output = output,
-              .choices_ = c("Do not set a reference",
-                            sData_list[[sData_name()]]$treats)
-            )
-          ###### Retrieve the CEAC from the ShinyPSA object:----
-          self$iContainer[["CEAC"]]$
-            server(
-              session = session,
-              input = input,
-              output = output,
-              .plot_ = rContainer[[sData_name()]]$
-                get_CEAC()
-            )
-          ###### Retrieve intervention names for CEAC options:----
-          self$iContainer[["getRef2"]]$
-            server(
-              session = session,
-              input = input,
-              output = output,
-              .choices_ = c("Do not set a reference",
-                            sData_list[[sData_name()]]$treats)
-            )
-
-          ###### Retrieve the CEAF from the ShinyPSA object:----
-          self$iContainer[["CEAF"]]$
-            server(
-              session = session,
-              input = input,
-              output = output,
-              .plot_ = rContainer[[sData_name()]]$
-                get_CEAF()
-            )
-
-          ###### Retrieve the NMB from the ShinyPSA object:----
-          self$iContainer[["NMB"]]$
-            server(
-              session = session,
-              input = input,
-              output = output,
-              .plot_ = rContainer[[sData_name()]]$
-                get_eNMB()
-            )
-
-          ###### Retrieve the EVPI from the ShinyPSA object:----
-          self$iContainer[["EVPI"]]$
-            server(
-              session = session,
-              input = input,
-              output = output,
-              .plot_ = rContainer[[sData_name()]]$
-                get_EVPI()
-            )
-
-          ###### Retrieve parameters names for Subset EVPPI options:----
-          self$iContainer[["subsetEVPPIS"]]$
-            server(
-              session = session,
-              input = input,
-              output = output,
-              .choices_ = rContainer[[sData_name()]]$
-                get_params_names()
-            )
-
-          ###### Retrieve Stability plots from the ShinyPSA object:----
-          self$iContainer[["PSA_stability"]]$
-            server(
-              session = session,
-              input = input,
-              output = output,
-              .plot_ = rContainer[[sData_name()]]$
-                get_PSA_stabl_plots()
-            )
-
-          ###### Retrieve costs:----
-          self$iContainer[["costs"]]$
-            server(
-              session = session,
-              input = input,
-              output = output,
-              .table_ = sData_list[[sData_name()]]$c,
-              .readyDT_ = FALSE
-            )
-
-          ###### Retrieve effects:----
-          self$iContainer[["effects"]]$
-            server(
-              session = session,
-              input = input,
-              output = output,
-              .table_ = sData_list[[sData_name()]]$e,
-              .readyDT_ = FALSE
-            )
-
-          ###### Retrieve parameters:----
-          self$iContainer[["parameters"]]$
-            server(
-              session = session,
-              input = input,
-              output = output,
-              .table_ = sData_list[[sData_name()]]$p,
-              .readyDT_ = FALSE
-            )
-
-          } else {
-            shiny::showNotification(
-              ui = "Please fix issues in the inputs tab!",
-              duration = 10,
-              type = "error"
-            )
-          }
         },
         ignoreNULL = TRUE,
         ignoreInit = TRUE
