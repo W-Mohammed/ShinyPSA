@@ -149,8 +149,7 @@ compute_CEACs_ <- function(.nmb, .effs = NULL, .costs = NULL,
       .costs = .costs,
       .interventions = .interventions,
       .Kmax = .Kmax,
-      .wtp = .wtp)
-    .nmb <- .nmb$nmb
+      .wtp = .wtp)$nmb
   }
 
   # Stop if object .nmb is not of class list:

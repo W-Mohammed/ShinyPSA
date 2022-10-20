@@ -285,3 +285,41 @@ check_uniqueness_ <- function(.data_, .label_) {
     }
   )
 }
+
+#' Remove formatting from data and ensure all columns are numericals.
+#'
+#' @param .data_ The data object from which to remove formatting and
+#' convert all columns to numeric.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' numerical_parameters <- coerce_numerics_(
+#'    .data_ = ShinyPSA::Clopidogrel_PSA$p)
+#' }
+coerce_numerics_ <- function(.data_) {
+  .data_ <- .data_ %>%
+    dplyr::mutate(
+      # Remove expected formatting ("£", "$", ",") in data set:
+      dplyr::across(
+        .cols = tidyselect::vars_select_helpers$where(is.character),
+        .fns = function(.x) {
+          stringr::str_replace_all(
+            string = .x,
+            pattern = "£|$|,",
+            replacement = "")
+        }
+      ),
+      # Convert character columns to numerics:
+      dplyr::across(
+        .cols = tidyselect::vars_select_helpers$where(is.character),
+        .fns = function(.x) {
+          as.numeric(.x)
+        }
+      )
+    )
+
+  return(.data_)
+}

@@ -238,7 +238,8 @@ plot_CEAC_ <- function(.PSA_data, ...) {
 
     ### CEAF:
     ceaf_df = .PSA_data$CEAF %>%
-      dplyr::mutate('Best option' = .PSA_data$best_name,
+      dplyr::mutate('Best option' =
+                      colnames(.PSA_data$CEAC)[max.col(.PSA_data$CEAC)],
                     'WTP threshold' = .PSA_data$WTPs)
 
     ## Plot:
