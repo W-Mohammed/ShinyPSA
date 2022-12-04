@@ -270,6 +270,7 @@ draw_summary_table_ <- function(.PSA_data,
     {if(!.latex_) {
       #### rename QALYs and Costs to mean:----
       dplyr::mutate(
+        .data = .,
         "Costs [95% CI]" = paste0(
           Costs, " ", `Costs 95% CI`),
         {{effs_mu_95_label}} := paste0(
