@@ -36,6 +36,10 @@
 #' under consideration become obsolete or requires updating)
 #' @param .effs_accuracy_ Number of digits for effects measure; default is
 #' 3 and is expressed as 1e-3 or 0.001.
+#' @param .latex_ Boolean to indicate whether to generate a latex table or
+#' not (default is FALSE).
+#' @param .latex_title_ Table title for the latex version.
+#' @param .latex_subtitle_ Table subtitle for the latex version.
 #'
 #' @return A table, dataframe, tibble or DT objects.
 #' @importFrom tidyselect vars_select_helpers
@@ -73,7 +77,10 @@ draw_summary_table_ <- function(.PSA_data,
                                 .evpi_population_ = NULL,
                                 .discount_rate_ = 0.035,
                                 .time_horion_ = NULL,
-                                .effs_accuracy_ = 1e-3) {
+                                .effs_accuracy_ = 1e-3,
+                                .latex_ = FALSE,
+                                .latex_title_ = NULL,
+                                .latex_subtitle_ = NULL) {
   ## Set currency label if none were provided:----
   if(is.null(.units_) | length(.units_) != 1) .units_ = "\u00A3"
 
@@ -102,10 +109,10 @@ draw_summary_table_ <- function(.PSA_data,
   )
   .wtp_ <- unique(.PSA_data$WTPs[wtp_index_])
 
-  ## Get the ICER table from the result's object:----
+  ## Get the ICER table from the results object:----
   ICER_tbl <- .PSA_data[["ICER"]]
 
-  ## Get the eNMB values from the result's object:----
+  ## Get the eNMB values from the results object:----
   eNMB <- .PSA_data[["e.NMB"]] %>%
     ### put WTP in a column next to interventions' expected NMB:
     dplyr::mutate('WTP' = .PSA_data[["WTPs"]]) %>%
@@ -127,7 +134,7 @@ draw_summary_table_ <- function(.PSA_data,
     names_from = 'WTP',
     values_from = 'NMB')
 
-  ## Get the probability of being cost-effective from the result's object:----
+  ## Get the probability of being cost-effective from the results object:----
   CEAF <- dplyr::tibble(
     'CEAF - values' = .PSA_data[["CEAF"]]$ceaf,
     ### put WTP in a column next to probability of CE:----
@@ -143,10 +150,10 @@ draw_summary_table_ <- function(.PSA_data,
                                         accuracy = 1,
                                         prefix = .units_)))
 
-  ## Get the EVPI from the result's object:----
+  ## Get the EVPI from the results object:----
   ### Estimate population EVPI if user provided necessary data:----
   discounted_population = 1
-  table_caption = "Individual EVPI"
+  table_caption = "EVPI per affected individual"
   if(!.individual_evpi_) {
     if(is.null(.evpi_population_) | is.null(.time_horion_)) {
       .individual_evpi_ <- TRUE
@@ -217,7 +224,7 @@ draw_summary_table_ <- function(.PSA_data,
     #### drop any NAs resulting from pivot_wider:----
     dplyr::select(tidyselect::vars_select_helpers$where(
       fn = function(.x) !all(is.na(.x)))) %>%
-    #### join the EVPI:
+    #### join the EVPI:----
     dplyr::left_join(x = ., y = EVPI, by = 'intervention') %>%
     #### create EVPI columns from relevant row values:----
     tidyr::pivot_wider(
@@ -243,7 +250,7 @@ draw_summary_table_ <- function(.PSA_data,
       dplyr::across(c(qalys, delta.e, dplyr::starts_with("Prob.")),
                     ~ as.character(round(.x, digits = 3)))) %>%
     ##### drop dominance column if it exists:----
-    dplyr::select(-dplyr::any_of('dominance')) %>%
+    dplyr::select(-dplyr::any_of("dominance")) %>%
     ##### rename columns to proper names:----
     dplyr::rename({{.effects_label_}} := qalys,
                   Comparators = intervention,
@@ -264,23 +271,38 @@ draw_summary_table_ <- function(.PSA_data,
         Comparators, Costs, `Costs 95% CI`, `Incremental Costs`,
         {{.effects_label_}}, {{effs_95_label}}, {{incr_col_}},
         dplyr::everything()) %>%
-    #### rename QALYs and Costs to mean:----
-        dplyr::mutate(
+    {if(!.latex_) {
+      #### rename QALYs and Costs to mean:----
+      dplyr::mutate(
+        .data = .,
         "Costs [95% CI]" = paste0(
           Costs, " ", `Costs 95% CI`),
         {{effs_mu_95_label}} := paste0(
-          .data[[{{.effects_label_}}]], " ", .data[[{{effs_95_label}}]])) %>%
+          .data[[{{.effects_label_}}]], " ",
+          .data[[{{effs_95_label}}]])) %>%
         dplyr::select(
           Comparators, `Costs [95% CI]`, {{effs_mu_95_label}},
           `Incremental Costs`, {{incr_col_}}, dplyr::everything()) %>%
         dplyr::select(
           -Costs, -`Costs 95% CI`, -{{.effects_label_}},
           -{{effs_95_label}})
+    } else {
+      .
+    }}
 
   ## Create a long format table:----
   if(.long_) {
-    ### reorder some columns for DT::RowGroup option:----
+    ### reorder some columns:----
     Summary_tbl <- Summary_tbl %>%
+      {if(.latex_){
+        dplyr::select(
+          .data = .,
+          Comparators, Costs, `Costs 95% CI`, {{.effects_label_}},
+          {{effs_95_label}}, `Incremental Costs`, {{incr_col_}},
+          dplyr::everything())
+      } else {
+        .
+      }} %>%
       #### flip the dataset to have everything in long format:----
     tidyr::pivot_longer(
       cols = -Comparators,
@@ -293,7 +315,7 @@ draw_summary_table_ <- function(.PSA_data,
   }
   ## Beautified tables:----
   ### Long format beautified table:----
-  if(.beautify_ & .long_) {
+  if(.beautify_ & .long_  & !.latex_) {
     #### Remove unnecessary strings:----
     Summary_tbl <- Summary_tbl %>%
       dplyr::mutate(dplyr::across(
@@ -406,7 +428,7 @@ draw_summary_table_ <- function(.PSA_data,
       )
   }
   ### Wide format beautified table:----
-  if(.beautify_ & !.long_) {
+  if(.beautify_ & !.long_ & !.latex_) {
     #### reorder table for wide format:----
     #### custom table container to create column groups:----
     sketch_ <- htmltools::withTags(table(
@@ -492,6 +514,160 @@ draw_summary_table_ <- function(.PSA_data,
         columns = colBorder_,
         `border-right` = 'solid 1px'
       )
+
+  }
+
+  ## Beautified latex tables:----
+  ### Long format beautified latex table:----
+  if(.beautify_ & .latex_) {
+    #### Remove unnecessary strings:----
+    Summary_tbl <- Summary_tbl %>%
+      dplyr::mutate(dplyr::across(
+        .cols = " ",
+        .fns = function(.x) {
+          stringr::str_replace_all(
+            string = .x,
+            pattern = c("NMB @ "),
+            replacement = c("  @")
+          )
+        }
+      )) %>%
+      dplyr::mutate(dplyr::across(
+        .cols = " ",
+        .fns = function(.x) {
+          stringr::str_replace_all(
+            string = .x,
+            pattern = c("Prob. CE @ "),
+            replacement = c("  @")
+          )
+        }
+      )) %>%
+      dplyr::mutate(dplyr::across(
+        .cols = " ",
+        .fns = function(.x) {
+          stringr::str_replace_all(
+            string = .x,
+            pattern = c("EVPI @ "),
+            replacement = c("  @")
+          )
+        }
+      )) %>%
+      dplyr::mutate(dplyr::across(
+        .cols = " ",
+        .fns = function(.x) {
+          dplyr::case_when(
+            .x == "Costs" ~ "Mean",
+            .x == {{.effects_label_}} ~ "Mean",
+            .x == "Costs 95% CI" ~ "95% CI",
+            .x == {{effs_95_label}} ~ "95% CI",
+            TRUE ~ .x
+          )
+        }
+      )) %>%
+      dplyr::mutate(dplyr::across(
+        .cols = dplyr::everything(),
+        .fns = function(.x) {
+          dplyr::case_when(
+            is.na(.x) ~ "-",
+            TRUE ~ .x
+          )
+        }
+      ))
+
+    #### Prepare table helper columns:----
+    Summary_tbl <- Summary_tbl %>%
+      dplyr::mutate(
+        ##### Prepare row groups:----
+        RowGroup_ = c(
+          rep(
+            glue::glue("Costs ({.units_})"),
+            2),
+          rep(
+            .effects_label_,
+            2),
+          rep(
+            "Incremental Analysis",
+            3),
+          rep(
+            glue::glue("Net Benefit ({.units_})"),
+            length(.wtp_)),
+          rep(
+            "Probability Cost-Effective",
+            length(.wtp_)),
+          rep(
+            glue::glue("Expected Value of Perfect Information ({.units_})"),
+            length(.wtp_)))#,
+        ##### Prepare border info:----
+        # RowBorder_ = c(1, 1, 0, 0, 1,
+        #                rep(0, length(.wtp_) - 1), 1,
+        #                rep(0, length(.wtp_) - 1), 1,
+        #                rep(0, length(.wtp_) - 1), 1)
+      )
+    #### Interventions' names bold style helper:----
+    # col_labs_list <- purrr::map(
+    #   .x = PSA_summary$interventions,
+    #   .f = function(.col_) {
+    #     dplyr::quo(
+    #       expr = {(
+    #         gt::md("**", .col_, "**")
+    #       )})
+    #   }) %>%
+    #   `names<-`(PSA_summary$interventions)
+
+    #### Build the table:----
+    Summary_tbl <- Summary_tbl %>%
+      dplyr::group_by(RowGroup_) %>%
+      gt::gt() %>%
+      {if(!is.null(.latex_title_)){
+        gt::tab_header(
+          data = .,
+          title = .latex_title_)
+      } else {
+        .}} %>%
+      {if(!is.null(.latex_title_) & !is.null(.latex_subtitle_)){
+        gt::tab_header(
+          data = .,
+          title = .latex_title_,
+          subtitle = .latex_subtitle_)
+      } else {
+        .}} %>%
+      # gt::tab_style(
+      #   style = gt::cell_text(
+      #     size = "xx-small"), #gt::px(7)),
+      #     locations = gt::cells_body(
+      #       columns = colnames(.) %in% colnames(.)[-1],
+      #       rows = gt::contains("[")
+      #       )
+      #     ) #%>%
+      gt::tab_footnote(
+        footnote = gt::md(
+        "_The ICER threshold values used in computing the results are
+        preceeded by the \"@\" symbol in the corresponding rows._"),
+        locations = gt::cells_row_groups(
+          groups = c(
+          glue::glue("Expected Value of Perfect Information ({.units_})"),
+          glue::glue("Net Benefit ({.units_})"),
+          "Probability Cost-Effective"
+          )
+        )) %>%
+      gt::tab_footnote(
+        footnote = gt::md(
+          paste0("_",table_caption, "._")),
+        locations = gt::cells_row_groups(
+          groups = glue::glue(
+            "Expected Value of Perfect Information ({.units_})")
+        )) %>%
+      gt::tab_source_note(
+        source_note = gt::md(
+          "**QALYs**: Quality-adjusted life years.
+          **CI**: Confidence interval.
+          **ICER**: Incremental cost-effectiveness ratio.
+          **EVPI**: Expected Value of Perfect Information."
+        )) %>%
+      # gt::cols_label(
+      #   .list = col_labs_list
+      #   ) %>%
+      gt::as_latex()
 
   }
 
