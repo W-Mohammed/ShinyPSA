@@ -15,7 +15,10 @@ draw_summary_table_(
   .evpi_population_ = NULL,
   .discount_rate_ = 0.035,
   .time_horion_ = NULL,
-  .effs_accuracy_ = 0.001
+  .effs_accuracy_ = 0.001,
+  .latex_ = FALSE,
+  .latex_title_ = NULL,
+  .latex_subtitle_ = NULL
 )
 }
 \arguments{
@@ -55,6 +58,13 @@ under consideration become obsolete or requires updating)}
 
 \item{.effs_accuracy_}{Number of digits for effects measure; default is
 3 and is expressed as 1e-3 or 0.001.}
+
+\item{.latex_}{Boolean to indicate whether to generate a latex table or
+not (default is FALSE).}
+
+\item{.latex_title_}{Table title for the latex version.}
+
+\item{.latex_subtitle_}{Table subtitle for the latex version.}
 }
 \value{
 A table, dataframe, tibble or DT objects.

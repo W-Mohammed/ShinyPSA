@@ -25,6 +25,7 @@ Imports:
     ggplot2,
     ggpubr,
     ggrepel,
+    gt,
     magrittr,
     mgcv,
     plyr,

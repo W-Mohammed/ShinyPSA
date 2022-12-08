@@ -36,6 +36,10 @@
 #' under consideration become obsolete or requires updating)
 #' @param .effs_accuracy_ Number of digits for effects measure; default is
 #' 3 and is expressed as 1e-3 or 0.001.
+#' @param .latex_ Boolean to indicate whether to generate a latex table or
+#' not (default is FALSE).
+#' @param .latex_title_ Table title for the latex version.
+#' @param .latex_subtitle_ Table subtitle for the latex version.
 #'
 #' @return A table, dataframe, tibble or DT objects.
 #' @importFrom tidyselect vars_select_helpers
@@ -69,12 +73,12 @@ draw_summary_table_ <- function(.PSA_data,
                                 .effects_label_ = "QALYs",
                                 .beautify_ = TRUE,
                                 .long_ = TRUE,
-                                .latex_ = FALSE,
                                 .individual_evpi_ = TRUE,
                                 .evpi_population_ = NULL,
                                 .discount_rate_ = 0.035,
                                 .time_horion_ = NULL,
                                 .effs_accuracy_ = 1e-3,
+                                .latex_ = FALSE,
                                 .latex_title_ = NULL,
                                 .latex_subtitle_ = NULL) {
   ## Set currency label if none were provided:----
@@ -105,10 +109,10 @@ draw_summary_table_ <- function(.PSA_data,
   )
   .wtp_ <- unique(.PSA_data$WTPs[wtp_index_])
 
-  ## Get the ICER table from the result's object:----
+  ## Get the ICER table from the results object:----
   ICER_tbl <- .PSA_data[["ICER"]]
 
-  ## Get the eNMB values from the result's object:----
+  ## Get the eNMB values from the results object:----
   eNMB <- .PSA_data[["e.NMB"]] %>%
     ### put WTP in a column next to interventions' expected NMB:
     dplyr::mutate('WTP' = .PSA_data[["WTPs"]]) %>%
@@ -130,7 +134,7 @@ draw_summary_table_ <- function(.PSA_data,
     names_from = 'WTP',
     values_from = 'NMB')
 
-  ## Get the probability of being cost-effective from the result's object:----
+  ## Get the probability of being cost-effective from the results object:----
   CEAF <- dplyr::tibble(
     'CEAF - values' = .PSA_data[["CEAF"]]$ceaf,
     ### put WTP in a column next to probability of CE:----
@@ -146,7 +150,7 @@ draw_summary_table_ <- function(.PSA_data,
                                         accuracy = 1,
                                         prefix = .units_)))
 
-  ## Get the EVPI from the result's object:----
+  ## Get the EVPI from the results object:----
   ### Estimate population EVPI if user provided necessary data:----
   discounted_population = 1
   table_caption = "EVPI per affected individual"
@@ -599,13 +603,17 @@ draw_summary_table_ <- function(.PSA_data,
         #                rep(0, length(.wtp_) - 1), 1,
         #                rep(0, length(.wtp_) - 1), 1)
       )
-    #### Treatment names bold style helper:----
-    col_labs_list <- purrr::map(
-        .x = PSA_summary$interventions,
-        .f = function(.col_) {
-          paste0("**", .col_, "**")
-        }) %>%
-      `names<-`(PSA_summary$interventions)
+    #### Interventions' names bold style helper:----
+    # col_labs_list <- purrr::map(
+    #   .x = PSA_summary$interventions,
+    #   .f = function(.col_) {
+    #     dplyr::quo(
+    #       expr = {(
+    #         gt::md("**", .col_, "**")
+    #       )})
+    #   }) %>%
+    #   `names<-`(PSA_summary$interventions)
+
     #### Build the table:----
     Summary_tbl <- Summary_tbl %>%
       dplyr::group_by(RowGroup_) %>%
@@ -656,10 +664,10 @@ draw_summary_table_ <- function(.PSA_data,
           **ICER**: Incremental cost-effectiveness ratio.
           **EVPI**: Expected Value of Perfect Information."
         )) %>%
-      gt::cols_label(
-        .list = col_labs_list
-        )
-    #gt::as_latex()
+      # gt::cols_label(
+      #   .list = col_labs_list
+      #   ) %>%
+      gt::as_latex()
 
   }
 
