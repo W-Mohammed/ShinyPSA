@@ -40,7 +40,8 @@
 #'                .label_wtp = FALSE,
 #'                .zoom = FALSE,
 #'                .zoom_cords = NULL,
-#'                .show_shapes = TRUE)
+#'                .show_shapes = TRUE,
+#'                .show_title = TRUE)
 #'
 #' p
 #' }
@@ -50,6 +51,7 @@ plot_CEAF_ <- function(.PSA_data, ...) {
   env_ = environment()
   # Define defaults:
   default_args <- list(
+    '.show_title' = TRUE,
     '.legend_pos' = c(0.8, 0.85), # c(x, y) double between 0:1
     '.wtp_threshold' = c(20000, 30000),
     '.show_wtp' = TRUE, # TRUE/FALSE
@@ -118,7 +120,6 @@ plot_CEAF_ <- function(.PSA_data, ...) {
       plot.margin = ggplot2::unit(c(5.5, 1, 5.5, 5.5), # more space LHS
                                   c("points", "cm", "points", "points"))) +
     ggplot2::labs(
-      title = "Cost Effectiveness Acceptability Frontier (CEAF)",
       x = "Willingness-to-pay (\u00A3)",
       y = "Probability cost-effective") +
     ggplot2::guides(
@@ -202,6 +203,13 @@ plot_CEAF_ <- function(.PSA_data, ...) {
         size = 1.5,
         alpha = 0.8,
         show.legend = TRUE)
+  }
+
+  # Show/hide plot title:
+  if(.show_title) {
+    p <- p +
+      ggplot2::labs(
+        title = "Cost Effectiveness Acceptability Frontier (CEAF)")
   }
 
   return(p)

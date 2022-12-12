@@ -15,6 +15,9 @@
 #' @param .min_percent Only parameters with percentage of overall EVPI equal to
 #' or higher than .min_percent will make it to the plot.
 #' @param .params_num The number of parameters to show in the bar plot.
+#' @param .show_title Boolean to show (default) or hide the plot title.
+#' This feature is essential for plots generated in a report/academic
+#' paper.
 #'
 #' @return An Object of class ggplot2.
 #' @export
@@ -42,61 +45,61 @@
 #'   .min_percent = NULL)
 #' }
 plot_EVPPI_ <- function(EVPPI_res, .show_percent = TRUE, .min_percent = 1,
-                        .params_num = NULL) {
+                        .params_num = NULL, .show_title = TRUE) {
   # Prepare plot data:----
   EVPPI_data <- EVPPI_res[[1]] %>%
     ## subset data columns:----
-    `colnames<-`(c("Parameters", "Per Person EVPPI", colnames(.)[-c(1,2)])) %>%
+  `colnames<-`(c("Parameters", "Per Person EVPPI", colnames(.)[-c(1,2)])) %>%
     ## create a numeric percentage EVPPI of overall EVPI:----
-    dplyr::mutate(
-      'percent' = as.numeric(
-        gsub(pattern = '%',
-             replacement = "",
-             x = EVPPI_res[[1]][[4]]))) %>%
+  dplyr::mutate(
+    'percent' = as.numeric(
+      gsub(pattern = '%',
+           replacement = "",
+           x = EVPPI_res[[1]][[4]]))) %>%
     ## rename exiting string percent variable to a usable name:----
-    dplyr::rename("Percent overall EVPI" = "Indexed to Overall EVPI") %>%
+  dplyr::rename("Percent overall EVPI" = "Indexed to Overall EVPI") %>%
     ## sort EVPPI values in descending order:----
-    dplyr::arrange(dplyr::desc(`Per Person EVPPI`)) %>%
+  dplyr::arrange(dplyr::desc(`Per Person EVPPI`)) %>%
     ## if a subset of EVPPI is requested:----
-    {if(is.null(.params_num)) {
-      .
-    } else {
-      if(is.numeric(.params_num)) {
+  {if(is.null(.params_num)) {
+    .
+  } else {
+    if(is.numeric(.params_num)) {
       dplyr::slice_head(.data = ., n = .params_num)
-      } else {
-        .}}} %>%
-    ## if a user wants :----
-    {if(is.null(.min_percent)) {
-      .
     } else {
-      if(is.numeric(.min_percent)) {
-        dplyr::filter(.data = ., percent >= .min_percent)
-      } else {
-        .}}}
+      .}}} %>%
+    ## if a user wants :----
+  {if(is.null(.min_percent)) {
+    .
+  } else {
+    if(is.numeric(.min_percent)) {
+      dplyr::filter(.data = ., percent >= .min_percent)
+    } else {
+      .}}}
 
   # Build EVPPI plot:----
   p <- ggplot2::ggplot(data = EVPPI_data) +
     ggplot2::coord_cartesian(xlim = c(0, NA)) +
     ## add bar plot:----
-    ggplot2::geom_bar(
-      ggplot2::aes(
-        x = `Per Person EVPPI`,
-        y = forcats::fct_reorder(Parameters, `Per Person EVPPI`)),
-      fill = "#EFC00099", #"#EFC000FF"
-      stat = "identity",
-      position = ggplot2::position_dodge2()) +
+  ggplot2::geom_bar(
+    ggplot2::aes(
+      x = `Per Person EVPPI`,
+      y = forcats::fct_reorder(Parameters, `Per Person EVPPI`)),
+    fill = "#EFC00099", #"#EFC000FF"
+    stat = "identity",
+    position = ggplot2::position_dodge2()) +
     ## add axis lines:----
-    ggplot2::geom_hline(
-      yintercept = 0,
-      color = 'grey',
-      size = 0.1) +
+  ggplot2::geom_hline(
+    yintercept = 0,
+    color = 'grey',
+    size = 0.1) +
     ggplot2::geom_vline(
       xintercept = 0,
       color = 'grey',
       size = 0.1) +
     ## fine tuning the plot:----
-    ggplot2::scale_x_continuous(labels = scales::dollar_format(
-      prefix = "\u00A3")) +
+  ggplot2::scale_x_continuous(labels = scales::dollar_format(
+    prefix = "\u00A3")) +
     ggplot2::theme(
       # axis.ticks.length.y = element_text(hjust = -2),
       plot.title.position = "plot", # Start title from near the margin
@@ -104,10 +107,9 @@ plot_EVPPI_ <- function(EVPPI_res, .show_percent = TRUE, .min_percent = 1,
       # panel.border = ggplot2::element_rect(colour = 'black', fill = NA),
       plot.margin = ggplot2::unit(c(5.5, 0.5, 5.5, 5.5), # more space LHS
                                   c("points", "cm", "points", "points"))) +
-      # panel.grid = element_blank(),
-      # panel.border = element_blank()) +
+    # panel.grid = element_blank(),
+    # panel.border = element_blank()) +
     ggplot2::labs(
-      title = "Per Person EVPPI",
       caption = if(!is.null(.min_percent)) {
         if(is.numeric(.min_percent)) {
           paste0(EVPPI_res[['Plot caption']][1], "
@@ -119,6 +121,13 @@ plot_EVPPI_ <- function(EVPPI_res, .show_percent = TRUE, .min_percent = 1,
       },
       x = "EVPPI (\u00A3)",
       y = "Parameters")
+
+  # Show/hide plot title:
+  if(.show_title) {
+    p <- p +
+      ggplot2::labs(
+        title = "Per Person EVPPI")
+  }
 
   # If user wants to see percentages on bars:
   if(isTRUE(.show_percent)) {

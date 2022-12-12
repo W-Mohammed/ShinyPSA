@@ -41,7 +41,8 @@ p <- plot_CEAF_(PSA_summary,
                .label_wtp = FALSE,
                .zoom = FALSE,
                .zoom_cords = NULL,
-               .show_shapes = TRUE)
+               .show_shapes = TRUE,
+               .show_title = TRUE)
 
 p
 }

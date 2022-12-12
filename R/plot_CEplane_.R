@@ -42,7 +42,8 @@
 #'                  .wtp_threshold = c(200),
 #'                  tst = "PRINT", # this will be ignored
 #'                  .nudge_labels = c(0.1, -0.1),
-#'                  .zoom_cords = c(-0.001, 0.001, -5, 5)))
+#'                  .zoom_cords = c(-0.001, 0.001, -5, 5),
+#'                  .show_title = TRUE)
 #'
 #' p
 #' }
@@ -52,6 +53,7 @@ plot_CEplane_ <- function(.PSA_data, ...) {
   env_ = environment()
   # Define defaults:
   default_args <- list(
+    '.show_title' = TRUE,
     '.ref' = NULL, # Integer 1:length(interventions)
     '.legend_pos' = c(0.8, 0.2), # c(x, y) double between 0:1
     '.show_ICER' = TRUE, # TRUE/FALSE
@@ -174,7 +176,6 @@ plot_CEplane_ <- function(.PSA_data, ...) {
       plot.margin = ggplot2::unit(c(5.5, 1, 5.5, 5.5), # more space LHS
                                   c("points", "cm", "points", "points"))) +
     ggplot2::labs(
-      title = .title_lab,
       x = .x_lab,
       y = .y_lab) +
     ggplot2::guides(
@@ -328,6 +329,13 @@ plot_CEplane_ <- function(.PSA_data, ...) {
     p <- p +
       ggplot2::coord_cartesian(xlim = x_lim, ylim = y_lim, expand = !.zoom,
                                default = .zoom)
+  }
+
+  ## Show/hide plot title:
+  if(.show_title) {
+    p <- p +
+      ggplot2::labs(
+        title = .title_lab)
   }
 
   return(p)

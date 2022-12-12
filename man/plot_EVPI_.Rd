@@ -47,7 +47,8 @@ p <- plot_EVPI_(PSA_summary,
                .discount_rate = 0.035,
                .population = 15000,
                .zoom = FALSE,
-               .zoom_cords = NULL)
+               .zoom_cords = NULL,
+               .show_title = TRUE)
 
 p
 }

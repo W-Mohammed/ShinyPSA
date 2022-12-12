@@ -43,7 +43,8 @@ p <- plot_CEplane_(PSA_summary,
                  .wtp_threshold = c(200),
                  tst = "PRINT", # this will be ignored
                  .nudge_labels = c(0.1, -0.1),
-                 .zoom_cords = c(-0.001, 0.001, -5, 5)))
+                 .zoom_cords = c(-0.001, 0.001, -5, 5),
+                 .show_title = TRUE)
 
 p
 }

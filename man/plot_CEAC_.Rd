@@ -45,7 +45,8 @@ p <- plot_CEAC_(PSA_summary,
                .zoom = FALSE,
                .zoom_cords = NULL,
                .show_shapes = TRUE,
-               .add_CEAF = TRUE)
+               .add_CEAF = TRUE,
+               .show_title = TRUE)
 
 p
 }
