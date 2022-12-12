@@ -38,7 +38,8 @@
 #'                .show_wtp = TRUE,
 #'                .label_wtp = FALSE,
 #'                .zoom = FALSE,
-#'                .zoom_cords = NULL)
+#'                .zoom_cords = NULL,
+#'                .show_title = TRUE)
 #'
 #' p
 #' }
@@ -48,6 +49,7 @@ plot_eNMB_ <- function(.PSA_data, ...) {
   env_ = environment()
   # Define defaults:
   default_args <- list(
+    '.show_title' = TRUE,
     '.legend_pos' = c(0.22, 0.78), # c(x, y) between 0:1 or character
     '.wtp_threshold' = c(20000, 30000),
     '.show_wtp' = TRUE, # TRUE/FALSE
@@ -125,7 +127,6 @@ plot_eNMB_ <- function(.PSA_data, ...) {
       plot.margin = ggplot2::unit(c(5.5, 1, 5.5, 5.5), # more space LHS
                                   c("points", "cm", "points", "points"))) +
     ggplot2::labs(
-      title = "Expected Net Monetary Benefit (eNMB)",
       x = "Willingness-to-pay (\u00A3)",
       y = "Expected Net Monetary Benefit (\u00A3)")
 
@@ -180,6 +181,13 @@ plot_eNMB_ <- function(.PSA_data, ...) {
           label = label_cord),
         size = 1.5,
         show.legend = FALSE)
+  }
+
+  # Show/hide plot title:
+  if(.show_title) {
+    p <- p +
+      ggplot2::labs(
+        title = "Expected Net Monetary Benefit (eNMB)")
   }
 
   return(p)

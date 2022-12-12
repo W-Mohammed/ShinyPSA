@@ -44,7 +44,8 @@
 #'                .zoom = FALSE,
 #'                .zoom_cords = NULL,
 #'                .show_shapes = TRUE,
-#'                .add_CEAF = TRUE)
+#'                .add_CEAF = TRUE,
+#'                .show_title = TRUE)
 #'
 #' p
 #' }
@@ -53,6 +54,7 @@ plot_CEAC_ <- function(.PSA_data, ...) {
   env_ = environment()
   # Define defaults:
   default_args <- list(
+    '.show_title' = TRUE, # TRUE/FALSE
     '.ref' = NULL, # Integer 1:length(interventions)
     '.legend_pos' = c(0.8, 0.85), # c(x, y) double between 0:1
     '.wtp_threshold' = c(20000, 30000),
@@ -135,7 +137,6 @@ plot_CEAC_ <- function(.PSA_data, ...) {
       plot.margin = ggplot2::unit(c(5.5, 1, 5.5, 5.5), # more space LHS
                                   c("points", "cm", "points", "points"))) +
     ggplot2::labs(
-      title = "Cost Effectiveness Acceptability Curve (CEAC)",
       x = "Willingness-to-pay (\u00A3)",
       y = "Probability cost-effective") +
     ggplot2::guides(
@@ -145,6 +146,13 @@ plot_CEAC_ <- function(.PSA_data, ...) {
                             size = 1,
                             alpha = 1,
                             shape = NA)))
+
+  # Show/hide plot title:
+  if(.show_title) {
+    p <- p +
+      ggplot2::labs(
+        title = "Cost Effectiveness Acceptability Curve (CEAC)")
+  }
 
   # Show/hide WTP on the CEAC:
   if(.show_wtp) {

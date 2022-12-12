@@ -39,7 +39,8 @@ p <- plot_eNMB_(PSA_summary,
                .show_wtp = TRUE,
                .label_wtp = FALSE,
                .zoom = FALSE,
-               .zoom_cords = NULL)
+               .zoom_cords = NULL,
+               .show_title = TRUE)
 
 p
 }

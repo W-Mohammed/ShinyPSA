@@ -8,7 +8,8 @@ plot_EVPPI_(
   EVPPI_res,
   .show_percent = TRUE,
   .min_percent = 1,
-  .params_num = NULL
+  .params_num = NULL,
+  .show_title = TRUE
 )
 }
 \arguments{
@@ -21,6 +22,10 @@ EVPI on the bars.}
 or higher than .min_percent will make it to the plot.}
 
 \item{.params_num}{The number of parameters to show in the bar plot.}
+
+\item{.show_title}{Boolean to show (default) or hide the plot title.
+This feature is essential for plots generated in a report/academic
+paper.}
 }
 \value{
 An Object of class ggplot2.
