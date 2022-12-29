@@ -40,6 +40,7 @@
 #' not (default is FALSE).
 #' @param .latex_title_ Table title for the latex version.
 #' @param .latex_subtitle_ Table subtitle for the latex version.
+#' @param .latex_code_ Print latex code to generate the table.
 #'
 #' @return A table, dataframe, tibble or DT objects.
 #' @importFrom tidyselect vars_select_helpers
@@ -80,7 +81,8 @@ draw_summary_table_ <- function(.PSA_data,
                                 .effs_accuracy_ = 1e-3,
                                 .latex_ = FALSE,
                                 .latex_title_ = NULL,
-                                .latex_subtitle_ = NULL) {
+                                .latex_subtitle_ = NULL,
+                                .latex_code_ = TRUE) {
   ## Set currency label if none were provided:----
   if(is.null(.units_) | length(.units_) != 1) .units_ = "\u00A3"
 
@@ -667,7 +669,10 @@ draw_summary_table_ <- function(.PSA_data,
       # gt::cols_label(
       #   .list = col_labs_list
       #   ) %>%
-      gt::as_latex()
+      {if(.latex_code_) {
+        gt::as_latex(data = .)
+      } else {
+        .}}
 
   }
 
