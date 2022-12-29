@@ -273,7 +273,7 @@ compute_ICERs_ <- function(.icer_data, .effs = NULL, .costs = NULL,
 
   # Drop .id:
   icer_tmp <- icer_tmp %>%
-    select(-.id)
+    dplyr::select(-.id)
 
   return(icer_tmp)
 }
