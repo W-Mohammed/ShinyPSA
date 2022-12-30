@@ -18,7 +18,11 @@ draw_summary_table_(
   .effs_accuracy_ = 0.001,
   .latex_ = FALSE,
   .latex_title_ = NULL,
-  .latex_subtitle_ = NULL
+  .latex_subtitle_ = NULL,
+  .latex_code_ = TRUE,
+  .footnotes_sourcenotes_ = TRUE,
+  .dominance_footnote_ = TRUE,
+  .all_sourcenotes_ = FALSE
 )
 }
 \arguments{
@@ -65,6 +69,17 @@ not (default is FALSE).}
 \item{.latex_title_}{Table title for the latex version.}
 
 \item{.latex_subtitle_}{Table subtitle for the latex version.}
+
+\item{.latex_code_}{Print latex code to generate the table.}
+
+\item{.footnotes_sourcenotes_}{Boolean (default TRUE) for whether to show
+table footnotes and source notes.}
+
+\item{.dominance_footnote_}{Boolean (default TRUE) for whether to define
+ED and SD in table footnotes or table sources.}
+
+\item{.all_sourcenotes_}{Boolean (default FALSE) for whether to report all
+table source notes.}
 }
 \value{
 A table, dataframe, tibble or DT objects.

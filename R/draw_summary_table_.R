@@ -41,7 +41,12 @@
 #' @param .latex_title_ Table title for the latex version.
 #' @param .latex_subtitle_ Table subtitle for the latex version.
 #' @param .latex_code_ Print latex code to generate the table.
-#'
+#' @param .footnotes_sourcenotes_ Boolean (default TRUE) for whether to show
+#' table footnotes and source notes.
+#' @param .dominance_footnote_ Boolean (default TRUE) for whether to define
+#' ED and SD in table footnotes or table sources.
+#' @param .all_sourcenotes_ Boolean (default FALSE) for whether to report all
+#' table source notes.
 #' @return A table, dataframe, tibble or DT objects.
 #' @importFrom tidyselect vars_select_helpers
 #' @export
@@ -82,7 +87,10 @@ draw_summary_table_ <- function(.PSA_data,
                                 .latex_ = FALSE,
                                 .latex_title_ = NULL,
                                 .latex_subtitle_ = NULL,
-                                .latex_code_ = TRUE) {
+                                .latex_code_ = TRUE,
+                                .footnotes_sourcenotes_ = TRUE,
+                                .dominance_footnote_ = TRUE,
+                                .all_sourcenotes_ = FALSE) {
   ## Set currency label if none were provided:----
   if(is.null(.units_) | length(.units_) != 1) .units_ = "\u00A3"
 
@@ -562,10 +570,8 @@ draw_summary_table_ <- function(.PSA_data,
             .x == {{.effects_label_}} ~ "Mean",
             .x == "Costs 95% CI" ~ "95% CI",
             .x == {{effs_95_label}} ~ "95% CI",
-            TRUE ~ .x
-          )
-        }
-      )) %>%
+            TRUE ~ .x)
+        })) %>%
       dplyr::mutate(dplyr::across(
         .cols = dplyr::everything(),
         .fns = function(.x) {
@@ -573,8 +579,7 @@ draw_summary_table_ <- function(.PSA_data,
             is.na(.x) ~ "-",
             TRUE ~ .x
           )
-        }
-      ))
+        }))
 
     #### Prepare table helper columns:----
     Summary_tbl <- Summary_tbl %>%
@@ -598,23 +603,23 @@ draw_summary_table_ <- function(.PSA_data,
             length(.wtp_)),
           rep(
             glue::glue("Expected Value of Perfect Information ({.units_})"),
-            length(.wtp_)))#,
-        ##### Prepare border info:----
-        # RowBorder_ = c(1, 1, 0, 0, 1,
-        #                rep(0, length(.wtp_) - 1), 1,
-        #                rep(0, length(.wtp_) - 1), 1,
-        #                rep(0, length(.wtp_) - 1), 1)
-      )
-    #### Interventions' names bold style helper:----
-    # col_labs_list <- purrr::map(
-    #   .x = PSA_summary$interventions,
-    #   .f = function(.col_) {
-    #     dplyr::quo(
-    #       expr = {(
-    #         gt::md("**", .col_, "**")
-    #       )})
-    #   }) %>%
-    #   `names<-`(PSA_summary$interventions)
+            length(.wtp_))))
+
+    #### Locate ED and SD in the table:
+    v_ED_SD <- Summary_tbl %>%
+      dplyr::rename("names" = " ") %>%
+      dplyr::filter(names == "ICER") %>%
+      as_vector()
+    v_ED <- if(length(which(v_ED_SD == "ED")) == 0) {
+      NULL
+    } else {
+      which(v_ED_SD == "ED")
+    }
+    v_SD <- if(length(which(v_ED_SD == "SD")) == 0) {
+      NULL
+    } else {
+      which(v_ED_SD == "SD")
+    }
 
     #### Build the table:----
     Summary_tbl <- Summary_tbl %>%
@@ -633,42 +638,117 @@ draw_summary_table_ <- function(.PSA_data,
           subtitle = .latex_subtitle_)
       } else {
         .}} %>%
-      # gt::tab_style(
-      #   style = gt::cell_text(
-      #     size = "xx-small"), #gt::px(7)),
-      #     locations = gt::cells_body(
-      #       columns = colnames(.) %in% colnames(.)[-1],
-      #       rows = gt::contains("[")
-      #       )
-      #     ) #%>%
-      gt::tab_footnote(
-        footnote = gt::md(
-        "_The ICER threshold values used in computing the results are
+      {if(is.null(.latex_title_) & !is.null(.latex_subtitle_)){
+        gt::tab_header(
+          data = .,
+          title = "",
+          subtitle = .latex_subtitle_)
+      } else {
+        .}} %>%
+      gt::opt_align_table_header(
+        align = "left") %>%
+      gt::tab_style(
+        style = gt::cell_text(
+          weight = "bold"),
+        locations = list(
+          gt::cells_column_labels(),
+          gt::cells_row_groups())) %>%
+      {if(.footnotes_sourcenotes_) {
+        gt::tab_footnote(
+          data = .,
+          footnote = gt::md(
+            "_The ICER threshold values used in computing the results are
         preceeded by the \"@\" symbol in the corresponding rows._"),
-        locations = gt::cells_row_groups(
-          groups = c(
-          glue::glue("Expected Value of Perfect Information ({.units_})"),
-          glue::glue("Net Benefit ({.units_})"),
-          "Probability Cost-Effective"
-          )
-        )) %>%
-      gt::tab_footnote(
-        footnote = gt::md(
-          paste0("_",table_caption, "._")),
-        locations = gt::cells_row_groups(
-          groups = glue::glue(
-            "Expected Value of Perfect Information ({.units_})")
-        )) %>%
-      gt::tab_source_note(
-        source_note = gt::md(
-          "**QALYs**: Quality-adjusted life years.
+          locations = gt::cells_row_groups(
+            groups = c(
+              glue::glue("Expected Value of Perfect Information ({.units_})"),
+              glue::glue("Net Benefit ({.units_})"),
+              "Probability Cost-Effective"
+            ))) %>%
+          gt::tab_footnote(
+            data = .,
+            footnote = gt::md(
+              paste0("_",table_caption, "._")),
+            locations = gt::cells_row_groups(
+              groups = glue::glue(
+                "Expected Value of Perfect Information ({.units_})")
+            )) %>%
+          {if(!.all_sourcenotes_ & !is.null(v_ED)) {
+            if(.dominance_footnote_){
+              gt::tab_footnote(
+                data = .,
+                footnote = gt::md(
+                  paste0("_Extendedly dominated._")),
+                locations = gt::cells_body(
+                  columns = v_ED,
+                  rows = 7))
+            } else {
+              gt::tab_source_note(
+                data = .,
+                source_note = gt::md(
+                  "**QALYs**: Quality-adjusted life years.
+            **CI**: Confidence interval.
+            **ICER**: Incremental cost-effectiveness ratio.
+            **ED**: Extendedly dominated.
+            **EVPI**: Expected Value of Perfect Information."
+                ))
+            }
+          } else {
+            .
+          }} %>%
+          {if(!.all_sourcenotes_ & !is.null(v_SD)) {
+            if(.dominance_footnote_){
+              gt::tab_footnote(
+                data = .,
+                footnote = gt::md(
+                  paste0("_Strongly dominated._")),
+                locations = gt::cells_body(
+                  columns = v_SD,
+                  rows = 7))
+            } else {
+              gt::tab_source_note(
+                data = .,
+                source_note = gt::md(
+                  "**QALYs**: Quality-adjusted life years.
+            **CI**: Confidence interval.
+            **ICER**: Incremental cost-effectiveness ratio.
+            **SD**: Strongly dominated.
+            **EVPI**: Expected Value of Perfect Information."
+                ))
+            }
+          } else {
+            .
+          }} %>%
+          {if(!.all_sourcenotes_ & !.dominance_footnote_ & is.null(v_SD) &
+              is.null(v_ED)) {
+            gt::tab_source_note(
+              data = .,
+              source_note = gt::md(
+                "**QALYs**: Quality-adjusted life years.
           **CI**: Confidence interval.
           **ICER**: Incremental cost-effectiveness ratio.
           **EVPI**: Expected Value of Perfect Information."
-        )) %>%
-      # gt::cols_label(
-      #   .list = col_labs_list
-      #   ) %>%
+              ))
+          } else {
+            .
+          }} %>%
+          {if(.all_sourcenotes_) {
+            gt::tab_source_note(
+              data = .,
+              source_note = gt::md(
+                "**QALYs**: Quality-adjusted life years.
+          **CI**: Confidence interval.
+          **ICER**: Incremental cost-effectiveness ratio.
+          **SD**: Strongly dominated.
+          **ED**: Extendedly dominated.
+          **EVPI**: Expected Value of Perfect Information."
+              ))
+          } else {
+            .
+          }}
+      } else {
+        .
+      }} %>%
       {if(.latex_code_) {
         gt::as_latex(data = .)
       } else {
