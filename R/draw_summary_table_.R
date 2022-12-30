@@ -284,7 +284,7 @@ draw_summary_table_ <- function(.PSA_data,
   dplyr::rename_with(toupper, icer) %>%
     #### put values from ICER information to the ICER column:----
   dplyr::mutate(
-    ICER = case_when(
+    ICER = dplyr::case_when(
       is.na(ICER) ~ `ICER information`,
       TRUE ~ ICER)) %>%
     dplyr::select(-`ICER information`) %>%
