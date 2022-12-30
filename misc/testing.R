@@ -14,7 +14,10 @@ tem_tab = ShinyPSA::draw_summary_table_(
   .latex_code_ = FALSE,
   .dominance_footnote_ = FALSE,
   .footnotes_sourcenotes_ = TRUE,
-  .all_sourcenotes_ = T)
+  .all_sourcenotes_ = T,
+  .subset_tab_ = TRUE,
+  .subset_group_ = c("NetBenefit",
+                     "ProbabilityCE"))
 #.latex_title_ = "This is a title",
 #.latex_subtitle_ = "This is a subtitle"
 #) #%>%

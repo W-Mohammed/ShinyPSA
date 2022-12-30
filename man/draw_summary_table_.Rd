@@ -22,7 +22,10 @@ draw_summary_table_(
   .latex_code_ = TRUE,
   .footnotes_sourcenotes_ = TRUE,
   .dominance_footnote_ = TRUE,
-  .all_sourcenotes_ = FALSE
+  .all_sourcenotes_ = FALSE,
+  .subset_tab_ = FALSE,
+  .subset_group_ = c("Costs", "Effects", "Incremental", "NetBenefit", "ProbabilityCE",
+    "EVPPI", "All")
 )
 }
 \arguments{
@@ -80,6 +83,13 @@ ED and SD in table footnotes or table sources.}
 
 \item{.all_sourcenotes_}{Boolean (default FALSE) for whether to report all
 table source notes.}
+
+\item{.subset_tab_}{Boolean (default FALSE) for whether to subset or report
+some of the table.}
+
+\item{.subset_group_}{A vector (default NULL) with the names of the row
+groups to be kept. Options are c("Costs", "Effects", "Incremental",
+"NetBenefit", "ProbabilityCE", "EVPPI", "All")}
 }
 \value{
 A table, dataframe, tibble or DT objects.

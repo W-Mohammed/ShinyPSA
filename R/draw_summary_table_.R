@@ -47,6 +47,12 @@
 #' ED and SD in table footnotes or table sources.
 #' @param .all_sourcenotes_ Boolean (default FALSE) for whether to report all
 #' table source notes.
+#' @param .subset_tab_ Boolean (default FALSE) for whether to subset or report
+#' some of the table.
+#' @param .subset_group_ A vector (default NULL) with the names of the row
+#' groups to be kept. Options are c("Costs", "Effects", "Incremental",
+#' "NetBenefit", "ProbabilityCE", "EVPPI", "All")
+#'
 #' @return A table, dataframe, tibble or DT objects.
 #' @importFrom tidyselect vars_select_helpers
 #' @export
@@ -90,7 +96,12 @@ draw_summary_table_ <- function(.PSA_data,
                                 .latex_code_ = TRUE,
                                 .footnotes_sourcenotes_ = TRUE,
                                 .dominance_footnote_ = TRUE,
-                                .all_sourcenotes_ = FALSE) {
+                                .all_sourcenotes_ = FALSE,
+                                .subset_tab_ = FALSE,
+                                .subset_group_ = c("Costs", "Effects",
+                                                   "Incremental", "NetBenefit",
+                                                   "ProbabilityCE", "EVPPI",
+                                                   "All")) {
   ## Set currency label if none were provided:----
   if(is.null(.units_) | length(.units_) != 1) .units_ = "\u00A3"
 
@@ -205,14 +216,14 @@ draw_summary_table_ <- function(.PSA_data,
     .units_ = "") %>%
     dplyr::rename({{effs_95_label}} := `[95% CI]`) %>%
     ### Costs 95% CI:----
-    dplyr::right_join(
-      x = .,
-      y = generate_95_ci(
-    .data_ = .PSA_data[['c']],
-    .interventions = .PSA_data[['interventions']],
-    .accuracy_ = 1,
-    .units_ = .units_),
-      by = "intervention") %>%
+  dplyr::right_join(
+    x = .,
+    y = generate_95_ci(
+      .data_ = .PSA_data[['c']],
+      .interventions = .PSA_data[['interventions']],
+      .accuracy_ = 1,
+      .units_ = .units_),
+    by = "intervention") %>%
     dplyr::rename(`Costs 95% CI` := `[95% CI]`)
 
   ## Put summary table together:----
@@ -222,65 +233,65 @@ draw_summary_table_ <- function(.PSA_data,
   ### start building the final tibble:----
   Summary_tbl <- ICER_tbl %>%
     #### join the 95% CI data by intervention name:----
-    dplyr::left_join(x = ., y = ci_95, by = 'intervention') %>%
+  dplyr::left_join(x = ., y = ci_95, by = 'intervention') %>%
     #### join the expected NMB to the ICER results by intervention name:----
-    dplyr::left_join(x = ., y = eNMB, by = 'intervention') %>%
+  dplyr::left_join(x = ., y = eNMB, by = 'intervention') %>%
     #### join the probability of being cost-effective by intervention name:----
-    dplyr::left_join(x = ., y = CEAF, by = 'intervention') %>%
+  dplyr::left_join(x = ., y = CEAF, by = 'intervention') %>%
     #### create probability CE columns from relevant row values:----
-    tidyr::pivot_wider(
-      names_from = `CEAF - WTP`,
-      values_from = `CEAF - values`) %>%
+  tidyr::pivot_wider(
+    names_from = `CEAF - WTP`,
+    values_from = `CEAF - values`) %>%
     #### drop any NAs resulting from pivot_wider:----
-    dplyr::select(tidyselect::vars_select_helpers$where(
-      fn = function(.x) !all(is.na(.x)))) %>%
+  dplyr::select(tidyselect::vars_select_helpers$where(
+    fn = function(.x) !all(is.na(.x)))) %>%
     #### join the EVPI:----
-    dplyr::left_join(x = ., y = EVPI, by = 'intervention') %>%
+  dplyr::left_join(x = ., y = EVPI, by = 'intervention') %>%
     #### create EVPI columns from relevant row values:----
-    tidyr::pivot_wider(
-      names_from = `EVPI - WTP`,
-      values_from = `EVPI - values`) %>%
+  tidyr::pivot_wider(
+    names_from = `EVPI - WTP`,
+    values_from = `EVPI - values`) %>%
     #### drop any NAs resulting from pivot_wider:----
-    dplyr::select(tidyselect::vars_select_helpers$where(
-      fn = function(.x) !all(is.na(.x)))) %>%
+  dplyr::select(tidyselect::vars_select_helpers$where(
+    fn = function(.x) !all(is.na(.x)))) %>%
     #### do some formatting:----
-    ##### format currency columns:----
-    dplyr::mutate(
-      dplyr::across(
-        tidyselect::vars_select_helpers$where(is.numeric) &
-          !c(qalys, delta.e,
-             dplyr::starts_with("Prob."),
-             dplyr::contains("95% CI")), ~
-          scales::dollar(
-            x = .x,
-            prefix = .units_,
-            accuracy = 1))) %>%
+  ##### format currency columns:----
+  dplyr::mutate(
+    dplyr::across(
+      tidyselect::vars_select_helpers$where(is.numeric) &
+        !c(qalys, delta.e,
+           dplyr::starts_with("Prob."),
+           dplyr::contains("95% CI")), ~
+        scales::dollar(
+          x = .x,
+          prefix = .units_,
+          accuracy = 1))) %>%
     ##### format effects columns:----
-    dplyr::mutate(
-      dplyr::across(c(qalys, delta.e, dplyr::starts_with("Prob.")),
-                    ~ as.character(round(.x, digits = 3)))) %>%
+  dplyr::mutate(
+    dplyr::across(c(qalys, delta.e, dplyr::starts_with("Prob.")),
+                  ~ as.character(round(.x, digits = 3)))) %>%
     ##### drop dominance column if it exists:----
-    dplyr::select(-dplyr::any_of("dominance")) %>%
+  dplyr::select(-dplyr::any_of("dominance")) %>%
     ##### rename columns to proper names:----
-    dplyr::rename({{.effects_label_}} := qalys,
-                  Comparators = intervention,
-                  {{incr_col_}} := delta.e,
-                  "Incremental Costs" = delta.c,
-                  "ICER information" = icer_label) %>%
+  dplyr::rename({{.effects_label_}} := qalys,
+                Comparators = intervention,
+                {{incr_col_}} := delta.e,
+                "Incremental Costs" = delta.c,
+                "ICER information" = icer_label) %>%
     ##### proper column name:----
-    dplyr::rename_with(stringr::str_to_title, costs) %>%
+  dplyr::rename_with(stringr::str_to_title, costs) %>%
     ##### convert column names to capital letters:----
-    dplyr::rename_with(toupper, icer) %>%
+  dplyr::rename_with(toupper, icer) %>%
     #### put values from ICER information to the ICER column:----
-    dplyr::mutate(
-      ICER = case_when(
-        is.na(ICER) ~ `ICER information`,
-        TRUE ~ ICER)) %>%
-      dplyr::select(-`ICER information`) %>%
-      dplyr::select(
-        Comparators, Costs, `Costs 95% CI`, `Incremental Costs`,
-        {{.effects_label_}}, {{effs_95_label}}, {{incr_col_}},
-        dplyr::everything()) %>%
+  dplyr::mutate(
+    ICER = case_when(
+      is.na(ICER) ~ `ICER information`,
+      TRUE ~ ICER)) %>%
+    dplyr::select(-`ICER information`) %>%
+    dplyr::select(
+      Comparators, Costs, `Costs 95% CI`, `Incremental Costs`,
+      {{.effects_label_}}, {{effs_95_label}}, {{incr_col_}},
+      dplyr::everything()) %>%
     {if(!.latex_) {
       #### rename QALYs and Costs to mean:----
       dplyr::mutate(
@@ -325,7 +336,7 @@ draw_summary_table_ <- function(.PSA_data,
   }
   ## Beautified tables:----
   ### Long format beautified table:----
-  if(.beautify_ & .long_  & !.latex_) {
+  if(.beautify_ & .long_  & !.latex_ & !.subset_tab_) {
     #### Remove unnecessary strings:----
     Summary_tbl <- Summary_tbl %>%
       dplyr::mutate(dplyr::across(
@@ -438,7 +449,7 @@ draw_summary_table_ <- function(.PSA_data,
       )
   }
   ### Wide format beautified table:----
-  if(.beautify_ & !.long_ & !.latex_) {
+  if(.beautify_ & !.long_ & !.latex_ & !.subset_tab_) {
     #### reorder table for wide format:----
     #### custom table container to create column groups:----
     sketch_ <- htmltools::withTags(table(
@@ -529,7 +540,7 @@ draw_summary_table_ <- function(.PSA_data,
 
   ## Beautified latex tables:----
   ### Long format beautified latex table:----
-  if(.beautify_ & .latex_) {
+  if(.beautify_ & .latex_ & !.subset_tab_) {
     #### Remove unnecessary strings:----
     Summary_tbl <- Summary_tbl %>%
       dplyr::mutate(dplyr::across(
@@ -753,8 +764,125 @@ draw_summary_table_ <- function(.PSA_data,
         gt::as_latex(data = .)
       } else {
         .}}
+  }
 
+  ## Subset  tables:----
+  if(.subset_tab_ & .long_) {
+    #### Possible subsets:
+    subs <- c("Costs", "Effects", "Incremental", "NetBenefit", "ProbabilityCE",
+               "EVPPI")
+    RowGroup_names <- c(
+      glue::glue("Costs ({.units_})"),
+      .effects_label_,
+      "Incremental Analysis",
+      glue::glue("Net Benefit ({.units_})"),
+      "Probability Cost-Effective",
+      glue::glue("Expected Value of Perfect Information ({.units_})"))
+    names(RowGroup_names) <- subs
+    RowGroup_subset <- RowGroup_names[.subset_group_]
+
+    #### Remove unnecessary strings:----
+    Summary_tbl <- Summary_tbl %>%
+      dplyr::mutate(dplyr::across(
+        .cols = " ",
+        .fns = function(.x) {
+          stringr::str_replace_all(
+            string = .x,
+            pattern = c("NMB @ "),
+            replacement = c("  @")
+          )
+        }
+      )) %>%
+      dplyr::mutate(dplyr::across(
+        .cols = " ",
+        .fns = function(.x) {
+          stringr::str_replace_all(
+            string = .x,
+            pattern = c("Prob. CE @ "),
+            replacement = c("  @")
+          )
+        }
+      )) %>%
+      dplyr::mutate(dplyr::across(
+        .cols = " ",
+        .fns = function(.x) {
+          stringr::str_replace_all(
+            string = .x,
+            pattern = c("EVPI @ "),
+            replacement = c("  @")
+          )
+        }
+      )) %>%
+      dplyr::mutate(dplyr::across(
+        .cols = " ",
+        .fns = function(.x) {
+          dplyr::case_when(
+            .x == "Costs" ~ "Mean",
+            .x == {{.effects_label_}} ~ "Mean",
+            .x == "Costs 95% CI" ~ "95% CI",
+            .x == {{effs_95_label}} ~ "95% CI",
+            TRUE ~ .x)
+        })) %>%
+      dplyr::mutate(dplyr::across(
+        .cols = dplyr::everything(),
+        .fns = function(.x) {
+          dplyr::case_when(
+            is.na(.x) ~ "-",
+            TRUE ~ .x
+          )
+        }))
+
+    #### Prepare table helper columns:----
+    Summary_tbl <- Summary_tbl %>%
+      dplyr::mutate(
+        ##### Prepare row groups:----
+        RowGroup_ = c(
+          rep(
+            glue::glue("Costs ({.units_})"),
+            2),
+          rep(
+            .effects_label_,
+            2),
+          rep(
+            "Incremental Analysis",
+            3),
+          rep(
+            glue::glue("Net Benefit ({.units_})"),
+            length(.wtp_)),
+          rep(
+            "Probability Cost-Effective",
+            length(.wtp_)),
+          rep(
+            glue::glue("Expected Value of Perfect Information ({.units_})"),
+            length(.wtp_))))
+
+    Summary_tbl <- Summary_tbl %>%
+      {if("All" %in% .subset_group_) {
+        .
+      } else {
+        dplyr::filter(
+          .data = .,
+          RowGroup_ %in% RowGroup_subset)
+      }}
+
+
+    #### Locate ED and SD in the table:
+    v_ED_SD <- Summary_tbl %>%
+      dplyr::rename("names" = " ") %>%
+      dplyr::filter(names == "ICER") %>%
+      as_vector()
+    v_ED <- if(length(which(v_ED_SD == "ED")) == 0) {
+      NULL
+    } else {
+      which(v_ED_SD == "ED")
+    }
+    v_SD <- if(length(which(v_ED_SD == "SD")) == 0) {
+      NULL
+    } else {
+      which(v_ED_SD == "SD")
+    }
   }
 
   return(Summary_tbl)
+
 }
