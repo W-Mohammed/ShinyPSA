@@ -51,7 +51,7 @@
 #' some of the table.
 #' @param .subset_group_ A vector (default NULL) with the names of the row
 #' groups to be kept. Options are c("Costs", "Effects", "Incremental",
-#' "NetBenefit", "ProbabilityCE", "EVPPI", "All")
+#' "NetBenefit", "ProbabilityCE", "EVPI", "All")
 #'
 #' @return A table, dataframe, tibble or DT objects.
 #' @importFrom tidyselect vars_select_helpers
@@ -100,7 +100,7 @@ draw_summary_table_ <- function(.PSA_data,
                                 .subset_tab_ = FALSE,
                                 .subset_group_ = c("Costs", "Effects",
                                                    "Incremental", "NetBenefit",
-                                                   "ProbabilityCE", "EVPPI",
+                                                   "ProbabilityCE", "EVPI",
                                                    "All")) {
   ## Set currency label if none were provided:----
   if(is.null(.units_) | length(.units_) != 1) .units_ = "\u00A3"
@@ -770,7 +770,7 @@ draw_summary_table_ <- function(.PSA_data,
   if(.subset_tab_ & .long_) {
     #### Possible subsets:
     subs <- c("Costs", "Effects", "Incremental", "NetBenefit", "ProbabilityCE",
-               "EVPPI")
+               "EVPI")
     RowGroup_names <- c(
       glue::glue("Costs ({.units_})"),
       .effects_label_,
