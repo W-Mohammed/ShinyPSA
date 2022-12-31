@@ -620,7 +620,7 @@ draw_summary_table_ <- function(.PSA_data,
     v_ED_SD <- Summary_tbl %>%
       dplyr::rename("names" = " ") %>%
       dplyr::filter(names == "ICER") %>%
-      as_vector()
+      as.vector()
     v_ED <- if(length(which(v_ED_SD == "ED")) == 0) {
       NULL
     } else {
