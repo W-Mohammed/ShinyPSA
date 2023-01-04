@@ -46,3 +46,37 @@ gt::gtcars %>%
 #   label = "numbered",
 #   rows = gt::matches("^[0-9]")
 # )
+
+## CR plots:
+psa_sum_object <- ShinyPSA::summarise_PSA_(
+  .effs = CRS_true_PSA$e,
+  .costs = CRS_true_PSA$c,
+  .params = CRS_true_PSA$p,
+  .interventions = CRS_true_PSA$treats)
+# CEP:
+CE_plane <- ShinyPSA::plot_CEplane_(
+  psa_sum_object,
+  .legend_pos = c(0.3, 0.8),
+  .show_ICER = FALSE,
+  .show_title = FALSE)
+# CEAC
+CEAC <- ShinyPSA::plot_CEAC_(
+  psa_sum_object,
+  .legend_pos = "none",
+  .show_title = FALSE)
+
+ggplot2::ggsave(
+  filename = "true_ce_plane.jpeg",
+  plot = CE_plane,
+  scale = 1.5,
+  width = 1000,
+  height = 700,
+  units = "px")
+
+ggplot2::ggsave(
+  filename = "true_ceac.jpeg",
+  plot = CEAC,
+  scale = 1.5,
+  width = 1000,
+  height = 700,
+  units = "px")

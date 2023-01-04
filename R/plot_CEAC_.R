@@ -128,7 +128,7 @@ plot_CEAC_ <- function(.PSA_data, ...) {
       # Remove background and box around the legend:
       legend.background = ggplot2::element_rect(fill = NA, color = NA),
       legend.spacing = ggplot2::unit(0, "cm"), # spacing between legend items
-      legend.spacing.y = ggplot2::unit(-0.195, "cm"), # bring legends closer
+      #legend.spacing.y = ggplot2::unit(-0.195, "cm"), # bring legends closer
       # Add a box around the keys:
       legend.key = ggplot2::element_rect(fill = "white", colour = "grey"),
       legend.key.size = ggplot2::unit(0.35, "cm"),

@@ -125,8 +125,8 @@ plot_CEplane_ <- function(.PSA_data, ...) {
     dplyr::left_join(
       x = .,
       y = .PSA_data$ICER %>%
-        select(intervention, icer_label) %>%
-        rename("interventions" = intervention),
+        dplyr::select(intervention, icer_label) %>%
+        dplyr::rename("interventions" = intervention),
       by = "interventions") %>%
     dplyr::rename("Label" = icer_label)
 
@@ -300,6 +300,7 @@ plot_CEplane_ <- function(.PSA_data, ...) {
         # Remove the stroke from the line:
         linetype = ggplot2::guide_legend(
           override.aes = list(order = 3,
+                              shape = NA,
                               stroke = NA)) # remove stroke
       )
   }
