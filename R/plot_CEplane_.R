@@ -300,7 +300,7 @@ plot_CEplane_ <- function(.PSA_data, ...) {
         # Remove the stroke from the line:
         linetype = ggplot2::guide_legend(
           override.aes = list(order = 3,
-                              size = 3,
+                              size = 1,
                               shape = NA,
                               stroke = NA)) # remove stroke
       )
@@ -317,8 +317,11 @@ plot_CEplane_ <- function(.PSA_data, ...) {
 
     # Plot:
     p <- p +
-      ggplot2::coord_cartesian(xlim = x_lim, ylim = y_lim, expand = !.zoom,
-                               default = .zoom)
+      ggplot2::coord_cartesian(
+        xlim = x_lim,
+        ylim = y_lim,
+        expand = !.zoom,
+        default = .zoom)
   }
 
   if(.zoom & !is.null(.zoom_cords) &
@@ -329,8 +332,11 @@ plot_CEplane_ <- function(.PSA_data, ...) {
 
     # Plot:
     p <- p +
-      ggplot2::coord_cartesian(xlim = x_lim, ylim = y_lim, expand = !.zoom,
-                               default = .zoom)
+      ggplot2::coord_cartesian(
+        xlim = x_lim,
+        ylim = y_lim,
+        expand = !.zoom,
+        default = .zoom)
   }
 
   ## Show/hide plot title:

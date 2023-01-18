@@ -86,7 +86,10 @@ plot_eNMB_ <- function(.PSA_data, ...) {
 
   # CEAC main plot:
   p <- ggplot2::ggplot() +
-    ggplot2::coord_cartesian(ylim = y_cords, xlim = .zoom_cords, expand = FALSE) +
+    ggplot2::coord_cartesian(
+      ylim = y_cords,
+      xlim = .zoom_cords,
+      expand = FALSE) +
     ggplot2::geom_hline(
       yintercept = 0,
       color = 'grey',
@@ -101,7 +104,6 @@ plot_eNMB_ <- function(.PSA_data, ...) {
         x = `WTP threshold`,
         y = eNMB,
         group = Option,
-        linetype = Option,
         color = Option),
       size = 0.4) +
     ggplot2::scale_x_continuous(labels = scales::dollar_format(
@@ -128,12 +130,18 @@ plot_eNMB_ <- function(.PSA_data, ...) {
                                   c("points", "cm", "points", "points"))) +
     ggplot2::labs(
       x = "Willingness-to-pay (\u00A3)",
-      y = "Expected Net Monetary Benefit (\u00A3)")
+      y = "Expected Net Monetary Benefit (\u00A3)") +
+    ggplot2::guides(
+      # Increase the size of the points in the legend:
+      color = ggplot2::guide_legend(
+        override.aes = list(order = 1,
+                            size = 3,
+                            alpha = 1,
+                            stroke = 1)))
 
-
-  # Show/hide WTP on the CEAF:
+  # Show/hide WTP on the eNMB:
   if(.show_wtp) {
-    ## CEAF plot willingness-to-pay (WTP) values:
+    ## eNMB plot willingness-to-pay (WTP) values:
     .wtp = .wtp_threshold %>%
       dplyr::as_tibble() %>%
       dplyr::mutate(
@@ -152,25 +160,24 @@ plot_eNMB_ <- function(.PSA_data, ...) {
         data = .wtp,
         ggplot2::aes(
           xintercept = x_cord,
-          alpha = lty_),
-        color = 'dark gray',
-        linetype = 3) +
+          linetype = lty_),
+        color = 'dark gray') +
       ggplot2::scale_alpha_manual(
         breaks = .wtp$lty_[1], # keep one for the legend
         values = rep(1, nrow(.wtp))) +
-      # scale_colour_manual(
-      #   breaks = .wtp$lty_[1], # keep one for the legend
-      #   values = rep("dark gray", nrow(.wtp)))
+      ggplot2::scale_linetype_manual(
+        breaks = c("Willingness-to-pay (\u00A3)" = "Willingness-to-pay (\u00A3)"),
+        values = c("Willingness-to-pay (\u00A3)" = 3)) +
       ggplot2::guides(
         # Remove the shapes from the line:
-        alpha = ggplot2::guide_legend(
+        linetype = ggplot2::guide_legend(
           override.aes = list(order = 2,
-                              size = 3,
+                              size = 1,
                               shape = NA, # remove shape
                               color = 'black')))
   }
 
-  # Label WTP value(s) on the CEAF:
+  # Label WTP value(s) on the eNMB:
   if(.label_wtp) {
     p <- p +
       ggrepel::geom_text_repel(

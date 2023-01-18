@@ -105,9 +105,12 @@ plot_EVPI_ <- function(.PSA_data, ...) {
       .zoom_cords = c(0, 31000)
   }
 
-  # CEAC main plot:
+  # EVPI main plot:
   p <- ggplot2::ggplot() +
-    ggplot2::coord_cartesian(ylim = y_cords, xlim = .zoom_cords, expand = FALSE) +
+    ggplot2::coord_cartesian(
+      ylim = y_cords,
+      xlim = .zoom_cords,
+      expand = FALSE) +
     ggplot2::geom_hline(
       yintercept = 0,
       color = 'grey',
@@ -151,9 +154,9 @@ plot_EVPI_ <- function(.PSA_data, ...) {
       y = "Expected value of perfect information",
       subtitle = subtitle_lab)
 
-  # Show/hide WTP on the CEAF:
+  # Show/hide WTP on the EVPI:
   if(.show_wtp) {
-    ## CEAF plot willingness-to-pay (WTP) values:
+    ## EVPI plot willingness-to-pay (WTP) values:
     .wtp = .wtp_threshold %>%
       dplyr::as_tibble() %>%
       dplyr::mutate(
@@ -181,11 +184,12 @@ plot_EVPI_ <- function(.PSA_data, ...) {
         # Remove the shapes from the line:
         linetype = ggplot2::guide_legend(
           override.aes = list(order = 2,
+                              size = 1,
                               shape = NA, # remove shape
                               color = 'black')))
   }
 
-  # Label WTP value(s) on the CEAF:
+  # Label WTP value(s) on the EVPI:
   if(.label_wtp) {
     p <- p +
       ggrepel::geom_text_repel(

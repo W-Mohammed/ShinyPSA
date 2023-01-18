@@ -100,7 +100,10 @@ plot_CEAC_ <- function(.PSA_data, ...) {
 
   # CEAC main plot:
   p <- ggplot2::ggplot() +
-    ggplot2::coord_cartesian(ylim = c(0, 1), xlim = .zoom_cords, expand = FALSE) +
+    ggplot2::coord_cartesian(
+      ylim = c(0, 1),
+      xlim = .zoom_cords,
+      expand = FALSE) +
     ggplot2::geom_hline(
       yintercept = 0,
       color = 'grey',
@@ -184,7 +187,7 @@ plot_CEAC_ <- function(.PSA_data, ...) {
         # Remove the shapes from the line:
         linetype = ggplot2::guide_legend(
           override.aes = list(order = 3,
-                              size = 3,
+                              size = 1,
                               shape = NA, # remove shape
                               color = 'black')))
   }
