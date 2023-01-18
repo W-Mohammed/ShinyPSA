@@ -25,7 +25,7 @@ draw_summary_table_(
   .all_sourcenotes_ = FALSE,
   .subset_tab_ = FALSE,
   .subset_group_ = c("Costs", "Effects", "Incremental", "NetBenefit", "ProbabilityCE",
-    "EVPPI", "All")
+    "EVPI", "All")
 )
 }
 \arguments{
@@ -89,7 +89,7 @@ some of the table.}
 
 \item{.subset_group_}{A vector (default NULL) with the names of the row
 groups to be kept. Options are c("Costs", "Effects", "Incremental",
-"NetBenefit", "ProbabilityCE", "EVPPI", "All")}
+"NetBenefit", "ProbabilityCE", "EVPI", "All")}
 }
 \value{
 A table, dataframe, tibble or DT objects.

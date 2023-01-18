@@ -616,7 +616,7 @@ draw_summary_table_ <- function(.PSA_data,
             glue::glue("Expected Value of Perfect Information ({.units_})"),
             length(.wtp_))))
 
-    #### Locate ED and SD in the table:
+    #### Identify ED and/or SD columns in the table:----
     v_ED_SD <- Summary_tbl %>%
       dplyr::rename("names" = " ") %>%
       dplyr::filter(names == "ICER") %>%
@@ -631,6 +631,45 @@ draw_summary_table_ <- function(.PSA_data,
     } else {
       which(v_ED_SD == "SD")
     }
+    #### Identify ICER row in the table:----
+    ICER_row_ <- Summary_tbl %>%
+      dplyr::rename("names" = " ") %>%
+      dplyr::pull("names") %>%
+      as.vector()
+    ICER_row_ <- if(length(which(ICER_row_ == "ICER")) == 0) {
+      NULL
+    } else {
+      which(ICER_row_ == "ICER")
+    }
+
+    #### Source-notes preparation:----
+    sourcenotes_ <- c(
+      "CI" = "**CI**: Confidence interval.",
+      "Effects" = "**QALYs**: Quality-adjusted life years.",
+      "Incremental" = "**ICER**: Incremental cost-effectiveness ratio.",
+      "EVPI" = "**EVPI**: Expected Value of Perfect Information.")
+    ##### Add source-notes as needed:----
+    if(!is.null(v_ED) & !.dominance_footnote_) {
+      sourcenotes_ <- c(
+        sourcenotes_,
+        "ED" = "**ED**: Extendedly dominated.")
+    }
+    if(!is.null(v_SD) & !.dominance_footnote_) {
+      sourcenotes_ <- c(
+        sourcenotes_,
+        "SD" = "**SD**: Strongly dominated.")
+    }
+    if(.all_sourcenotes_) {
+      sourcenotes_ <- c(
+        "CI" = "**CI**: Confidence interval.",
+        "Effects" = "**QALYs**: Quality-adjusted life years.",
+        "Incremental" = "**ICER**: Incremental cost-effectiveness ratio.",
+        "EVPI" = "**EVPI**: Expected Value of Perfect Information.",
+        "ED" = "**ED**: Extendedly dominated.",
+        "SD" = "**SD**: Strongly dominated.")
+    }
+    ##### Sort source-notes alphabetically:----
+    sourcenotes_ <- sort(sourcenotes_)
 
     #### Build the table:----
     Summary_tbl <- Summary_tbl %>%
@@ -692,17 +731,12 @@ draw_summary_table_ <- function(.PSA_data,
                   paste0("_Extendedly dominated._")),
                 locations = gt::cells_body(
                   columns = v_ED,
-                  rows = 7))
+                  rows = ICER_row_))
             } else {
               gt::tab_source_note(
                 data = .,
                 source_note = gt::md(
-                  "**QALYs**: Quality-adjusted life years.
-            **CI**: Confidence interval.
-            **ICER**: Incremental cost-effectiveness ratio.
-            **ED**: Extendedly dominated.
-            **EVPI**: Expected Value of Perfect Information."
-                ))
+                  paste0(sourcenotes_, collapse = " ")))
             }
           } else {
             .
@@ -715,31 +749,24 @@ draw_summary_table_ <- function(.PSA_data,
                   paste0("_Strongly dominated._")),
                 locations = gt::cells_body(
                   columns = v_SD,
-                  rows = 7))
+                  rows = ICER_row_))
             } else {
-              gt::tab_source_note(
-                data = .,
-                source_note = gt::md(
-                  "**QALYs**: Quality-adjusted life years.
-            **CI**: Confidence interval.
-            **ICER**: Incremental cost-effectiveness ratio.
-            **SD**: Strongly dominated.
-            **EVPI**: Expected Value of Perfect Information."
-                ))
-            }
+              if(is.null(v_ED)) { # avoid printing the source note twice
+                gt::tab_source_note(
+                  data = .,
+                  source_note = gt::md(
+                    paste0(sourcenotes_, collapse = " ")))
+              } else {
+                .
+              }}
           } else {
             .
           }} %>%
-          {if(!.all_sourcenotes_ & !.dominance_footnote_ & is.null(v_SD) &
-              is.null(v_ED)) {
+          {if(!.all_sourcenotes_ & is.null(v_SD) & is.null(v_ED)) {
             gt::tab_source_note(
               data = .,
               source_note = gt::md(
-                "**QALYs**: Quality-adjusted life years.
-          **CI**: Confidence interval.
-          **ICER**: Incremental cost-effectiveness ratio.
-          **EVPI**: Expected Value of Perfect Information."
-              ))
+                paste0(sourcenotes_, collapse = " ")))
           } else {
             .
           }} %>%
@@ -747,13 +774,7 @@ draw_summary_table_ <- function(.PSA_data,
             gt::tab_source_note(
               data = .,
               source_note = gt::md(
-                "**QALYs**: Quality-adjusted life years.
-          **CI**: Confidence interval.
-          **ICER**: Incremental cost-effectiveness ratio.
-          **SD**: Strongly dominated.
-          **ED**: Extendedly dominated.
-          **EVPI**: Expected Value of Perfect Information."
-              ))
+                paste0(sourcenotes_, collapse = " ")))
           } else {
             .
           }}
@@ -766,7 +787,7 @@ draw_summary_table_ <- function(.PSA_data,
         .}}
   }
 
-  ## Subset  tables:----
+  ## Subset tables:----
   if(.subset_tab_ & .long_) {
     #### Possible subsets:
     subs <- c("Costs", "Effects", "Incremental", "NetBenefit", "ProbabilityCE",
@@ -781,68 +802,17 @@ draw_summary_table_ <- function(.PSA_data,
     names(RowGroup_names) <- subs
     RowGroup_subset <- RowGroup_names[.subset_group_]
 
-    #### Remove unnecessary strings:----
-    Summary_tbl <- Summary_tbl %>%
-      dplyr::mutate(dplyr::across(
-        .cols = " ",
-        .fns = function(.x) {
-          stringr::str_replace_all(
-            string = .x,
-            pattern = c("NMB @ "),
-            replacement = c("  @")
-          )
-        }
-      )) %>%
-      dplyr::mutate(dplyr::across(
-        .cols = " ",
-        .fns = function(.x) {
-          stringr::str_replace_all(
-            string = .x,
-            pattern = c("Prob. CE @ "),
-            replacement = c("  @")
-          )
-        }
-      )) %>%
-      dplyr::mutate(dplyr::across(
-        .cols = " ",
-        .fns = function(.x) {
-          stringr::str_replace_all(
-            string = .x,
-            pattern = c("EVPI @ "),
-            replacement = c("  @")
-          )
-        }
-      )) %>%
-      dplyr::mutate(dplyr::across(
-        .cols = " ",
-        .fns = function(.x) {
-          dplyr::case_when(
-            .x == "Costs" ~ "Mean",
-            .x == {{.effects_label_}} ~ "Mean",
-            .x == "Costs 95% CI" ~ "95% CI",
-            .x == {{effs_95_label}} ~ "95% CI",
-            TRUE ~ .x)
-        })) %>%
-      dplyr::mutate(dplyr::across(
-        .cols = dplyr::everything(),
-        .fns = function(.x) {
-          dplyr::case_when(
-            is.na(.x) ~ "-",
-            TRUE ~ .x
-          )
-        }))
-
-    #### Prepare table helper columns:----
+    #### Prepare table helper columns and remove unnecessary strings:----
     Summary_tbl <- Summary_tbl %>%
       dplyr::mutate(
         ##### Prepare row groups:----
         RowGroup_ = c(
           rep(
             glue::glue("Costs ({.units_})"),
-            2),
+            ifelse(.latex_, 2, 1)),
           rep(
             .effects_label_,
-            2),
+            ifelse(.latex_, 2, 1)),
           rep(
             "Incremental Analysis",
             3),
@@ -854,8 +824,64 @@ draw_summary_table_ <- function(.PSA_data,
             length(.wtp_)),
           rep(
             glue::glue("Expected Value of Perfect Information ({.units_})"),
-            length(.wtp_))))
+            length(.wtp_))
+          )
+        ) %>%
+      dplyr::mutate(
+        dplyr::across(
+        .cols = " ",
+        .fns = function(.x) {
+          stringr::str_replace_all(
+            string = .x,
+            pattern = c("NMB @ "),
+            replacement = c("  @")
+          )
+        }
+      )) %>%
+      dplyr::mutate(
+        dplyr::across(
+        .cols = " ",
+        .fns = function(.x) {
+          stringr::str_replace_all(
+            string = .x,
+            pattern = c("Prob. CE @ "),
+            replacement = c("  @")
+          )
+        }
+      )) %>%
+      dplyr::mutate(
+        dplyr::across(
+        .cols = " ",
+        .fns = function(.x) {
+          stringr::str_replace_all(
+            string = .x,
+            pattern = c("EVPI @ "),
+            replacement = c("  @")
+          )
+        }
+      )) %>%
+      dplyr::mutate(
+        dplyr::across(
+        .cols = " ",
+        .fns = function(.x) {
+          dplyr::case_when(
+            .x == "Costs" ~ "Mean",
+            .x == {{.effects_label_}} ~ "Mean",
+            .x == "Costs 95% CI" ~ "95% CI",
+            .x == {{effs_95_label}} ~ "95% CI",
+            TRUE ~ .x)
+        })) %>%
+      dplyr::mutate(
+        dplyr::across(
+        .cols = dplyr::everything(),
+        .fns = function(.x) {
+          dplyr::case_when(
+            is.na(.x) ~ "-",
+            TRUE ~ .x
+          )
+        }))
 
+    #### Keep requested columns:----
     Summary_tbl <- Summary_tbl %>%
       {if("All" %in% .subset_group_) {
         .
@@ -864,9 +890,16 @@ draw_summary_table_ <- function(.PSA_data,
           .data = .,
           RowGroup_ %in% RowGroup_subset)
       }}
+    ####  requested columns:----
+    if("All" %in% .subset_group_) {
+      .subset_group_ <- c("Costs", "Effects", "Incremental", "NetBenefit",
+                          "ProbabilityCE", "EVPI")
+    }
+  }
 
-
-    #### Locate ED and SD in the table:
+  ### Long format beautified subset table:----
+  if(.beautify_ & .subset_tab_ & .long_) {
+    #### Identify ED and/or SD columns in the table:----
     v_ED_SD <- Summary_tbl %>%
       dplyr::rename("names" = " ") %>%
       dplyr::filter(names == "ICER") %>%
@@ -881,6 +914,203 @@ draw_summary_table_ <- function(.PSA_data,
     } else {
       which(v_ED_SD == "SD")
     }
+    #### Identify ICER row in the table:----
+    ICER_row_ <- Summary_tbl %>%
+      dplyr::rename("names" = " ") %>%
+      dplyr::pull("names") %>%
+      as.vector()
+    ICER_row_ <- if(length(which(ICER_row_ == "ICER")) == 0) {
+      NULL
+    } else {
+      which(ICER_row_ == "ICER")
+    }
+
+    #### Threshold and EVPI footnotes:----
+    ##### The targeted sub-groups:----
+    thresholds_footnotes_ <- c(
+      glue::glue("Expected Value of Perfect Information ({.units_})"),
+      glue::glue("Net Benefit ({.units_})"),
+      "Probability Cost-Effective"
+    )
+    EVPI_footnotes_ <- c(
+      "EVPI" = glue::glue("Expected Value of Perfect Information ({.units_})"))
+    ##### Name targeted sub-groups using same sub-setting pseudo-names:----
+    names(thresholds_footnotes_) <- c("EVPI", "NetBenefit", "ProbabilityCE")
+    ##### Find out which sub-group is being in the requested sub-set:----
+    thresholds_footnotes_groups_ <- thresholds_footnotes_[
+      names(thresholds_footnotes_) %in% .subset_group_]
+    ##### Also confirm EVPI sub-group is in the dataset:----
+    EVPI_footnotes_group_ <- EVPI_footnotes_[
+      names(EVPI_footnotes_) %in% .subset_group_]
+
+    #### Source-notes preparation:----
+    sourcenotes_ <- c(
+      "Effects" = "**QALYs**: Quality-adjusted life years.",
+      "Incremental" = "**ICER**: Incremental cost-effectiveness ratio.",
+      "EVPI" = "**EVPI**: Expected Value of Perfect Information.")
+    sourcenotes_needed_ <- sourcenotes_[names(sourcenotes_) %in% .subset_group_]
+    ##### Add source-notes as needed:----
+    if(any(c("Effects", "Costs") %in% .subset_group_)) {
+      sourcenotes_needed_ <- c(
+        sourcenotes_needed_,
+        "CI" = "**CI**: Confidence interval.")
+    }
+    if(!is.null(v_ED) & !.dominance_footnote_) {
+      sourcenotes_needed_ <- c(
+        sourcenotes_needed_,
+        "ED" = "**ED**: Extendedly dominated.")
+    }
+    if(!is.null(v_SD) & !.dominance_footnote_) {
+      sourcenotes_needed_ <- c(
+        sourcenotes_needed_,
+        "SD" = "**SD**: Strongly dominated.")
+    }
+    if(.all_sourcenotes_) {
+      sourcenotes_needed_ <- c(
+        "CI" = "**CI**: Confidence interval.",
+        "Effects" = "**QALYs**: Quality-adjusted life years.",
+        "Incremental" = "**ICER**: Incremental cost-effectiveness ratio.",
+        "EVPI" = "**EVPI**: Expected Value of Perfect Information.",
+        "ED" = "**ED**: Extendedly dominated.",
+        "SD" = "**SD**: Strongly dominated.")
+    }
+    ##### Sort source-notes alphabetically:----
+    sourcenotes_needed_ <- sort(sourcenotes_needed_)
+
+    #### Build the table:----
+    Summary_tbl <- Summary_tbl %>%
+      dplyr::group_by(RowGroup_) %>%
+      gt::gt() %>%
+      {if(!is.null(.latex_title_)){
+        gt::tab_header(
+          data = .,
+          title = .latex_title_)
+      } else {
+        .
+      }} %>%
+      {if(!is.null(.latex_title_) & !is.null(.latex_subtitle_)){
+        gt::tab_header(
+          data = .,
+          title = .latex_title_,
+          subtitle = .latex_subtitle_)
+      } else {
+        .
+      }} %>%
+      {if(is.null(.latex_title_) & !is.null(.latex_subtitle_)){
+        gt::tab_header(
+          data = .,
+          title = "",
+          subtitle = .latex_subtitle_)
+      } else {
+        .
+      }} %>%
+      gt::opt_align_table_header(
+        align = "left") %>%
+      gt::tab_style(
+        style = gt::cell_text(
+          weight = "bold"),
+        locations = list(
+          gt::cells_column_labels(),
+          gt::cells_row_groups())) %>%
+      {if(.footnotes_sourcenotes_) {
+        {if(length(thresholds_footnotes_groups_) > 0) {
+          gt::tab_footnote(
+            data = .,
+            footnote = gt::md(
+              "_The ICER threshold values used in computing the results are
+        preceeded by the \"@\" symbol in the corresponding rows._"),
+            locations = gt::cells_row_groups(
+              groups = thresholds_footnotes_groups_
+            ))
+        } else {
+          .
+        }} %>%
+          {if(length(EVPI_footnotes_group_) > 0) {
+            gt::tab_footnote(
+              data = .,
+              footnote = gt::md(
+                paste0("_", table_caption, "._")),
+              locations = gt::cells_row_groups(
+                groups = EVPI_footnotes_group_
+              ))
+          } else {
+            .
+          }} %>%
+          {if(!.all_sourcenotes_ & !is.null(v_ED)) {
+            if(.dominance_footnote_){
+              gt::tab_footnote(
+                data = .,
+                footnote = gt::md(
+                  paste0("_Extendedly dominated._")),
+                locations = gt::cells_body(
+                  columns = v_ED,
+                  rows = ICER_row_)) %>%
+                gt::tab_source_note(
+                  data = .,
+                  source_note = gt::md(
+                    paste0(sourcenotes_needed_, collapse = " ")))
+            } else {
+              gt::tab_source_note(
+                data = .,
+                source_note = gt::md(
+                  paste0(sourcenotes_needed_, collapse = " ")))
+            }
+          } else {
+            .
+          }} %>%
+          {if(!.all_sourcenotes_ & !is.null(v_SD)) {
+            if(.dominance_footnote_){
+              gt::tab_footnote(
+                data = .,
+                footnote = gt::md(
+                  paste0("_Strongly dominated._")),
+                locations = gt::cells_body(
+                  columns = v_SD,
+                  rows = ICER_row_)) %>%
+                {if(is.null(v_ED)) {
+                  gt::tab_source_note(
+                    data = .,
+                    source_note = gt::md(
+                      paste0(sourcenotes_needed_, collapse = " ")))
+                } else {
+                  .
+                }}
+            } else {
+              if(is.null(v_ED)) { # avoid printing the source note twice
+                gt::tab_source_note(
+                  data = .,
+                  source_note = gt::md(
+                    paste0(sourcenotes_needed_, collapse = " ")))
+              } else {
+                .
+              }}
+          } else {
+            .
+          }} %>%
+          {if(!.all_sourcenotes_ & is.null(v_SD) & is.null(v_ED)) {
+            gt::tab_source_note(
+              data = .,
+              source_note = gt::md(
+                paste0(sourcenotes_needed_, collapse = " ")))
+          } else {
+            .
+          }} %>%
+          {if(.all_sourcenotes_) {
+            gt::tab_source_note(
+              data = .,
+              source_note = gt::md(
+                paste0(sourcenotes_needed_, collapse = " ")))
+          } else {
+            .
+          }}
+      } else {
+        .
+      }} %>%
+      {if(.latex_code_) {
+        gt::as_latex(data = .)
+      } else {
+        .
+      }}
   }
 
   return(Summary_tbl)

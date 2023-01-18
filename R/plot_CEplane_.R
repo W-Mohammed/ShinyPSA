@@ -182,14 +182,14 @@ plot_CEplane_ <- function(.PSA_data, ...) {
       # Increase the size of the points in the legend:
       color = ggplot2::guide_legend(
         override.aes = list(order = 1,
-                            size = 1.5,
+                            size = 3,
                             alpha = 1,
                             stroke = NA, # remove stroke
                             linetype = 0)), # remove line
       # Remove the fill colour in shape 21, generalising it to all options:
       fill = ggplot2::guide_legend(
         override.aes = list(order = 2,
-                            size = 2.5,
+                            size = 3,
                             alpha = 1,
                             fill = NA, # remove fill
                             linetype = 0))) # remove line
@@ -300,6 +300,7 @@ plot_CEplane_ <- function(.PSA_data, ...) {
         # Remove the stroke from the line:
         linetype = ggplot2::guide_legend(
           override.aes = list(order = 3,
+                              size = 3,
                               shape = NA,
                               stroke = NA)) # remove stroke
       )

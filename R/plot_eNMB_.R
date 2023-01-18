@@ -165,6 +165,7 @@ plot_eNMB_ <- function(.PSA_data, ...) {
         # Remove the shapes from the line:
         alpha = ggplot2::guide_legend(
           override.aes = list(order = 2,
+                              size = 3,
                               shape = NA, # remove shape
                               color = 'black')))
   }

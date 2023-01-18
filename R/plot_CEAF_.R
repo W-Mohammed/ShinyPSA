@@ -126,7 +126,7 @@ plot_CEAF_ <- function(.PSA_data, ...) {
       # Increase the size of the points in the legend:
       color = ggplot2::guide_legend(
         override.aes = list(order = 1,
-                            size = 1,
+                            size = 3,
                             alpha = 1,
                             shape = NA)))
 
@@ -159,6 +159,7 @@ plot_CEAF_ <- function(.PSA_data, ...) {
         # Remove the shapes from the line:
         linetype = ggplot2::guide_legend(
           override.aes = list(order = 2,
+                              size = 3,
                               shape = NA, # remove shape
                               color = 'black')))
   }

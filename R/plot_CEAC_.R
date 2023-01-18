@@ -128,7 +128,7 @@ plot_CEAC_ <- function(.PSA_data, ...) {
       # Remove background and box around the legend:
       legend.background = ggplot2::element_rect(fill = NA, color = NA),
       legend.spacing = ggplot2::unit(0, "cm"), # spacing between legend items
-      #legend.spacing.y = ggplot2::unit(-0.195, "cm"), # bring legends closer
+      legend.spacing.y = ggplot2::unit(-0.195, "cm"), # bring legends closer
       # Add a box around the keys:
       legend.key = ggplot2::element_rect(fill = "white", colour = "grey"),
       legend.key.size = ggplot2::unit(0.35, "cm"),
@@ -143,7 +143,7 @@ plot_CEAC_ <- function(.PSA_data, ...) {
       # Increase the size of the points in the legend:
       color = ggplot2::guide_legend(
         override.aes = list(order = 1,
-                            size = 1,
+                            size = 3,
                             alpha = 1,
                             shape = NA)))
 
@@ -184,6 +184,7 @@ plot_CEAC_ <- function(.PSA_data, ...) {
         # Remove the shapes from the line:
         linetype = ggplot2::guide_legend(
           override.aes = list(order = 3,
+                              size = 3,
                               shape = NA, # remove shape
                               color = 'black')))
   }
@@ -248,7 +249,8 @@ plot_CEAC_ <- function(.PSA_data, ...) {
     ceaf_df = .PSA_data$CEAF %>%
       dplyr::mutate('Best option' =
                       colnames(.PSA_data$CEAC)[max.col(.PSA_data$CEAC)],
-                    'WTP threshold' = .PSA_data$WTPs)
+                    'WTP threshold' = .PSA_data$WTPs,
+                    'Data' = "CEAF")
 
     ## Plot:
     p <- p +
@@ -257,20 +259,22 @@ plot_CEAC_ <- function(.PSA_data, ...) {
           dplyr::filter(`WTP threshold` %in% n_points),
         ggplot2::aes(
           x = `WTP threshold`,
-          y = ceaf),
+          y = ceaf,
+          fill = Data),
         size = 2,
         stroke = 1,
-        alpha = 0.8,
+        alpha = 0.4,
         shape = 21,
         color = "black",
         show.legend = TRUE) +
       ggplot2::scale_fill_manual(
-        values = c("CEAF" = "black")) +
+        breaks = c("CEAF" = "CEAF"),
+        values = c("CEAF" = NA)) +
       ggplot2::guides(
         fill = ggplot2::guide_legend(
           override.aes = list(order = 2,
                               shape = 21,
-                              size = 2.5,
+                              size = 3,
                               stroke = 1)))
   }
 

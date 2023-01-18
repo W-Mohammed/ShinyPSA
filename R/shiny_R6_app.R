@@ -75,9 +75,9 @@ ShinyPSA_R6_App <- R6::R6Class(
       left: 0px;
       background-color: rgba(51, 62, 72, 0.5) !important;"))
       )
-      self$icon <- "https://pbs.twimg.com/profile_images/959365885537456128/tC4OVmkX_400x400.jpg"
+      self$icon <- "https://pbs.twimg.com/profile_images/1587395963785826305/5fUKyVVe_400x400.jpg"
       self$iContainer[["themeSwch"]] <- prettySwitch$new(
-        .label_ = "light_mode"
+        .label_ = "Light mode"
       )
       self$iContainer[["startBtn"]] <- actionButton$new(
         .label_ = "Start"
@@ -100,7 +100,7 @@ ShinyPSA_R6_App <- R6::R6Class(
       self$iContainer[["maxWTP2"]] <- numericInput$new(
         .label_ = "Set maximum Willingness-to-pay"
       )
-      self$iContainer[["sumTbl"]] <-  dataTableDT$new(
+      self$iContainer[["sumTbl"]] <-  dataTableGT$new(
         .label_ = "PSA summary table"
       )
       self$iContainer[["CEP"]] <- ggplot2Plot$new(
@@ -390,20 +390,30 @@ ShinyPSA_R6_App <- R6::R6Class(
         #### Title panel:----
         titlePanel(
           windowTitle = "ShinyPSA demo",
-          div(
-            class = "d-flex p-4 bd-highlight",
-            ##### App logo:----
-            img(
-              src = self$icon,
-              height = "45px",
-              class = "pr-2 pb-0"),
-            ##### Title:----
-            span("ShinyPSA demo app!"),
-            ##### Theme switcher:----
-            self$iContainer[["themeSwch"]]$
-              ui_input(
-                .value_ = TRUE
+          tagList(
+            div(
+              class = "d-flex p-4 bd-highlight",
+              ##### App logo:----
+              img(
+                src = self$icon,
+                height = "90px",
+                class = "pr-2 pb-0"),
+              div(
+                style = "margin-right: 1rm; margin-top: auto;
+                margin-bottom: auto;",
+                ##### Title:----
+                span("ShinyPSA demo app!"),
+                ##### Theme switcher:----
+              ),
+              div(
+                style = "margin-top: auto; margin-bottom: auto;
+                margin-left: auto; margin-right: 0;",
+                self$iContainer[["themeSwch"]]$
+                  ui_input(
+                    .value_ = TRUE
+                  )
               )
+            )
           )
         ),
         #### Landing page:----
@@ -611,7 +621,7 @@ ShinyPSA_R6_App <- R6::R6Class(
                   id = "outputs",
                   ###### Summary table:----
                   bslib::nav(
-                    width = 9,
+                    width = 12,
                     title = "Summary table",
                     fluidRow(
                       column(
@@ -658,8 +668,8 @@ ShinyPSA_R6_App <- R6::R6Class(
                       column(
                         width = 10,
                         div(
-                          class = "pb-5 pt-2 pr-1
-                          d-flex d-flex align-items-center",
+                          class = "pb-5 pt-2 pr-0
+                          d-flex align-items-center",
                           #style = ,
                           self$iContainer[["sumTbl"]]$
                             ui_output()
@@ -1516,9 +1526,20 @@ ShinyPSA_R6_App <- R6::R6Class(
               .table_ = rContainer[[sData_name()]]$
                 get_Summary_table(
                   .beautify_ = TRUE,
-                  .long_ = TRUE
+                  .long_ = TRUE,
+                  .latex_ = TRUE,
+                  .latex_title_ = gt::md("**PSA Results**"),
+                  .latex_subtitle_ = gt::md("**_Sumamry table_**"),
+                  .latex_code_ = FALSE,
+                  .footnotes_sourcenotes_ = TRUE,
+                  .all_sourcenotes_ = FALSE,
+                  .dominance_footnote_ = FALSE,
+                  .subset_tab_ = FALSE,
+                  .subset_group_ = c("All")
                 ),
-              .readyDT_ = TRUE
+              .width_ = "100%",
+              .height_ = "100%",
+              .align_ = NULL
             )
           ###### Retrieve the CEP from the ShinyPSA object:----
           self$iContainer[["CEP"]]$
@@ -1689,9 +1710,15 @@ ShinyPSA_R6_App <- R6::R6Class(
                              get_uiInId()]],
                   .time_horion_ =
                     input[[self$iContainer[["timEVPI0"]]$
-                             get_uiInId()]]
-                ),
-              .readyDT_ = TRUE
+                             get_uiInId()]],
+                  .latex_ = TRUE,
+                  .latex_code_ = FALSE,
+                  .footnotes_sourcenotes_ = TRUE,
+                  .all_sourcenotes_ = FALSE,
+                  .dominance_footnote_ = FALSE,
+                  .subset_tab_ = FALSE,
+                  .subset_group_ = c("All")
+                )
             )
         },
         ignoreNULL = TRUE,
@@ -1722,9 +1749,15 @@ ShinyPSA_R6_App <- R6::R6Class(
               .table_ = rContainer[[sData_name()]]$
                 get_Summary_table(
                   .beautify_ = TRUE,
-                  .long_ = TRUE
-                ),
-              .readyDT_ = TRUE
+                  .long_ = TRUE,
+                  .latex_ = TRUE,
+                  .latex_code_ = FALSE,
+                  .footnotes_sourcenotes_ = TRUE,
+                  .all_sourcenotes_ = FALSE,
+                  .dominance_footnote_ = FALSE,
+                  .subset_tab_ = FALSE,
+                  .subset_group_ = c("All")
+                )
             )
         },
         ignoreNULL = TRUE,
@@ -2370,10 +2403,11 @@ ShinyPSA_R6_App <- R6::R6Class(
               input[[self$iContainer[["themeSwch"]]$
                      get_uiInId()]]
             )) {
-              bslib::bs_theme()
+              bslib::bs_theme(
+                bootswatch = "minty")
             } else {
               bslib::bs_theme(
-                bootswatch = "solar" #"cyborg" #"solar" #"sandstone"
+                bootswatch = "cyborg" #"darkly" #"solar" #"solar" #"sandstone"
               )
             }
           )

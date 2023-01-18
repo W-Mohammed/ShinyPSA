@@ -581,6 +581,104 @@ dataTableDT = R6::R6Class(
   )
 )
 
+# Table - GT:----
+#' R6 Class employing gt::render_gt & gt::gt_output
+#'
+#' @description
+#' An instance of this class is used in similar way to gt::render_gt &
+#' gt::gt_output
+#' @format An [R6::R6Class] object.
+#' @name dataTableGT
+NULL
+#'
+#' @rdname dataTableGT
+#' @export
+dataTableGT = R6::R6Class(
+  classname = 'dataTableGT',
+  public = list(
+    ## Fields:----
+
+    ## Methods:----
+    ### Initialise:----
+    initialize = function(.label_) {
+
+      private$label_ = .label_
+      private$id_ = uuid::UUIDgenerate()
+      private$ns_ = NS(private$id_)
+
+    },
+    ### UI:----
+    #### UI input:----
+    ui_input = function(.tag_ = "UI_input") {
+
+      private$uiInput_Id_ <- private$ns_(.tag_)
+
+      tagList(
+
+      )
+
+    },
+    #### UI output:----
+    ui_output = function(.tag_ = "UI_output") {
+
+      private$uiOutput_Id_ <- private$ns_(.tag_)
+
+      tagList(
+        gt::gt_output(outputId = private$uiOutput_Id_)
+      )
+
+    },
+    #### UI rendered output:----
+    ui_render_output = function(.tag_ = "UI_render_output") {
+
+      private$uiRenderedOutput_Id_ <- private$ns_(.tag_)
+
+    },
+
+    ### server:----
+    server = function(input, output, session, .table_, .width_ = NULL,
+                      .height_ = NULL, .align_ = NULL) {
+
+      output[[private$uiOutput_Id_]] <- gt::render_gt(
+          expr = .table_,
+          width = .width_,
+          height = .height_,
+          align = .align_)
+
+    },
+    ### Getters:----
+    #### Get UI input ID:----
+    get_uiInId = function() {
+
+      return(private$uiInput_Id_)
+    },
+    #### Get UI output ID:----
+    get_uiOtId = function() {
+
+      return(private$uiOutput_Id_)
+    },
+    #### Get UI rendered output ID:----
+    get_uiRdOtId = function() {
+
+      return(private$uiRenderedOutput_Id_)
+    }
+
+  ),
+
+  private = list(
+    ## Fields:----
+    label_ = NULL,
+    id_ = NULL,
+    ns_ = NULL,
+    uiInput_Id_ = NULL,
+    uiOutput_Id_ = NULL,
+    uiRenderedOutput_Id_ = NULL
+
+    ## Methods:----
+
+  )
+)
+
 # sliderInput:----
 #' R6 Class employing shiny::sliderInput
 #'

@@ -191,13 +191,13 @@ ShinyPSA <- R6::R6Class(
             # pass arguments to the relevant function:
             dots_$.PSA_data <- private$PSA_summary
             private$PSA_summary[["Summary_table"]] <-
-              do.call(private$draw_summary_table_, dots_)
+              do.call(ShinyPSA::draw_summary_table_, dots_)
             # return default object after creation:
             private$PSA_summary[["Summary_table"]]
           } else {
             # pass arguments to the relevant function:
             dots_$.PSA_data <- private$PSA_summary
-            do.call(private$draw_summary_table_, dots_)
+            do.call(ShinyPSA::draw_summary_table_, dots_)
           }
         }
 
